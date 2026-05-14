@@ -81,9 +81,11 @@ public:		// User declarations
 	bool addSQLtulos(vatp *va, int dKilp, int ipv, int piste);
 	bool addSQLpv(kilptietue *kilp, int dKilp, int ipv);
 	bool addSQLrivi(kilptietue *kilp, int dKilp);
+	bool addSQLvaliajat(kilptietue *kilp, int dKilp, int ipv);
 	bool kirjSQLrivi(int dKilp);
 	bool updateSQLtulos(vatp *va, int dKilp, int ipv, int piste);
 	bool updateSQLpv(kilptietue *kilp, kilppvtp *pv1, int dKilp, int ipv);
+	bool updateSQLvaliajat(kilptietue *kilp, int dKilp, int ipv);
 	bool updateSQLrivi(kilptietue *kilp, int dKilp);
 	bool deleteSQLrivi(int dKilp);
 	int __fastcall lukumSQL(void);
