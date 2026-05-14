@@ -360,6 +360,40 @@ bool TFormMySQL::addSQLtulos(vatp *va, int dKilp, int ipv, int piste)
 	return(true);
 }
 //---------------------------------------------------------------------------
+
+// Väliaikojen lisääminen erilliseen taulukkoon
+bool TFormMySQL::addSQLvaliajat(kilptietue *kilp, int dKilp, int ipv)
+{
+	wchar_t as[20];
+	kilppvtp *pv = kilp->pv + ipv;
+	
+	// Kirjoita kaikki väliajat erilliseen valiajat-taulukkoon
+	for (int piste = pvparam[ipv].hiihtolahto ? 0 : 1; 
+		 piste <= Sarjat[kilp->Sarja(ipv)].valuku[ipv]+1; piste++) {
+		
+		// Ohita tyhjät väliajat
+		if (pv->va[piste].vatulos == 0)
+			continue;
+		
+		int tt0 = piste == 0 ? t0 : 0;
+		
+		SQLDataSet1->CommandText =
+			UnicodeString(L"INSERT into valiajat (kilpailu, tietue, vaihe, piste, aika, aikatime, sija) values ('") +
+			UnicodeString(kilpparam.kilpkoodi) + L"','" +
+			UnicodeString(dKilp) + L"','" +
+			UnicodeString(ipv+1) + L"','" +
+			UnicodeString(piste) + L"','" +
+			UnicodeString(pv->va[piste].vatulos + tt0*TUNTI) + L"','" +
+			((pv->va[piste].vatulos != TMAALI0) ? 
+				UnicodeString(aikatowstr_cols_n(as, pv->va[piste].vatulos, tt0, 0, 8)) : 
+				UnicodeString(L"00:00:00")) + L"','" +
+			UnicodeString(pv->va[piste].vasija) + L"')";
+		SQLDataSet1->ExecSQL(true);
+	}
+	return(true);
+}
+
+//---------------------------------------------------------------------------
 bool TFormMySQL::addSQLpv(kilptietue *kilp, int dKilp, int ipv)
 {
 	wchar_t as[20], as2[20];
@@ -395,9 +429,15 @@ bool TFormMySQL::addSQLpv(kilptietue *kilp, int dKilp, int ipv)
 			UnicodeString(aikatowstr_cols_n(as2,kilp->ytulos(ipv), 0, 0, 8))+L"','"+
 			UnicodeString(kilp->y_sija(ipv))+L"')";
 	SQLDataSet1->ExecSQL(true);
+	
+	// Kirjoita väliajat tulos-taulukkoon
 	for (int piste = pvparam[ipv].hiihtolahto ? 0 : 1; piste <= Sarjat[kilp->Sarja(ipv)].valuku[ipv]+1; piste++) {
 		addSQLtulos(&pv->va[piste], dKilp, ipv, piste);
-		}
+	}
+	
+	// Kirjoita väliajat myös erilliseen valiajat-taulukkoon (varmuuskopio)
+	addSQLvaliajat(kilp, dKilp, ipv);
+	
 	return(true);
 }
 //---------------------------------------------------------------------------
@@ -501,6 +541,29 @@ bool TFormMySQL::updateSQLtulos(vatp *va, int dKilp, int ipv, int piste)
 	return(true);
 }
 //---------------------------------------------------------------------------
+
+// Väliaikojen päivitys erillisessä taulukossa
+bool TFormMySQL::updateSQLvaliajat(kilptietue *kilp, int dKilp, int ipv)
+{
+	wchar_t as[20];
+	kilppvtp *pv = kilp->pv + ipv;
+	
+	// Poista vanhat väliajat tälle vaiheelle
+	SQLDataSet1->CommandText =
+		UnicodeString(L"DELETE from valiajat where kilpailu='") +
+		UnicodeString(kilpparam.kilpkoodi) +
+		UnicodeString(L"' and tietue=") + UnicodeString(dKilp) +
+		UnicodeString(L" AND vaihe=") + UnicodeString(ipv+1) +
+		UnicodeString(L";");
+	SQLDataSet1->ExecSQL(true);
+	
+	// Kirjoita uudet väliajat
+	addSQLvaliajat(kilp, dKilp, ipv);
+	
+	return(true);
+}
+
+//---------------------------------------------------------------------------
 bool TFormMySQL::updateSQLpv(kilptietue *kilp, kilppvtp *pv1, int dKilp, int ipv)
 {
 	wchar_t as[20], as2[20];
@@ -550,10 +613,13 @@ bool TFormMySQL::updateSQLpv(kilptietue *kilp, kilppvtp *pv1, int dKilp, int ipv
 				L" AND vaihe="+UnicodeString(ipv+1);
 			SQLDataSet1->ExecSQL(true);
 			}
+		// Päivitä väliajat tulos-taulukossa
 		for (int piste = pvparam[ipv].hiihtolahto ? 0 : 1; piste <= Sarjat[kilp->Sarja(ipv)].valuku[ipv]+1; piste++) {
 			updateSQLtulos(&pv->va[piste], dKilp, ipv, piste);
-			}
 		}
+		// Päivitä väliajat myös erillisessä valiajat-taulukossa
+		updateSQLvaliajat(kilp, dKilp, ipv);
+	}
 	return(true);
 }
 //---------------------------------------------------------------------------
@@ -618,6 +684,11 @@ bool TFormMySQL::deleteSQLrivi(int dKilp)
 	SQLDataSet1->ExecSQL(true);
 	SQLDataSet1->CommandText =
 		UnicodeString(L"DELETE from tulos where kilpailu='")+
+		UnicodeString(kilpparam.kilpkoodi)+
+		UnicodeString(L"' and tietue=")+UnicodeString(dKilp)+UnicodeString(L";");
+	SQLDataSet1->ExecSQL(true);
+	SQLDataSet1->CommandText =
+		UnicodeString(L"DELETE from valiajat where kilpailu='")+
 		UnicodeString(kilpparam.kilpkoodi)+
 		UnicodeString(L"' and tietue=")+UnicodeString(dKilp)+UnicodeString(L";");
 	SQLDataSet1->ExecSQL(true);
