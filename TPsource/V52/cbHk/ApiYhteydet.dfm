@@ -1,9 +1,9 @@
 object FormApiYhteydet: TFormApiYhteydet
   Left = 0
   Top = 0
-  Width = 600
-  Height = 550
-  Caption = 'REST API - Verkko yhteydet'
+  Caption = 'JAHOnline API - kilpailijat'
+  ClientHeight = 560
+  ClientWidth = 620
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,38 +17,45 @@ object FormApiYhteydet: TFormApiYhteydet
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 600
-    Height = 480
+    Width = 620
+    Height = 490
     ActivePage = TabYhteys
     Align = alClient
     TabOrder = 0
     object TabYhteys: TTabSheet
-      Caption = 'Yhteysasetukset'
+      Caption = 'Yhteys'
       object LabelUrl: TLabel
-        Left = 20
-        Top = 30
-        Width = 140
+        Left = 16
+        Top = 16
+        Width = 200
         Height = 13
-        Caption = 'API-palvelimen osoite (URL):'
+        Caption = 'Bridge-URL (JAHOnline):'
       end
       object LabelPortti: TLabel
-        Left = 20
-        Top = 80
-        Width = 86
+        Left = 16
+        Top = 72
+        Width = 180
         Height = 13
-        Caption = 'Portti (port):'
+        Caption = 'Portti (0 = URL:n oletus):'
       end
       object LabelApiKey: TLabel
-        Left = 20
-        Top = 130
-        Width = 132
+        Left = 16
+        Top = 128
+        Width = 220
         Height = 13
-        Caption = 'API-avain (authentication):'
+        Caption = 'API-avain (kilpailun api_token):'
+      end
+      object LabelKilpailuId: TLabel
+        Left = 16
+        Top = 184
+        Width = 160
+        Height = 13
+        Caption = 'kilpailu_id (JAHOnline):'
       end
       object LabelYhteysTila: TLabel
-        Left = 20
-        Top = 200
-        Width = 100
+        Left = 16
+        Top = 280
+        Width = 120
         Height = 20
         Caption = 'EI AKTIIVINEN'
         Font.Charset = DEFAULT_CHARSET
@@ -59,117 +66,160 @@ object FormApiYhteydet: TFormApiYhteydet
         ParentFont = False
       end
       object EditUrl: TEdit
-        Left = 20
-        Top = 50
-        Width = 300
+        Left = 16
+        Top = 36
+        Width = 560
         Height = 21
-        Text = 'http://localhost'
         TabOrder = 0
+        Text = 'https://jahonline.com/public/api/kilpailijat_bridge.php'
         OnChange = EditUrlChange
       end
       object EditPortti: TEdit
-        Left = 20
-        Top = 100
-        Width = 100
+        Left = 16
+        Top = 92
+        Width = 80
         Height = 21
-        Text = '8080'
         TabOrder = 1
+        Text = '0'
       end
       object EditApiKey: TEdit
-        Left = 20
-        Top = 150
-        Width = 300
+        Left = 16
+        Top = 148
+        Width = 400
         Height = 21
         PasswordChar = '*'
         TabOrder = 2
       end
+      object EditKilpailuId: TEdit
+        Left = 16
+        Top = 204
+        Width = 100
+        Height = 21
+        TabOrder = 3
+        Text = '0'
+      end
       object BtnYhteysTesti: TButton
-        Left = 20
-        Top = 240
-        Width = 150
-        Height = 35
-        Caption = 'Testaa yhteyttä'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Tahoma'
+        Left = 16
+        Top = 320
+        Width = 140
+        Height = 32
+        Caption = 'Testaa (ping)'
         Font.Style = [fsBold]
         ParentFont = False
-        TabOrder = 3
+        TabOrder = 4
         OnClick = BtnYhteysTesti
+      end
+      object BtnLahetaNyt: TButton
+        Left = 170
+        Top = 320
+        Width = 160
+        Height = 32
+        Caption = 'L'#228'het'#228' kilpailijat nyt'
+        TabOrder = 5
+        OnClick = BtnLahetaNytClick
+      end
+      object BtnHaeNyt: TButton
+        Left = 348
+        Top = 320
+        Width = 160
+        Height = 32
+        Caption = 'Hae kilpailijat nyt'
+        TabOrder = 6
+        OnClick = BtnHaeNytClick
       end
     end
     object TabAsetukset: TTabSheet
-      Caption = 'Automaattiset asetukset'
+      Caption = 'Automaatio'
       ImageIndex = 1
-      object CBLahetaValiajat: TCheckBox
-        Left = 20
-        Top = 30
-        Width = 400
+      object CBLahetaKilpailijat: TCheckBox
+        Left = 16
+        Top = 24
+        Width = 520
         Height = 17
-        Caption = 'Lähetä väliajat automaattisesti nettiin'
+        Caption = 'L'#228'het'#228' kaikki kilpailijat + ajat automaattisesti (synkkaa)'
+        Checked = True
+        State = cbChecked
         TabOrder = 0
       end
-      object CBVastaanottaValiajat: TCheckBox
-        Left = 20
-        Top = 60
-        Width = 400
+      object CBVastaanottaKilpailijat: TCheckBox
+        Left = 16
+        Top = 52
+        Width = 520
         Height = 17
-        Caption = 'Vastaanota väliajat mobiilisovelluksesta / netistä'
+        Caption = 'Vastaanota kilpailijat JAHOnlinesta (kilpailijat)'
+        Checked = True
+        State = cbChecked
         TabOrder = 1
       end
-      object CBLahetaTulokset: TCheckBox
-        Left = 20
-        Top = 90
-        Width = 400
+      object CBLahetaValiajat: TCheckBox
+        Left = 16
+        Top = 80
+        Width = 520
         Height = 17
-        Caption = 'Lähetä tulokset nettiin (HTML/JSON)'
+        Caption = 'L'#228'het'#228' live-v'#228'liajat / tapahtumat (tulossa)'
         TabOrder = 2
       end
-      object CBVastaanottaEiLahteneet: TCheckBox
-        Left = 20
-        Top = 120
-        Width = 400
+      object CBVastaanottaValiajat: TCheckBox
+        Left = 16
+        Top = 108
+        Width = 520
         Height = 17
-        Caption = 'Vastaanota "ei lähteneet" merkinnät netistä'
+        Caption = 'Vastaanota v'#228'liajat (tulossa)'
         TabOrder = 3
       end
-      object LabelLahetysvali: TLabel
-        Left = 20
-        Top = 160
-        Width = 130
-        Height = 13
-        Caption = 'Lähettämisen väli:'
-      end
-      object EditLahetysvali: TEdit
-        Left = 20
-        Top = 180
-        Width = 80
-        Height = 21
-        Text = '5'
+      object CBLahetaTulokset: TCheckBox
+        Left = 16
+        Top = 136
+        Width = 520
+        Height = 17
+        Caption = 'Sis'#228'lyt'#228' tulokset l'#228'hetykseen'
+        Checked = True
+        State = cbChecked
         TabOrder = 4
       end
-      object LabelSekunti: TLabel
-        Left = 110
-        Top = 185
+      object CBVastaanottaEiLahteneet: TCheckBox
+        Left = 16
+        Top = 164
+        Width = 520
+        Height = 17
+        Caption = 'P'#228'ivit'#228' DNS/DNF-statukset hausta'
+        Checked = True
+        State = cbChecked
+        TabOrder = 5
+      end
+      object LabelLahetysvali: TLabel
+        Left = 16
+        Top = 208
+        Width = 120
+        Height = 13
+        Caption = 'Synkronointiv'#228'li:'
+      end
+      object EditLahetysvali: TEdit
+        Left = 16
+        Top = 228
         Width = 60
+        Height = 21
+        TabOrder = 6
+        Text = '10'
+      end
+      object LabelSekunti: TLabel
+        Left = 84
+        Top = 232
+        Width = 50
         Height = 13
         Caption = 'sekuntia'
       end
     end
     object TabTila: TTabSheet
-      Caption = 'Yhteyden tila & lokit'
+      Caption = 'Loki'
       ImageIndex = 2
       object MemoTila: TMemo
-        Left = 10
-        Top = 10
-        Width = 560
+        Left = 8
+        Top = 8
+        Width = 580
         Height = 380
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -10
-        Font.Name = 'Courier New'
-        Font.Style = []
+        Font.Name = 'Consolas'
+        Font.Height = -11
         ParentFont = False
         ReadOnly = True
         ScrollBars = ssBoth
@@ -177,76 +227,58 @@ object FormApiYhteydet: TFormApiYhteydet
         WordWrap = False
       end
       object BtnPaivitaTila: TButton
-        Left = 10
+        Left = 8
         Top = 400
         Width = 100
         Height = 25
-        Caption = 'Päivitä tila'
+        Caption = 'P'#228'ivit'#228
         TabOrder = 1
         OnClick = BtnPaivitaTilaClick
       end
       object BtnTyhjennaMemo: TButton
         Left = 120
         Top = 400
-        Width = 100
+        Width = 110
         Height = 25
-        Caption = 'Tyhjennä lokit'
+        Caption = 'Tyhjenn'#228' loki'
         TabOrder = 2
         OnClick = BtnTyhjennaMemoClick
       end
       object BtnVieInternet: TButton
-        Left = 230
+        Left = 244
         Top = 400
-        Width = 150
+        Width = 160
         Height = 25
-        Caption = 'Ohjeet (www)'
+        Caption = 'Avaa API-ohje'
         TabOrder = 3
         OnClick = BtnVieInternetClick
       end
     end
   end
   object BtnOK: TButton
-    Left = 360
-    Top = 500
-    Width = 100
+    Left = 320
+    Top = 510
+    Width = 90
     Height = 30
     Caption = 'OK'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
     TabOrder = 1
     OnClick = BtnOKClick
   end
   object BtnPeruuta: TButton
-    Left = 470
-    Top = 500
-    Width = 100
+    Left = 420
+    Top = 510
+    Width = 90
     Height = 30
     Caption = 'Peruuta'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
     TabOrder = 2
     OnClick = BtnPeruutaClick
   end
   object BtnOhje: TButton
-    Left = 10
-    Top = 500
-    Width = 100
+    Left = 16
+    Top = 510
+    Width = 90
     Height = 30
-    Caption = '? Ohje'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
+    Caption = 'Ohje'
     TabOrder = 3
     OnClick = BtnOhjeClick
   end

@@ -1,330 +1,330 @@
-// Pekka Pirila's sports timekeeping program (Finnish: tulospalveluohjelma)
-// Copyright (C) 2015 Pekka Pirila 
-
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-//---------------------------------------------------------------------------
-
 #include <vcl.h>
 #pragma hdrstop
+#include <stdio.h>
+#include <vector>
 
 #include "ApiSaike.h"
-#include <Winsock2.h>
-#include <wininet.h>
+#include "ApiJson.h"
+#include "ApiYhteydet.h"
+#include "HkDeclare.h"
 
-#pragma comment(lib, "wininet.lib")
-#pragma comment(lib, "ws2_32.lib")
+#pragma package(smart_init)
 
-extern apiconfigtp apiconfig;
+extern CRITICAL_SECTION tall_CriticalSection;
 
-//---------------------------------------------------------------------------
 __fastcall TApiSaike::TApiSaike(bool CreateSuspended)
-	: TThread(CreateSuspended), pysaytysPyynnon(false), viiveMs(5000)
+	: TThread(CreateSuspended), pysaytysPyynnon(false), viiveMs(10000)
 {
 	Priority = tpLower;
 	FreeOnTerminate = false;
 }
 
-//---------------------------------------------------------------------------
 __fastcall TApiSaike::~TApiSaike(void)
 {
 	PyynnoPysaytys();
 	WaitFor();
 }
 
-//---------------------------------------------------------------------------
 void TApiSaike::PyynnoPysaytys(void)
 {
 	pysaytysPyynnon = true;
 }
 
-//---------------------------------------------------------------------------
+void __fastcall TApiSaike::LisaaMemo(void)
+{
+	if (FormApiYhteydet && FormApiYhteydet->MemoTila)
+		FormApiYhteydet->MemoTila->Lines->Add(viestiJono);
+}
+
 void __fastcall TApiSaike::Paivita(const UnicodeString msg, bool virhe)
 {
-	if (FormApiYhteydet) {
-		UnicodeString logiviesti = virhe ? L"❌ " : L"✓ ";
-		logiviesti += msg;
-		Synchronize([this, logiviesti]() {
-			FormApiYhteydet->PaivitaTila(logiviesti);
-		});
+	viestiJono = (virhe ? UnicodeString(L"! ") : UnicodeString(L"")) + msg;
+	Synchronize(&LisaaMemo);
+}
+
+static UnicodeString StatusMerkki(wchar_t keskhyl)
+{
+	switch (keskhyl) {
+	case L'T': return L"DNS";
+	case L'H': return L"DNF";
+	case L'K': return L"DSQ";
+	case L'E': return L"DNS";
+	default: return L"OK";
 	}
 }
 
-//---------------------------------------------------------------------------
-bool TApiSaike::LahetaHttpGet(const UnicodeString& url, UnicodeString& vastaus)
+static wchar_t StatusMerkkiin(const UnicodeString& st)
 {
-	HINTERNET hInternet = InternetOpen(L"Tulospalvelu/2.0", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
-	if (!hInternet)
-		return false;
-	
-	HINTERNET hConnect = InternetOpenUrl(hInternet, url.c_str(), NULL, 0, INTERNET_FLAG_RELOAD, 0);
-	if (!hConnect) {
-		InternetCloseHandle(hInternet);
-		return false;
-	}
-	
-	char szBuffer[4096];
-	DWORD dwBytesRead = 0;
-	vastaus = L"";
-	
-	while (InternetReadFile(hConnect, szBuffer, sizeof(szBuffer) - 1, &dwBytesRead) && dwBytesRead > 0) {
-		szBuffer[dwBytesRead] = 0;
-		vastaus += UnicodeString(AnsiString(szBuffer));
-	}
-	
-	InternetCloseHandle(hConnect);
-	InternetCloseHandle(hInternet);
-	return true;
+	if (st.CompareIC(L"DNS") == 0 || st.CompareIC(L"EI_LAHTENYT") == 0)
+		return L'T';
+	if (st.CompareIC(L"DNF") == 0 || st.CompareIC(L"KESKEYTTI") == 0)
+		return L'H';
+	if (st.CompareIC(L"DSQ") == 0 || st.CompareIC(L"HYLATTY") == 0)
+		return L'K';
+	return L' ';
 }
 
-//---------------------------------------------------------------------------
-bool TApiSaike::LahetaHttpPost(const UnicodeString& url, const UnicodeString& data, UnicodeString& vastaus)
+UnicodeString ApiRakennaKilpailijatJson(void)
 {
-	HINTERNET hInternet = InternetOpen(L"Tulospalvelu/2.0", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
-	if (!hInternet)
-		return false;
-	
-	URL_COMPONENTS urlComp = { 0 };
-	urlComp.dwStructSize = sizeof(URL_COMPONENTS);
-	urlComp.dwSchemeLength = -1;
-	urlComp.dwHostNameLength = -1;
-	urlComp.dwPathLength = -1;
-	
-	if (!InternetCrackUrl(url.c_str(), url.Length(), 0, &urlComp)) {
-		InternetCloseHandle(hInternet);
-		return false;
-	}
-	
-	UnicodeString hostName(urlComp.lpszHostName, urlComp.dwHostNameLength);
-	HINTERNET hConnect = InternetConnect(hInternet, hostName.c_str(), urlComp.nPort, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
-	if (!hConnect) {
-		InternetCloseHandle(hInternet);
-		return false;
-	}
-	
-	UnicodeString pathName(urlComp.lpszUrlPath, urlComp.dwPathLength);
-	HINTERNET hRequest = HttpOpenRequest(hConnect, L"POST", pathName.c_str(), HTTP_VERSION, NULL, NULL, 0, 0);
-	if (!hRequest) {
-		InternetCloseHandle(hConnect);
-		InternetCloseHandle(hInternet);
-		return false;
-	}
-	
-	AnsiString dataAnsi = AnsiString(data);
-	DWORD dwDataLen = dataAnsi.Length();
-	
-	// Add Content-Type header
-	HttpAddRequestHeaders(hRequest, L"Content-Type: application/json\r\n", -1L, HTTP_ADDREQ_FLAG_ADD);
-	
-	// Add API key if configured
-	if (apiconfig.apiKey[0] != 0) {
-		UnicodeString authHeader = L"Authorization: Bearer " + UnicodeString(apiconfig.apiKey);
-		HttpAddRequestHeaders(hRequest, authHeader.c_str(), -1L, HTTP_ADDREQ_FLAG_ADD);
-	}
-	
-	if (!HttpSendRequest(hRequest, NULL, 0, (void*)dataAnsi.c_str(), dwDataLen)) {
-		InternetCloseHandle(hRequest);
-		InternetCloseHandle(hConnect);
-		InternetCloseHandle(hInternet);
-		return false;
-	}
-	
-	char szBuffer[4096];
-	DWORD dwBytesRead = 0;
-	vastaus = L"";
-	
-	while (InternetReadFile(hRequest, szBuffer, sizeof(szBuffer) - 1, &dwBytesRead) && dwBytesRead > 0) {
-		szBuffer[dwBytesRead] = 0;
-		vastaus += UnicodeString(AnsiString(szBuffer));
-	}
-	
-	InternetCloseHandle(hRequest);
-	InternetCloseHandle(hConnect);
-	InternetCloseHandle(hInternet);
-	return true;
-}
+	UnicodeString arr = L"[";
+	bool first = true;
+	int ipv = 0;
+	if (k_pv > 0)
+		ipv = k_pv - 1;
+	if (ipv < 0)
+		ipv = 0;
 
-//---------------------------------------------------------------------------
-void __fastcall TApiSaike::LaheteValiajat(void)
-{
-	// Implement sending split times to API
-	// This would iterate through competition data and POST to /api/v1/competition/{id}/splits
-	
-	if (!apiconfig.lahetaValiajat)
-		return;
-	
-	try {
-		UnicodeString url = UnicodeString(apiconfig.apiUrl) + L":" + UnicodeString(apiconfig.apiPort) + 
-							L"/api/v1/competition/current/splits";
-		
-		// TODO: Serialize current split times to JSON
-		UnicodeString jsonData = L"{"
-			L"\"timestamp\": \"" + TDateTime::CurrentDateTime().FormatString(L"yyyy-mm-dd hh:mm:ss") + L"\","
-			L"\"splits\": []"
-			L"}";
-		
-		UnicodeString vastaus;
-		if (LahetaHttpPost(url, jsonData, vastaus)) {
-			Paivita(L"Väliajat lähetetty onnistuneesti");
-		} else {
-			Paivita(L"Väliaikojen lähettäminen epäonnistui", true);
-		}
-	} catch (...) {
-		Paivita(L"Virhe väliaikojen lähettämisessä", true);
-	}
-}
+	for (int d = 1; d < nrec; d++) {
+		kilptietue kilp;
+		kilp.GETREC(d);
+		if (kilp.kilpstatus != 0)
+			continue;
 
-//---------------------------------------------------------------------------
-void __fastcall TApiSaike::VastaanottaValiajat(void)
-{
-	// Implement receiving split times from API
-	// This would GET from /api/v1/competition/{id}/splits and update local data
-	
-	if (!apiconfig.vastaanottaValiajat)
-		return;
-	
-	try {
-		UnicodeString url = UnicodeString(apiconfig.apiUrl) + L":" + UnicodeString(apiconfig.apiPort) + 
-							L"/api/v1/competition/current/splits";
-		
-		UnicodeString vastaus;
-		if (LahetaHttpGet(url, vastaus)) {
-			// TODO: Parse JSON and update split times in local database
-			Paivita(L"Väliajat vastaanotettu netistä");
-		} else {
-			Paivita(L"Väliaikojen vastaanottaminen epäonnistui", true);
-		}
-	} catch (...) {
-		Paivita(L"Virhe väliaikojen vastaanottamisessa", true);
-	}
-}
+		int numero = kilp.id();
+		if (numero <= 0)
+			continue;
 
-//---------------------------------------------------------------------------
-void __fastcall TApiSaike::LaheteaTulokset(void)
-{
-	// Implement publishing results to API
-	// This would serialize final results and POST to /api/v1/competition/{id}/results
-	
-	if (!apiconfig.lahetaTulokset)
-		return;
-	
-	try {
-		UnicodeString url = UnicodeString(apiconfig.apiUrl) + L":" + UnicodeString(apiconfig.apiPort) + 
-							L"/api/v1/competition/current/results";
-		
-		// TODO: Serialize results to JSON
-		UnicodeString jsonData = L"{"
-			L"\"format\": \"json\","
-			L"\"timestamp\": \"" + TDateTime::CurrentDateTime().FormatString(L"yyyy-mm-dd hh:mm:ss") + L"\","
-			L"\"results\": []"
-			L"}";
-		
-		UnicodeString vastaus;
-		if (LahetaHttpPost(url, jsonData, vastaus)) {
-			Paivita(L"Tulokset julkaistu nettiin");
-		} else {
-			Paivita(L"Tulosten julkaiseminen epäonnistui", true);
-		}
-	} catch (...) {
-		Paivita(L"Virhe tulosten julkaisemisessa", true);
-	}
-}
+		UnicodeString sarjaNimi = L"";
+		int srj = kilp.Sarja(ipv);
+		if (srj >= 0 && srj < sarjaluku)
+			sarjaNimi = Sarjat[srj].sarjanimi;
 
-//---------------------------------------------------------------------------
-void __fastcall TApiSaike::VastaanottaEiLahteneet(void)
-{
-	// Implement receiving "didn't start" entries from API
-	// This would GET from /api/v1/competition/{id}/no-starts
-	
-	if (!apiconfig.vastaanottaEiLahteneet)
-		return;
-	
-	try {
-		UnicodeString url = UnicodeString(apiconfig.apiUrl) + L":" + UnicodeString(apiconfig.apiPort) + 
-							L"/api/v1/competition/current/no-starts";
-		
-		UnicodeString vastaus;
-		if (LahetaHttpGet(url, vastaus)) {
-			// TODO: Parse JSON and mark entries as "didn't start"
-			Paivita(L"'Ei lähteneet' -merkinnät päivitetty");
-		} else {
-			Paivita(L"'Ei lähteneet' -merkintöjen vastaanottaminen epäonnistui", true);
-		}
-	} catch (...) {
-		Paivita(L"Virhe 'ei lähteneet' -merkintöjen vastaanottamisessa", true);
-	}
-}
+		int badge = kilp.Badge(ipv, 0, true);
+		int badge2 = kilp.Badge(ipv, 1, true);
+		INT32 tls = kilp.tulos_pv(ipv, false, 1);
+		wchar_t tark = kilp.tark(ipv);
 
-//---------------------------------------------------------------------------
-void __fastcall TApiSaike::KasitteleValiajat(void)
-{
-	// Main processing routine that calls individual operations
-	if (!apiconfig.kaynnissa) {
-		Sleep(1000);
-		return;
-	}
-	
-	if (apiconfig.lahetaValiajat) {
-		LaheteValiajat();
-	}
-	
-	if (apiconfig.vastaanottaValiajat) {
-		VastaanottaValiajat();
-	}
-	
-	if (apiconfig.lahetaTulokset) {
-		LaheteaTulokset();
-	}
-	
-	if (apiconfig.vastaanottaEiLahteneet) {
-		VastaanottaEiLahteneet();
-	}
-}
-
-//---------------------------------------------------------------------------
-void __fastcall TApiSaike::Execute(void)
-{
-	viiveMs = apiconfig.lahetysvali * 1000;
-	int jakso = 0;
-	
-	Paivita(L"API-säie käynnistetty");
-	
-	while (!pysaytysPyynnon) {
-		try {
-			// Process API operations
-			if (apiconfig.kaynnissa) {
-				KasitteleValiajat();
+		UnicodeString valia = L"[";
+		bool vfirst = true;
+		if (kilp.pv && kilp.pv[ipv].va) {
+			int nva = 0;
+			if (srj >= 0 && srj < sarjaluku)
+				nva = Sarjat[srj].valuku[ipv];
+			if (nva < 0) nva = 0;
+			if (nva > 60) nva = 60;
+			for (int p = 1; p <= nva; p++) {
+				INT32 va = kilp.pv[ipv].va[p].vatulos;
+				if (va <= 0)
+					continue;
+				if (!vfirst) valia += L",";
+				vfirst = false;
+				valia += L"{\"piste\":" + IntToStr(p)
+					+ L",\"aika_sec\":" + IntToStr((int)va)
+					+ L",\"sija\":" + IntToStr((int)kilp.pv[ipv].va[p].vasija)
+					+ L"}";
 			}
-			
-			// Sleep in chunks to allow responsive shutdown
-			for (int i = 0; i < apiconfig.lahetysvali && !pysaytysPyynnon; i++) {
-				Sleep(1000);
+		}
+		valia += L"]";
+
+		if (!first) arr += L",";
+		first = false;
+
+		arr += L"{";
+		arr += L"\"numero\":" + IntToStr(numero);
+		arr += L",\"sukunimi\":" + ApiJsonString(kilp.sukunimi);
+		arr += L",\"etunimi\":" + ApiJsonString(kilp.etunimi);
+		arr += L",\"nimi\":" + ApiJsonString(UnicodeString(kilp.sukunimi) + L" " + UnicodeString(kilp.etunimi));
+		arr += L",\"seura\":" + ApiJsonString(kilp.seura);
+		arr += L",\"maa\":" + ApiJsonString(kilp.maa);
+		arr += L",\"sarja_nimi\":" + ApiJsonString(sarjaNimi);
+		arr += L",\"badge\":" + IntToStr(badge);
+		arr += L",\"badge2\":" + IntToStr(badge2);
+		arr += L",\"emit_koodi\":" + IntToStr(badge);
+		arr += L",\"emit_koodi2\":" + IntToStr(badge2);
+		arr += L",\"status\":" + ApiJsonString(StatusMerkki(tark));
+		arr += L",\"keskhyl\":" + ApiJsonString(UnicodeString(tark));
+		if (tls > 0)
+			arr += L",\"aika_sec\":" + IntToStr((int)tls);
+		else
+			arr += L",\"aika_sec\":null";
+		INT16 sija = 0;
+		if (kilp.pv)
+			sija = kilp.pv[ipv].ysija;
+		if (sija > 0)
+			arr += L",\"sija\":" + IntToStr((int)sija);
+		else
+			arr += L",\"sija\":null";
+		arr += L",\"valiajat\":" + valia;
+		arr += L"}";
+	}
+	arr += L"]";
+	return arr;
+}
+
+int ApiSovellaKilpailijatJson(const UnicodeString& json)
+{
+	std::vector<UnicodeString> objs;
+	int n = ApiJsonExtractObjectArray(json, L"kilpailijat", objs);
+	if (n <= 0)
+		return 0;
+
+	int ipv = 0;
+	if (k_pv > 0)
+		ipv = k_pv - 1;
+	if (ipv < 0)
+		ipv = 0;
+
+	int updated = 0;
+	EnterCriticalSection(&tall_CriticalSection);
+	__try {
+		for (size_t i = 0; i < objs.size(); i++) {
+			const UnicodeString& o = objs[i];
+			int numero = 0;
+			if (!ApiJsonFindInt(o, L"numero", numero) || numero <= 0)
+				continue;
+
+			UnicodeString sukunimi, etunimi, seura, maa, sarjaNimi, status;
+			ApiJsonFindString(o, L"sukunimi", sukunimi);
+			ApiJsonFindString(o, L"etunimi", etunimi);
+			ApiJsonFindString(o, L"seura", seura);
+			ApiJsonFindString(o, L"maa", maa);
+			ApiJsonFindString(o, L"sarja_nimi", sarjaNimi);
+			ApiJsonFindString(o, L"status", status);
+
+			int badge = 0, badge2 = 0, aikaSec = -1, sija = -1;
+			ApiJsonFindInt(o, L"badge", badge);
+			if (badge <= 0)
+				ApiJsonFindInt(o, L"emit_koodi", badge);
+			ApiJsonFindInt(o, L"badge2", badge2);
+			if (badge2 <= 0)
+				ApiJsonFindInt(o, L"emit_koodi2", badge2);
+			__int64 a64 = 0;
+			if (ApiJsonFindInt64(o, L"aika_sec", a64))
+				aikaSec = (int)a64;
+			ApiJsonFindInt(o, L"sija", sija);
+
+			int d = getpos(numero, true);
+			kilptietue kilp;
+			bool uusi = false;
+			if (d > 0) {
+				kilp.GETREC(d);
+			} else {
+				kilp.nollaa();
+				kilp.setId(numero);
+				uusi = true;
 			}
-			
-			jakso++;
-			if (jakso % 10 == 0) {
-				// Log status every 10 cycles
-				if (apiconfig.kaynnissa) {
-					Paivita(L"API-säie aktiivinen. Sykli: " + UnicodeString(jakso));
+
+			if (!sukunimi.IsEmpty())
+				wcsncpy(kilp.sukunimi, sukunimi.c_str(), LSNIMI);
+			if (!etunimi.IsEmpty())
+				wcsncpy(kilp.etunimi, etunimi.c_str(), LENIMI);
+			if (!seura.IsEmpty())
+				wcsncpy(kilp.seura, seura.c_str(), LSEURA);
+			if (!maa.IsEmpty())
+				wcsncpy(kilp.maa, maa.c_str(), 3);
+
+			if (!sarjaNimi.IsEmpty()) {
+				for (int s = 0; s < sarjaluku; s++) {
+					if (sarjaNimi.CompareIC(Sarjat[s].sarjanimi) == 0) {
+						kilp.setSarja(s);
+						break;
+					}
 				}
 			}
-		} catch (...) {
-			Paivita(L"Virhe API-säikeen suoritussa", true);
+
+			if (kilp.pv) {
+				if (badge > 0)
+					kilp.pv[ipv].badge[0] = badge;
+				if (badge2 > 0)
+					kilp.pv[ipv].badge[1] = badge2;
+				if (apiconfig.vastaanottaEiLahteneet && !status.IsEmpty()) {
+					wchar_t m = StatusMerkkiin(status);
+					if (m != L' ')
+						kilp.set_tark(m, ipv);
+				}
+				if (aikaSec >= 0)
+					kilp.tall_tulos_pv(aikaSec, ipv, 0);
+				if (sija >= 0)
+					kilp.pv[ipv].ysija = (INT16)sija;
+			}
+
+			if (uusi) {
+				int nd = 0;
+				kilp.addtall(&nd, 0);
+			} else {
+				kilp.tallenna(d, 0, 0, 0, 0);
+			}
+			updated++;
 		}
+	} __finally {
+		LeaveCriticalSection(&tall_CriticalSection);
 	}
-	
-	Paivita(L"API-säie pysäytetty");
+	return updated;
 }
 
-//---------------------------------------------------------------------------
+int ApiSynkkaaLahetaKaikki(void)
+{
+	if (apiconfig.kilpailuId <= 0 || apiconfig.apiKey[0] == 0)
+		return -1;
+
+	UnicodeString kilpailijat = ApiRakennaKilpailijatJson();
+	UnicodeString body =
+		L"{\"action\":\"synkkaa\",\"kilpailu_id\":" + IntToStr(apiconfig.kilpailuId)
+		+ L",\"lahde\":\"HkKisaWin\""
+		+ L",\"luo_puuttuvat\":true"
+		+ L",\"kilpailijat\":" + kilpailijat
+		+ L"}";
+
+	UnicodeString vastaus;
+	if (!ApiHttpPostJson(ApiBridgeUrl(), body, vastaus))
+		return -2;
+	if (!ApiJsonStatusOk(vastaus))
+		return -3;
+
+	int count = 0;
+	// rough count of objects
+	std::vector<UnicodeString> objs;
+	count = ApiJsonExtractObjectArray(L"{\"kilpailijat\":" + kilpailijat + L"}", L"kilpailijat", objs);
+	return count;
+}
+
+int ApiSynkkaaHaeKaikki(void)
+{
+	if (apiconfig.kilpailuId <= 0 || apiconfig.apiKey[0] == 0)
+		return -1;
+
+	UnicodeString body =
+		L"{\"action\":\"kilpailijat\",\"kilpailu_id\":" + IntToStr(apiconfig.kilpailuId) + L"}";
+	UnicodeString vastaus;
+	if (!ApiHttpPostJson(ApiBridgeUrl(), body, vastaus))
+		return -2;
+	if (!ApiJsonStatusOk(vastaus))
+		return -3;
+	return ApiSovellaKilpailijatJson(vastaus);
+}
+
+void __fastcall TApiSaike::Kasittele(void)
+{
+	if (!apiconfig.kaynnissa)
+		return;
+
+	if (apiconfig.lahetaKilpailijat || apiconfig.lahetaTulokset) {
+		int n = ApiSynkkaaLahetaKaikki();
+		if (n >= 0)
+			Paivita(L"Lähetetty kilpailijoita: " + IntToStr(n));
+		else
+			Paivita(L"Lähetys epäonnistui (" + IntToStr(n) + L")", true);
+	}
+
+	if (apiconfig.vastaanottaKilpailijat) {
+		int n = ApiSynkkaaHaeKaikki();
+		if (n >= 0)
+			Paivita(L"Haettu/päivitetty: " + IntToStr(n));
+		else
+			Paivita(L"Haku epäonnistui (" + IntToStr(n) + L")", true);
+	}
+}
+
+void __fastcall TApiSaike::Execute(void)
+{
+	ApiConfigLataa();
+	while (!pysaytysPyynnon) {
+		viiveMs = apiconfig.lahetysvali * 1000;
+		if (viiveMs < 2000)
+			viiveMs = 2000;
+		if (apiconfig.kaynnissa)
+			Kasittele();
+		for (int t = 0; t < viiveMs && !pysaytysPyynnon; t += 200)
+			Sleep(200);
+	}
+}

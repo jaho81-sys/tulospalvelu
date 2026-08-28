@@ -1,78 +1,237 @@
-// Pekka Pirila's sports timekeeping program (Finnish: tulospalveluohjelma)
-// Copyright (C) 2015 Pekka Pirila 
-
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-//---------------------------------------------------------------------------
-
 #include <vcl.h>
 #pragma hdrstop
 #include <Winsock2.h>
-#include <iphlpapi.h>
+#include <wininet.h>
+#include <stdio.h>
 
 #include "ApiYhteydet.h"
+#include "ApiJson.h"
+#include "ApiSaike.h"
+#include "ApiIntegration.h"
 
 #pragma comment(lib, "ws2_32.lib")
-#pragma comment(lib, "iphlpapi.lib")
+#pragma comment(lib, "wininet.lib")
 
-//---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TFormApiYhteydet *FormApiYhteydet;
-apiconfigtp apiconfig = {
-	L"http://localhost",
-	8080,
-	L"",
-	0,
-	0,
-	0,
-	0,
-	5,
-	0
-};
 
-//---------------------------------------------------------------------------
+TFormApiYhteydet *FormApiYhteydet;
+
+apiconfigtp apiconfig;
+
+static UnicodeString ConfigPolku(void)
+{
+	wchar_t buf[MAX_PATH];
+	GetModuleFileNameW(NULL, buf, MAX_PATH);
+	UnicodeString dir = ExtractFilePath(UnicodeString(buf));
+	return dir + L"jahonline_api.ini";
+}
+
+void ApiConfigNollaa(void)
+{
+	memset(&apiconfig, 0, sizeof(apiconfig));
+	wcsncpy(apiconfig.apiUrl,
+		L"https://jahonline.com/public/api/kilpailijat_bridge.php",
+		sizeof(apiconfig.apiUrl)/2 - 1);
+	apiconfig.apiPort = 0;
+	apiconfig.lahetysvali = 10;
+	apiconfig.lahetaKilpailijat = 1;
+	apiconfig.vastaanottaKilpailijat = 1;
+	apiconfig.lahetaTulokset = 1;
+}
+
+void ApiConfigLataa(void)
+{
+	ApiConfigNollaa();
+	UnicodeString polku = ConfigPolku();
+	if (!FileExists(polku))
+		return;
+
+	wchar_t tmp[512];
+	GetPrivateProfileStringW(L"jahonline", L"url", apiconfig.apiUrl, tmp, 512, polku.c_str());
+	wcsncpy(apiconfig.apiUrl, tmp, sizeof(apiconfig.apiUrl)/2 - 1);
+	GetPrivateProfileStringW(L"jahonline", L"api_key", L"", tmp, 512, polku.c_str());
+	wcsncpy(apiconfig.apiKey, tmp, sizeof(apiconfig.apiKey)/2 - 1);
+	apiconfig.apiPort = GetPrivateProfileIntW(L"jahonline", L"port", 0, polku.c_str());
+	apiconfig.kilpailuId = GetPrivateProfileIntW(L"jahonline", L"kilpailu_id", 0, polku.c_str());
+	apiconfig.lahetysvali = GetPrivateProfileIntW(L"jahonline", L"vali", 10, polku.c_str());
+	apiconfig.lahetaKilpailijat = GetPrivateProfileIntW(L"jahonline", L"laheta_kilpailijat", 1, polku.c_str());
+	apiconfig.vastaanottaKilpailijat = GetPrivateProfileIntW(L"jahonline", L"vastaanotta_kilpailijat", 1, polku.c_str());
+	apiconfig.lahetaValiajat = GetPrivateProfileIntW(L"jahonline", L"laheta_valiajat", 0, polku.c_str());
+	apiconfig.vastaanottaValiajat = GetPrivateProfileIntW(L"jahonline", L"vastaanotta_valiajat", 0, polku.c_str());
+	apiconfig.lahetaTulokset = GetPrivateProfileIntW(L"jahonline", L"laheta_tulokset", 1, polku.c_str());
+	apiconfig.vastaanottaEiLahteneet = GetPrivateProfileIntW(L"jahonline", L"vastaanotta_dns", 1, polku.c_str());
+	apiconfig.kaynnissa = GetPrivateProfileIntW(L"jahonline", L"kaynnissa", 0, polku.c_str());
+	if (apiconfig.lahetysvali < 2)
+		apiconfig.lahetysvali = 2;
+}
+
+void ApiConfigTallenna(void)
+{
+	UnicodeString polku = ConfigPolku();
+	WritePrivateProfileStringW(L"jahonline", L"url", apiconfig.apiUrl, polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"api_key", apiconfig.apiKey, polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"port", IntToStr(apiconfig.apiPort).c_str(), polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"kilpailu_id", IntToStr(apiconfig.kilpailuId).c_str(), polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"vali", IntToStr(apiconfig.lahetysvali).c_str(), polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"laheta_kilpailijat", IntToStr(apiconfig.lahetaKilpailijat).c_str(), polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"vastaanotta_kilpailijat", IntToStr(apiconfig.vastaanottaKilpailijat).c_str(), polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"laheta_valiajat", IntToStr(apiconfig.lahetaValiajat).c_str(), polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"vastaanotta_valiajat", IntToStr(apiconfig.vastaanottaValiajat).c_str(), polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"laheta_tulokset", IntToStr(apiconfig.lahetaTulokset).c_str(), polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"vastaanotta_dns", IntToStr(apiconfig.vastaanottaEiLahteneet).c_str(), polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"kaynnissa", IntToStr(apiconfig.kaynnissa).c_str(), polku.c_str());
+}
+
+UnicodeString ApiBridgeUrl(void)
+{
+	UnicodeString url = apiconfig.apiUrl;
+	url = StringReplace(url, L" ", L"", TReplaceFlags() << rfReplaceAll);
+	if (url.IsEmpty())
+		url = L"https://jahonline.com/public/api/kilpailijat_bridge.php";
+
+	// If only host given, append bridge path
+	if (url.Pos(L"/api/") == 0 && url.Pos(L"pirila_bridge") == 0 && url.Pos(L"kilpailijat_bridge") == 0) {
+		if (url[url.Length()] == L'/')
+			url += L"public/api/kilpailijat_bridge.php";
+		else
+			url += L"/public/api/kilpailijat_bridge.php";
+	}
+
+	// Optional port override when URL has no explicit port and apiPort > 0
+	if (apiconfig.apiPort > 0 && url.Pos(L"://") > 0) {
+		// leave as-is if user already put :port in URL
+		UnicodeString after = url.SubString(url.Pos(L"://") + 3, url.Length());
+		if (after.Pos(L":") == 0) {
+			int slash = after.Pos(L"/");
+			UnicodeString host = slash > 0 ? after.SubString(1, slash - 1) : after;
+			UnicodeString path = slash > 0 ? after.SubString(slash, after.Length()) : UnicodeString(L"");
+			UnicodeString scheme = url.SubString(1, url.Pos(L"://") + 2);
+			url = scheme + host + L":" + IntToStr(apiconfig.apiPort) + path;
+		}
+	}
+	return url;
+}
+
+static bool HttpRequest(const wchar_t* method, const UnicodeString& url,
+	const UnicodeString& body, UnicodeString& vastaus)
+{
+	vastaus = L"";
+	HINTERNET hInternet = InternetOpenW(L"Tulospalvelu-JAHOnline/1.0", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+	if (!hInternet)
+		return false;
+
+	URL_COMPONENTSW uc = {0};
+	uc.dwStructSize = sizeof(uc);
+	wchar_t host[256] = {0};
+	wchar_t path[1024] = {0};
+	wchar_t extra[512] = {0};
+	uc.lpszHostName = host;
+	uc.dwHostNameLength = 255;
+	uc.lpszUrlPath = path;
+	uc.dwUrlPathLength = 1023;
+	uc.lpszExtraInfo = extra;
+	uc.dwExtraInfoLength = 511;
+
+	if (!InternetCrackUrlW(url.c_str(), 0, 0, &uc)) {
+		InternetCloseHandle(hInternet);
+		return false;
+	}
+
+	INTERNET_PORT port = uc.nPort;
+	DWORD flags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE;
+	if (uc.nScheme == INTERNET_SCHEME_HTTPS)
+		flags |= INTERNET_FLAG_SECURE;
+
+	HINTERNET hConnect = InternetConnectW(hInternet, host, port, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+	if (!hConnect) {
+		InternetCloseHandle(hInternet);
+		return false;
+	}
+
+	UnicodeString fullPath = UnicodeString(path) + UnicodeString(extra);
+	const wchar_t* acceptTypes[] = { L"*/*", NULL };
+	HINTERNET hRequest = HttpOpenRequestW(hConnect, method, fullPath.c_str(), NULL, NULL, acceptTypes, flags, 0);
+	if (!hRequest) {
+		InternetCloseHandle(hConnect);
+		InternetCloseHandle(hInternet);
+		return false;
+	}
+
+	UnicodeString headers = L"Content-Type: application/json; charset=utf-8\r\nAccept: application/json\r\n";
+	if (apiconfig.apiKey[0] != 0) {
+		headers += L"Authorization: Bearer ";
+		headers += apiconfig.apiKey;
+		headers += L"\r\n";
+		headers += L"X-API-Key: ";
+		headers += apiconfig.apiKey;
+		headers += L"\r\n";
+	}
+	HttpAddRequestHeadersW(hRequest, headers.c_str(), -1, HTTP_ADDREQ_FLAG_ADD | HTTP_ADDREQ_FLAG_REPLACE);
+
+	AnsiString bodyUtf8 = ApiWideToUtf8(body);
+	BOOL ok = HttpSendRequestW(hRequest, NULL, 0,
+		body.IsEmpty() ? NULL : (LPVOID)bodyUtf8.c_str(),
+		body.IsEmpty() ? 0 : bodyUtf8.Length());
+
+	if (ok) {
+		char buf[4096];
+		DWORD n = 0;
+		AnsiString raw;
+		while (InternetReadFile(hRequest, buf, sizeof(buf) - 1, &n) && n > 0) {
+			buf[n] = 0;
+			raw += AnsiString(buf, n);
+		}
+		vastaus = ApiUtf8ToWide(raw);
+	}
+
+	InternetCloseHandle(hRequest);
+	InternetCloseHandle(hConnect);
+	InternetCloseHandle(hInternet);
+	return ok != FALSE;
+}
+
+bool ApiHttpPostJson(const UnicodeString& url, const UnicodeString& jsonBody, UnicodeString& vastaus)
+{
+	return HttpRequest(L"POST", url, jsonBody, vastaus);
+}
+
+bool ApiHttpGetAuth(const UnicodeString& url, UnicodeString& vastaus)
+{
+	return HttpRequest(L"GET", url, L"", vastaus);
+}
+
 __fastcall TFormApiYhteydet::TFormApiYhteydet(TComponent* Owner)
 	: TForm(Owner)
 {
 	Scaled = false;
-	if (Screen->PixelsPerInch != 96) {
+	if (Screen->PixelsPerInch != 96)
 		ScaleBy(Screen->PixelsPerInch, 96);
-	}
 }
 
-//---------------------------------------------------------------------------
 void __fastcall TFormApiYhteydet::FormShow(TObject *Sender)
 {
+	ApiConfigLataa();
 	LueTiedot();
-	PaivitaTila(L"Ikkunaa avattu. Tarkista asetukset ja klikkaa 'Yhteystesti'.");
+	PaivitaTila(L"Asetukset ladattu. Testaa yhteys Bearer-pingillä.");
 }
 
-//---------------------------------------------------------------------------
 void __fastcall TFormApiYhteydet::LueTiedot(void)
 {
 	EditUrl->Text = apiconfig.apiUrl;
-	EditPortti->Text = UnicodeString(apiconfig.apiPort);
+	EditPortti->Text = IntToStr(apiconfig.apiPort);
 	EditApiKey->Text = apiconfig.apiKey;
-	CBLahetaValiajat->Checked = apiconfig.lahetaValiajat;
-	CBVastaanottaValiajat->Checked = apiconfig.vastaanottaValiajat;
-	CBLahetaTulokset->Checked = apiconfig.lahetaTulokset;
-	CBVastaanottaEiLahteneet->Checked = apiconfig.vastaanottaEiLahteneet;
-	EditLahetysvali->Text = UnicodeString(apiconfig.lahetysvali);
-	
+	EditKilpailuId->Text = IntToStr(apiconfig.kilpailuId);
+	CBLahetaKilpailijat->Checked = apiconfig.lahetaKilpailijat != 0;
+	CBVastaanottaKilpailijat->Checked = apiconfig.vastaanottaKilpailijat != 0;
+	CBLahetaValiajat->Checked = apiconfig.lahetaValiajat != 0;
+	CBVastaanottaValiajat->Checked = apiconfig.vastaanottaValiajat != 0;
+	CBLahetaTulokset->Checked = apiconfig.lahetaTulokset != 0;
+	CBVastaanottaEiLahteneet->Checked = apiconfig.vastaanottaEiLahteneet != 0;
+	EditLahetysvali->Text = IntToStr(apiconfig.lahetysvali);
+
 	if (apiconfig.kaynnissa) {
-		LabelYhteysTila->Caption = L"AKTIIVINEN ✓";
+		LabelYhteysTila->Caption = L"AKTIIVINEN";
 		LabelYhteysTila->Font->Color = clGreen;
 	} else {
 		LabelYhteysTila->Caption = L"EI AKTIIVINEN";
@@ -80,176 +239,142 @@ void __fastcall TFormApiYhteydet::LueTiedot(void)
 	}
 }
 
-//---------------------------------------------------------------------------
 void __fastcall TFormApiYhteydet::KirjoitaTiedot(void)
 {
 	wcsncpy(apiconfig.apiUrl, EditUrl->Text.c_str(), sizeof(apiconfig.apiUrl)/2 - 1);
+	apiconfig.apiUrl[sizeof(apiconfig.apiUrl)/2 - 1] = 0;
 	apiconfig.apiPort = _wtoi(EditPortti->Text.c_str());
 	wcsncpy(apiconfig.apiKey, EditApiKey->Text.c_str(), sizeof(apiconfig.apiKey)/2 - 1);
-	apiconfig.lahetaValiajat = CBLahetaValiajat->Checked;
-	apiconfig.vastaanottaValiajat = CBVastaanottaValiajat->Checked;
-	apiconfig.lahetaTulokset = CBLahetaTulokset->Checked;
-	apiconfig.vastaanottaEiLahteneet = CBVastaanottaEiLahteneet->Checked;
+	apiconfig.apiKey[sizeof(apiconfig.apiKey)/2 - 1] = 0;
+	apiconfig.kilpailuId = _wtoi(EditKilpailuId->Text.c_str());
+	apiconfig.lahetaKilpailijat = CBLahetaKilpailijat->Checked ? 1 : 0;
+	apiconfig.vastaanottaKilpailijat = CBVastaanottaKilpailijat->Checked ? 1 : 0;
+	apiconfig.lahetaValiajat = CBLahetaValiajat->Checked ? 1 : 0;
+	apiconfig.vastaanottaValiajat = CBVastaanottaValiajat->Checked ? 1 : 0;
+	apiconfig.lahetaTulokset = CBLahetaTulokset->Checked ? 1 : 0;
+	apiconfig.vastaanottaEiLahteneet = CBVastaanottaEiLahteneet->Checked ? 1 : 0;
 	apiconfig.lahetysvali = _wtoi(EditLahetysvali->Text.c_str());
-	
-	if (apiconfig.lahetysvali < 1)
-		apiconfig.lahetysvali = 5;
+	if (apiconfig.lahetysvali < 2)
+		apiconfig.lahetysvali = 2;
 }
 
-//---------------------------------------------------------------------------
 void __fastcall TFormApiYhteydet::PaivitaTila(UnicodeString viesti)
 {
-	TDateTime nyt = Now();
-	UnicodeString aika = FormatDateTime(L"hh:mm:ss", nyt);
+	UnicodeString aika = FormatDateTime(L"hh:nn:ss", Now());
 	MemoTila->Lines->Add(L"[" + aika + L"] " + viesti);
-	
-	// Pidä vain 100 viimeistä riviä
-	while (MemoTila->Lines->Count > 100) {
+	while (MemoTila->Lines->Count > 200)
 		MemoTila->Lines->Delete(0);
-	}
-	
-	// Scroll to bottom
-	MemoTila->SelStart = MemoTila->GetTextLen() - 1;
+	MemoTila->SelStart = MemoTila->GetTextLen();
 }
 
-//---------------------------------------------------------------------------
 void __fastcall TFormApiYhteydet::TestaaYhteys(void)
 {
 	KirjoitaTiedot();
-	PaivitaTila(L"Testataan yhteyttä osoitteeseen: " + EditUrl->Text + L":" + EditPortti->Text);
-	
-	// Simple DNS/socket test
-	WSADATA wsaData;
-	SOCKET sock = INVALID_SOCKET;
-	struct sockaddr_in serverAddr;
-	
-	if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
-		PaivitaTila(L"❌ VIRHE: Winsock alustus epäonnistui");
+	ApiConfigTallenna();
+
+	if (apiconfig.kilpailuId <= 0) {
+		PaivitaTila(L"VIRHE: aseta kilpailu_id (JAHOnline)");
 		return;
 	}
-	
-	UnicodeString host = EditUrl->Text;
-	if (host.Pos(L"://") > 0) {
-		host = host.SubString(host.Pos(L"://") + 3, host.Length());
-	}
-	if (host.Pos(L"/") > 0) {
-		host = host.SubString(1, host.Pos(L"/") - 1);
-	}
-	
-	struct hostent *he = gethostbyname(AnsiString(host).c_str());
-	if (he == NULL) {
-		PaivitaTila(L"❌ VIRHE: Palvelimen nimeä ei löydetty: " + host);
-		WSACleanup();
+	if (apiconfig.apiKey[0] == 0) {
+		PaivitaTila(L"VIRHE: aseta API-avain (= kilpailun api_token)");
 		return;
 	}
-	
-	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (sock == INVALID_SOCKET) {
-		PaivitaTila(L"❌ VIRHE: Soketti luonti epäonnistui");
-		WSACleanup();
+
+	UnicodeString url = ApiBridgeUrl();
+	UnicodeString body = L"{\"action\":\"ping\",\"kilpailu_id\":" + IntToStr(apiconfig.kilpailuId) + L"}";
+	UnicodeString vastaus;
+	PaivitaTila(L"POST ping → " + url);
+
+	if (!ApiHttpPostJson(url, body, vastaus)) {
+		PaivitaTila(L"VIRHE: HTTP-pyyntö epäonnistui");
+		apiconfig.kaynnissa = 0;
+		LabelYhteysTila->Caption = L"EI AKTIIVINEN";
+		LabelYhteysTila->Font->Color = clRed;
 		return;
 	}
-	
-	// Set non-blocking mode for timeout
-	u_long mode = 1;
-	ioctlsocket(sock, FIONBIO, &mode);
-	
-	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_port = htons(apiconfig.apiPort);
-	serverAddr.sin_addr.s_addr = *(unsigned long *) he->h_addr;
-	
-	int connectResult = connect(sock, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
-	
-	// Wait 2 seconds for connection
-	fd_set writeSet;
-	FD_ZERO(&writeSet);
-	FD_SET(sock, &writeSet);
-	
-	timeval tv;
-	tv.tv_sec = 2;
-	tv.tv_usec = 0;
-	
-	int selectResult = select(0, NULL, &writeSet, NULL, &tv);
-	
-	if (selectResult > 0) {
-		PaivitaTila(L"✓ Yhteys muodostettiin onnistuneesti!");
+
+	if (ApiJsonStatusOk(vastaus)) {
+		PaivitaTila(L"OK: " + vastaus.SubString(1, 180));
 		apiconfig.kaynnissa = 1;
-		LabelYhteysTila->Caption = L"AKTIIVINEN ✓";
+		LabelYhteysTila->Caption = L"AKTIIVINEN";
 		LabelYhteysTila->Font->Color = clGreen;
+		ApiConfigTallenna();
+		TApiIntegration::GetInstance()->Alusta();
 	} else {
-		PaivitaTila(L"❌ VIRHE: Yhteys aikakatkaistiin. Tarkista palvelimen osoite ja portti.");
+		PaivitaTila(L"VIRHE vastaus: " + vastaus.SubString(1, 240));
 		apiconfig.kaynnissa = 0;
 		LabelYhteysTila->Caption = L"EI AKTIIVINEN";
 		LabelYhteysTila->Font->Color = clRed;
 	}
-	
-	closesocket(sock);
-	WSACleanup();
 }
 
-//---------------------------------------------------------------------------
 void __fastcall TFormApiYhteydet::BtnYhteysTesti(TObject *Sender)
 {
 	TestaaYhteys();
 }
 
-//---------------------------------------------------------------------------
-void __fastcall TFormApiYhteydet::BtnPaivitaTilaClick(TObject *Sender)
+void __fastcall TFormApiYhteydet::BtnLahetaNytClick(TObject *Sender)
 {
-	PaivitaTila(L"Asetukset päivitetty. Tila tarkistettu manuaalisesti.");
+	KirjoitaTiedot();
+	ApiConfigTallenna();
+	int n = ApiSynkkaaLahetaKaikki();
+	PaivitaTila(L"Lähetys valmis, rivejä: " + IntToStr(n));
 }
 
-//---------------------------------------------------------------------------
+void __fastcall TFormApiYhteydet::BtnHaeNytClick(TObject *Sender)
+{
+	KirjoitaTiedot();
+	ApiConfigTallenna();
+	int n = ApiSynkkaaHaeKaikki();
+	PaivitaTila(L"Haku valmis, päivitetty: " + IntToStr(n));
+}
+
+void __fastcall TFormApiYhteydet::BtnPaivitaTilaClick(TObject *Sender)
+{
+	PaivitaTila(L"URL=" + ApiBridgeUrl() + L" kilpailu_id=" + IntToStr(apiconfig.kilpailuId));
+}
+
 void __fastcall TFormApiYhteydet::BtnTyhjennaMemoClick(TObject *Sender)
 {
 	MemoTila->Clear();
-	PaivitaTila(L"Lokit tyhjennetty.");
 }
 
-//---------------------------------------------------------------------------
 void __fastcall TFormApiYhteydet::BtnVieInternetClick(TObject *Sender)
 {
-	ShellExecute(NULL, L"open", L"https://github.com/jaho81-sys/tulospalvelu/wiki/API-yhteydet", NULL, NULL, SW_SHOW);
+	ShellExecuteW(NULL, L"open",
+		L"https://github.com/jaho81-sys/tulospalvelu/blob/main/docs/api-jahonline.md",
+		NULL, NULL, SW_SHOW);
 }
 
-//---------------------------------------------------------------------------
 void __fastcall TFormApiYhteydet::BtnOhjeClick(TObject *Sender)
 {
 	ShowMessage(
-		L"REST API -yhteyksien konfiguraatio\n\n"
-		L"1. Yhteysväli:\n"
-		L"   - URL: API-palvelimen osoite (esim. http://localhost:8080)\n"
-		L"   - Portti: Palvelimen portti (oletus 8080)\n"
-		L"   - API-avain: Autentikaatioksi tarvittava avain\n\n"
-		L"2. Asetukset:\n"
-		L"   - Lähetä väliajat: Lähettää väliajat automaattisesti netiin\n"
-		L"   - Vastaanota väliajat: Vastaanottaa väliajat mobiilista/netistä\n"
-		L"   - Lähetä tulokset: Julkaisee tulokset netiin\n"
-		L"   - Vastaanota 'ei lähteneet': Päivittää ei-lähteneille merkityt\n\n"
-		L"3. Tila:\n"
-		L"   - Näyttää yhteyden lokitiedot\n"
-		L"   - Klikkaa 'Yhteystesti' testataksesi yhteyden\n"
+		L"JAHOnline API (kaksisuuntainen)\n\n"
+		L"URL: https://jahonline.com/public/api/kilpailijat_bridge.php\n"
+		L"API-avain: hallinnan kilpailun api_token\n"
+		L"kilpailu_id: JAHOnline-kilpailun ID\n\n"
+		L"Lähetä kilpailijat → action=synkkaa (kaikki osanottajat + ajat)\n"
+		L"Hae kilpailijat → action=kilpailijat (päivitys paikalliseen KILP.DAT)\n"
+		L"Auth: Authorization: Bearer <api_token>\n"
 	);
 }
 
-//---------------------------------------------------------------------------
 void __fastcall TFormApiYhteydet::EditUrlChange(TObject *Sender)
 {
-	// Placeholder for real-time validation
 }
 
-//---------------------------------------------------------------------------
 void __fastcall TFormApiYhteydet::BtnOKClick(TObject *Sender)
 {
 	KirjoitaTiedot();
+	ApiConfigTallenna();
+	if (apiconfig.kaynnissa)
+		TApiIntegration::GetInstance()->Alusta();
 	PaivitaTila(L"Asetukset tallennettu.");
 	Close();
 }
 
-//---------------------------------------------------------------------------
 void __fastcall TFormApiYhteydet::BtnPeruutaClick(TObject *Sender)
 {
 	Close();
 }
-
-//---------------------------------------------------------------------------

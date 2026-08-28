@@ -481,6 +481,24 @@
             <DependentOn>..\cbHk\UnitEmit_VA.h</DependentOn>
             <BuildOrder>126</BuildOrder>
         </CppCompile>
+        <CppCompile Include="..\cbHk\ApiJson.cpp">
+            <DependentOn>..\cbHk\ApiJson.h</DependentOn>
+            <BuildOrder>200</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\cbHk\ApiYhteydet.cpp">
+            <Form>FormApiYhteydet</Form>
+            <FormType>dfm</FormType>
+            <DependentOn>..\cbHk\ApiYhteydet.h</DependentOn>
+            <BuildOrder>201</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\cbHk\ApiSaike.cpp">
+            <DependentOn>..\cbHk\ApiSaike.h</DependentOn>
+            <BuildOrder>202</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\cbHk\ApiIntegration.cpp">
+            <DependentOn>..\cbHk\ApiIntegration.h</DependentOn>
+            <BuildOrder>203</BuildOrder>
+        </CppCompile>
         <CppCompile Include="..\cbHk\UnitExport.cpp">
             <Form>FormExport</Form>
             <DependentOn>..\cbHk\UnitExport.h</DependentOn>

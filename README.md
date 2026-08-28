@@ -28,6 +28,14 @@ osoitteessa https://www.tulospalvelu.fi/pirila/ohjeet/, jolta edellä mainitun
 sivuston sisältö on alun perin tuotu.
 
 
+## JAHOnline-integraatio (kaksisuuntainen)
+
+HkKisaWin ↔ https://jahonline.com kilpailijasiirto (Bearer `api_token`).
+
+- Ohje: [`docs/api-jahonline.md`](docs/api-jahonline.md)
+- Valikko: **JAHOnline API (kilpailijat)**
+- Lähdekoodi: `TPsource/V52/cbHk/Api*.cpp`
+
 ## Description
 After ten years, it’s time to start implementing a new version 2.0.
 
