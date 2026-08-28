@@ -1,0 +1,17 @@
+{
+  "name": "tulospalvelu docs-site",
+  "install": "pip3 install --user -r docs-site/requirements.txt",
+  "terminals": [
+    {
+      "name": "mkdocs serve",
+      "command": "cd docs-site && python3 -m mkdocs serve -a 0.0.0.0:8000",
+      "description": "Live-reloading MkDocs Material dev server for the docs-site guides (http://localhost:8000)."
+    }
+  ],
+  "ports": [
+    {
+      "name": "mkdocs",
+      "port": 8000
+    }
+  ]
+}
