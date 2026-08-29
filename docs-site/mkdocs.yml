@@ -80,7 +80,7 @@ nav:
     - Asennuksen toteutus:
       - Asennuksen vaiheet: asentaminen/asennuksen_vaiheet.md
     - JAHOnline:
-      - Kaksisuuntainen kilpailijasiirto: asentaminen/jahonline.md
+      - Pirilä synkka: asentaminen/jahonline.md
     - Esimerkkiaineisto: asentaminen/esimerkkiaineisto.md
   - "Suunnistuskilpailun tulospalvelu":
     - Yleiskatsaus: suunnistuskilpailu/index.md

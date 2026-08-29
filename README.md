@@ -31,10 +31,11 @@ sivuston sisältö on alun perin tuotu.
 ## JAHOnline-integraatio (kaksisuuntainen)
 
 HkKisaWin ↔ https://jahonline.com kilpailijasiirto (Bearer `api_token`).
-Erillistä siirto-ohjelmaa ei tarvita — kaksisuuntainen synkka on HkKisaWinissä.
+Erillistä siirto-ohjelmaa, CSV-bridgeä tai MySQL-välikantaa ei tarvita.
 
 - Ohje (lähde): [`docs/api-jahonline.md`](docs/api-jahonline.md)
-- Asennusohje nettisivulla: [JAHOnline-integraatio](docs-site/docs/asentaminen/jahonline.md)
+- Pirilä synkka (asennus): [docs-site/docs/asentaminen/jahonline.md](docs-site/docs/asentaminen/jahonline.md)
+- JAHOnline `docs/pirila.md` -korvaus: [`docs/jahonline-docs/pirila.md`](docs/jahonline-docs/pirila.md)
 - Valikko: **JAHOnline API (kilpailijat)**
 - Emit-luenta merkitsee kilpailijan läsnäolevaksi ja lähettää tiedon JAHOnlineen
 

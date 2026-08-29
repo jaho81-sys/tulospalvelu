@@ -14,6 +14,6 @@ ohjelmia ensimmäistä kertaa.
 - **Asennuksen toteutus**
     - [Asennuksen vaiheet](asennuksen_vaiheet.md)
 - **JAHOnline (nettitulospalvelu)**
-    - [Kaksisuuntainen kilpailijasiirto](jahonline.md) — ei erillistä siirto-ohjelmaa
+    - [Pirilä synkka](jahonline.md) — HkKisaWin → JAHOnline, ei erillistä siirto-ohjelmaa
 - **Tutustuminen ohjelmiin**
     - [Esimerkkiaineisto](esimerkkiaineisto.md)

@@ -29,7 +29,7 @@ Kilpailijatietojen kaksisuuntainen siirto JAHOnline-tulospalveluun on
 rakennettu *HkKisaWiniin* (valikko **JAHOnline API (kilpailijat)**).
 Erillistä siirto- tai bridge-ohjelmaa ei tarvita. Emit-luenta merkitsee
 lähtijän läsnäolevaksi ja synkkaa tiedon nettiin. Katso
-[JAHOnline-asennusohje](jahonline.md).
+[Pirilä synkka](jahonline.md).
 
 Ohjelma *HkKisaWin*
 tarvitsee toimiakseen useita kirjastotiedostoja (dll- ja bpl-tiedostoja), jotka

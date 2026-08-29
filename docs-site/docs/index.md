@@ -23,8 +23,8 @@ Jos olet uusi käyttäjä:
 
 1. **[Asentaminen ja tutustuminen](asentaminen/yleista.md)** — asennusohjeet
    ja yleisperehdytys ohjelmaperheeseen
-2. **[JAHOnline-kilpailijasiirto](asentaminen/jahonline.md)** — kaksisuuntainen
-   synkka HkKisaWinissä, ilman erillistä siirto-ohjelmaa
+2. **[Pirilä synkka (JAHOnline)](asentaminen/jahonline.md)** — kilpailijat,
+   läsnäolo ja ajat HkKisaWinistä, ilman erillistä siirto-ohjelmaa
 3. Kilpailulajin mukaan:
     - **[Ensimmäisen suunnistuskilpailun tulospalvelu](suunnistuskilpailu/johdanto.md)**
     - **[Hiihtokilpailun tulospalvelu](hiihtokilpailu/johdanto.md)**

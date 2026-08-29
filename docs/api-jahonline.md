@@ -11,9 +11,11 @@ kaksisuuntaiseen synkkaan tarvitaan HTTP + Bearer-avain.
 JAHOnline käyttää kilpailukohtaista `api_token`-arvoa (hallinta → kilpailu).
 Pirilä lähettää saman avaimen: `Authorization: Bearer <api_token>`.
 
-Erillistä siirto-ohjelmaa ei tarvita: kaksisuuntainen synkka on HkKisaWinissä
-(valikko **JAHOnline API (kilpailijat)**). Asennusohje nettisivulla:
-[docs-site/docs/asentaminen/jahonline.md](../docs-site/docs/asentaminen/jahonline.md).
+Erillistä siirto-ohjelmaa, CSV-bridgeä tai MySQL-välikantaa ei tarvita:
+kaksisuuntainen synkka on HkKisaWinissä (valikko **JAHOnline API (kilpailijat)**).
+
+- Asennusohje: [docs-site/docs/asentaminen/jahonline.md](../docs-site/docs/asentaminen/jahonline.md)
+- JAHOnline-sivun `docs/pirila.md` -korvaus: [docs/jahonline-docs/pirila.md](jahonline-docs/pirila.md)
 
 ## Endpoint
 

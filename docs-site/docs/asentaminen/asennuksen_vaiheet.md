@@ -41,5 +41,5 @@ yllä toisessa vaiheessa valittu kansio.
 
 Jos kilpailijatiedot julkaistaan JAHOnlinessa, avaa asennuksen jälkeen HkKisaWin
 ja määritä yhteys valikosta **JAHOnline API (kilpailijat)**. Erillistä
-siirto-ohjelmaa ei asenneta. Ohje: [JAHOnline — kaksisuuntainen
-kilpailijasiirto](jahonline.md).
+siirto-ohjelmaa, CSV-bridgeä tai MySQL-välikantaa ei asenneta. Ohje:
+[Pirilä synkka (JAHOnline)](jahonline.md).
