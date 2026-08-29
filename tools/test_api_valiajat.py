@@ -61,13 +61,26 @@ def test_valiajat_apply():
     print("ok valiajat apply")
 
 
+def test_cpp_json_actions():
+    hk = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "ApiSaike.cpp"),
+              encoding="utf-8", errors="replace").read()
+    vi = open(os.path.join(ROOT, "TPsource", "V52", "ViestiWin", "ApiSaike.cpp"),
+              encoding="utf-8", errors="replace").read()
+    assert r'\"action\":\"tapahtuma\"' in hk
+    assert r'\"action\":\"tapahtuma\"' in vi
+    assert r'\"tyyppi\":\"yksilo\"' in hk
+    assert r'\"tyyppi\":\"viesti\"' in vi
+    assert r'\"osuus\":' in vi
+    print("ok cpp json actions")
+
+
 def test_source_hooks():
     files = {
-        "cbHk/ApiSaike.cpp": ["action\":\"tapahtuma", "lahetaValiajat", "valiajat", "tyyppi\":\"yksilo"],
+        "cbHk/ApiSaike.cpp": ["tapahtuma", "lahetaValiajat", "valiajat", "yksilo"],
         "cbHk/UnitAjanotto.cpp": ["IlmoitaTapahtuma"],
         "cbHk/UnitEmit.cpp": ["IlmoitaTapahtuma", "IlmoitaLasna"],
         "cbHk/WinHk.dfm": ["JAHOnline API (synkka)"],
-        "ViestiWin/ApiSaike.cpp": ["tyyppi\":\"viesti", "osuus", "tapahtuma"],
+        "ViestiWin/ApiSaike.cpp": ["viesti", "osuus", "tapahtuma"],
         "ViestiWin/UnitAjanotto.cpp": ["IlmoitaTapahtuma"],
         "ViestiWin/UnitEmit.cpp": ["IlmoitaTapahtuma", "IlmoitaLasna"],
         "ViestiWin/UnitJoukkuetiedot.cpp": ["IlmoitaTapahtuma"],
@@ -88,6 +101,7 @@ def main():
     test_tapahtuma_yksilo()
     test_tapahtuma_viesti()
     test_valiajat_apply()
+    test_cpp_json_actions()
     test_source_hooks()
     print("all ok")
     return 0
