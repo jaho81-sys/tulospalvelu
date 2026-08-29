@@ -22,6 +22,7 @@
 #include "HkDeclare.h"
 #include "UnitKilpailijaOnline.h"
 #include "WinHk.h"
+#include "ApiHkIntegration.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -579,6 +580,17 @@ int __fastcall TFormKilpailijaOnline::tallennaTiedot(void)
    Kilp1.tallenna(dKilp, 0, 0, 0, &Kilp);
    LeaveCriticalSection(&tall_CriticalSection);
    Kilp.GETREC(dKilp);
+   if (Kilp1.id() > 0) {
+	   int nva = 0;
+	   int srj = Kilp1.Sarja();
+	   if (srj >= 0 && srj < sarjaluku)
+		   nva = Sarjat[srj].valuku[k_pv];
+	   for (int iva = 1; iva <= nva; iva++) {
+		   INT32 va = Kilp1.p_aika(iva);
+		   if (va > 0)
+			   ApiHkIntegration::IlmoitaTapahtuma(Kilp1.id(), iva, (int)va);
+	   }
+   }
    return(0);
    }
 //---------------------------------------------------------------------------

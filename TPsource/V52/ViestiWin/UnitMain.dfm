@@ -434,6 +434,10 @@ object FormMain: TFormMain
         Caption = '&Kirjoita siirtotiedostoon'
         OnClick = Kirjoitasiirtotiedostoon1Click
       end
+      object JahonlineApi1: TMenuItem
+        Caption = '&JAHOnline API (synkka)'
+        OnClick = JahonlineApi1Click
+      end
       object MySQL1: TMenuItem
         Caption = 'MySQL'
         OnClick = MySQL1Click

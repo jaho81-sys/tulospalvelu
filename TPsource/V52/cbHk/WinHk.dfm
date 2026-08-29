@@ -619,7 +619,7 @@ object FormMain: TFormMain
         OnClick = Kirjoitasiirtotiedostoon1Click
       end
       object JahonlineApi1: TMenuItem
-        Caption = '&JAHOnline API (kilpailijat)'
+        Caption = '&JAHOnline API (synkka)'
         OnClick = JahonlineApi1Click
       end
       object Asetukset1: TMenuItem

@@ -37,6 +37,8 @@ void ApiConfigNollaa(void)
 	apiconfig.lahetysvali = 10;
 	apiconfig.lahetaKilpailijat = 1;
 	apiconfig.vastaanottaKilpailijat = 1;
+	apiconfig.lahetaValiajat = 1;
+	apiconfig.vastaanottaValiajat = 1;
 	apiconfig.lahetaTulokset = 1;
 }
 
@@ -57,8 +59,8 @@ void ApiConfigLataa(void)
 	apiconfig.lahetysvali = GetPrivateProfileIntW(L"jahonline", L"vali", 10, polku.c_str());
 	apiconfig.lahetaKilpailijat = GetPrivateProfileIntW(L"jahonline", L"laheta_kilpailijat", 1, polku.c_str());
 	apiconfig.vastaanottaKilpailijat = GetPrivateProfileIntW(L"jahonline", L"vastaanotta_kilpailijat", 1, polku.c_str());
-	apiconfig.lahetaValiajat = GetPrivateProfileIntW(L"jahonline", L"laheta_valiajat", 0, polku.c_str());
-	apiconfig.vastaanottaValiajat = GetPrivateProfileIntW(L"jahonline", L"vastaanotta_valiajat", 0, polku.c_str());
+	apiconfig.lahetaValiajat = GetPrivateProfileIntW(L"jahonline", L"laheta_valiajat", 1, polku.c_str());
+	apiconfig.vastaanottaValiajat = GetPrivateProfileIntW(L"jahonline", L"vastaanotta_valiajat", 1, polku.c_str());
 	apiconfig.lahetaTulokset = GetPrivateProfileIntW(L"jahonline", L"laheta_tulokset", 1, polku.c_str());
 	apiconfig.vastaanottaEiLahteneet = GetPrivateProfileIntW(L"jahonline", L"vastaanotta_dns", 1, polku.c_str());
 	apiconfig.kaynnissa = GetPrivateProfileIntW(L"jahonline", L"kaynnissa", 0, polku.c_str());
@@ -354,8 +356,10 @@ void __fastcall TFormApiYhteydet::BtnOhjeClick(TObject *Sender)
 		L"URL: https://jahonline.com/public/api/kilpailijat_bridge.php\n"
 		L"API-avain: hallinnan kilpailun api_token\n"
 		L"kilpailu_id: JAHOnline-kilpailun ID\n\n"
-		L"Lähetä kilpailijat → action=synkkaa (osanottajat, ajat, läsnäolo)\n"
+		L"Lähetä kilpailijat → action=synkkaa (osanottajat, ajat, läsnäolo, väliajat)\n"
 		L"Hae kilpailijat → action=kilpailijat (päivitys paikalliseen KILP.DAT)\n"
+		L"Online-rasti / ajanotto → action=tapahtuma (piste, aika_sec)\n"
+		L"ViestiWin: sama protokolla + kenttä osuus (1-pohjainen).\n"
 		L"Emit-luenta merkitsee lähtijän läsnäolevaksi ja synkkaa heti.\n"
 		L"Auth: Authorization: Bearer <api_token>\n"
 	);

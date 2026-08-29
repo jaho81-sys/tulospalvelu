@@ -23,7 +23,7 @@ typedef struct {
 	int lahetaKilpailijat;         // Push full roster + times (action=synkkaa)
 	int vastaanottaKilpailijat;    // Pull roster from server (action=kilpailijat)
 	int lahetaValiajat;            // Push live punches / splits (action=tapahtuma)
-	int vastaanottaValiajat;       // Reserved / pull splits later
+	int vastaanottaValiajat;       // Pull splits from JAHOnline (kilpailijat.valiajat)
 	int lahetaTulokset;            // Alias: also push results with synkkaa
 	int vastaanottaEiLahteneet;    // Apply DNS/DNF from pull
 	int lahetysvali;               // Interval seconds

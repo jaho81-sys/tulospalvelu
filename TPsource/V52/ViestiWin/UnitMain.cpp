@@ -64,6 +64,7 @@
 #include "UnitOsuuskopiointi.h"
 #include "UnitMySQL.h"
 #include "UnitLahestyjat.h"
+#include "ApiVIntegration.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -544,6 +545,7 @@ void LukumaaratTh(LPVOID lpCn)
 
 void __fastcall TFormMain::onShow(TObject *Sender)
 {
+	ApiVIntegration::Alusta();
 /*
    static int init;
 
@@ -981,6 +983,7 @@ void __fastcall TFormMain::FormCloseQuery(TObject *Sender, bool &CanClose)
 	  CanClose = false;
 	  }
    else {
+	  ApiVIntegration::Lopeta();
 	  lopetus1();
 	  Sleep(500);
 	  }
@@ -1925,6 +1928,12 @@ void __fastcall TFormMain::Sakkoseuranta1Click(TObject *Sender)
 }
 
 //---------------------------------------------------------------------------
+void __fastcall TFormMain::JahonlineApi1Click(TObject *Sender)
+{
+	ApiVIntegration::AvaaMuokkausikkuna(Handle);
+}
+//---------------------------------------------------------------------------
+
 void __fastcall TFormMain::MySQL1Click(TObject *Sender)
 {
 	if (!FormMySQL)

@@ -1620,8 +1620,21 @@ int __fastcall TFormEmit::tallennaKilpailija(bool kysy)
 	if (DKilp == getpos(Kilp.id()))
 		Kilp.tallenna(DKilp, 0, 0, 0, 0);
 	LeaveCriticalSection(&tall_CriticalSection);
-	if (Kilp.id() > 0)
+	if (Kilp.id() > 0) {
 		ApiHkIntegration::IlmoitaLasna(Kilp.id());
+		INT32 tls = Kilp.p_aika(0);
+		if (tls > 0)
+			ApiHkIntegration::IlmoitaTapahtuma(Kilp.id(), 0, (int)tls);
+		int nva = 0;
+		int srj = Kilp.Sarja();
+		if (srj >= 0 && srj < sarjaluku)
+			nva = Sarjat[srj].valuku[k_pv];
+		for (int iva = 1; iva <= nva; iva++) {
+			INT32 va = Kilp.p_aika(iva);
+			if (va > 0)
+				ApiHkIntegration::IlmoitaTapahtuma(Kilp.id(), iva, (int)va);
+		}
+	}
 	KasittelyKesken = false;
 	Nayta();
 	TallVals();

@@ -169,7 +169,7 @@
         <BCC_GenerateMultithreaded>true</BCC_GenerateMultithreaded>
         <DCC_DcuOutput>obj\</DCC_DcuOutput>
         <BCC_PCHCache>true</BCC_PCHCache>
-        <IncludePath>..\ViestiWin\;..\tputilv2\;..\cbTp\;..\Tp\;..\Juk\;..\com\;..\INCLUDE\;$(IncludePath)</IncludePath>
+        <IncludePath>..\ViestiWin\;..\cbHk\;..\tputilv2\;..\cbTp\;..\Tp\;..\Juk\;..\com\;..\INCLUDE\;$(IncludePath)</IncludePath>
         <BCC_IntegerSizedEnums>false</BCC_IntegerSizedEnums>
         <BRCC_IncludePath>..\COMM;$(BDS)\include;$(BDS)\include\vcl;$(BRCC_IncludePath)</BRCC_IncludePath>
         <AllPackageLibs>vcl.lib;rtl.lib;vclie.lib;dbrtl.lib;dbexpress.lib;DbxCommonDriver.lib;DBXMySQLDriver.lib;IndySystem.lib;IndyProtocols.lib;IndyCore.lib;vclx.lib</AllPackageLibs>
@@ -818,6 +818,24 @@
             <FormType>dfm</FormType>
             <DependentOn>..\ViestiWin\UnitMySQL.h</DependentOn>
             <BuildOrder>108</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\cbHk\ApiJson.cpp">
+            <DependentOn>..\cbHk\ApiJson.h</DependentOn>
+            <BuildOrder>210</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\cbHk\ApiYhteydet.cpp">
+            <Form>FormApiYhteydet</Form>
+            <FormType>dfm</FormType>
+            <DependentOn>..\cbHk\ApiYhteydet.h</DependentOn>
+            <BuildOrder>211</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\ViestiWin\ApiSaike.cpp">
+            <DependentOn>..\ViestiWin\ApiSaike.h</DependentOn>
+            <BuildOrder>212</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\cbHk\ApiIntegration.cpp">
+            <DependentOn>..\cbHk\ApiIntegration.h</DependentOn>
+            <BuildOrder>213</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\ViestiWin\UnitNollaus.cpp">
             <Form>FormNollaus</Form>

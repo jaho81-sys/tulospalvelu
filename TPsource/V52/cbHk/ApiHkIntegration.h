@@ -57,6 +57,12 @@ namespace ApiHkIntegration
 	{
 		ApiIlmoitaLasna(kilpno);
 	}
+
+	// Ajanotto / online-rasti
+	inline void IlmoitaTapahtuma(int kilpno, int piste, int aikaSec)
+	{
+		ApiIlmoitaTapahtuma(kilpno, piste, aikaSec);
+	}
 }
 
 //---------------------------------------------------------------------------

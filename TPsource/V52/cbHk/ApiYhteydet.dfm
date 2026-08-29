@@ -1,7 +1,7 @@
 object FormApiYhteydet: TFormApiYhteydet
   Left = 0
   Top = 0
-  Caption = 'JAHOnline API - kilpailijat'
+  Caption = 'JAHOnline API - synkka'
   ClientHeight = 560
   ClientWidth = 620
   Color = clBtnFace
@@ -156,7 +156,9 @@ object FormApiYhteydet: TFormApiYhteydet
         Top = 80
         Width = 520
         Height = 17
-        Caption = 'L'#228'het'#228' live-v'#228'liajat / tapahtumat (tulossa)'
+        Caption = 'L'#228'het'#228' live-v'#228'liajat / online-rastit (tapahtuma)'
+        Checked = True
+        State = cbChecked
         TabOrder = 2
       end
       object CBVastaanottaValiajat: TCheckBox
@@ -164,7 +166,9 @@ object FormApiYhteydet: TFormApiYhteydet
         Top = 108
         Width = 520
         Height = 17
-        Caption = 'Vastaanota v'#228'liajat (tulossa)'
+        Caption = 'Vastaanota v'#228'liajat / online-rastit JAHOnlinesta'
+        Checked = True
+        State = cbChecked
         TabOrder = 3
       end
       object CBLahetaTulokset: TCheckBox
