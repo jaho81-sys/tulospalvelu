@@ -11,6 +11,10 @@ kaksisuuntaiseen synkkaan tarvitaan HTTP + Bearer-avain.
 JAHOnline käyttää kilpailukohtaista `api_token`-arvoa (hallinta → kilpailu).
 Pirilä lähettää saman avaimen: `Authorization: Bearer <api_token>`.
 
+Erillistä siirto-ohjelmaa ei tarvita: kaksisuuntainen synkka on HkKisaWinissä
+(valikko **JAHOnline API (kilpailijat)**). Asennusohje nettisivulla:
+[docs-site/docs/asentaminen/jahonline.md](../docs-site/docs/asentaminen/jahonline.md).
+
 ## Endpoint
 
 Oletus-URL:
@@ -41,7 +45,11 @@ Bodyyn aina: `"kilpailu_id": <int>`
 {"action":"kilpailijat","kilpailu_id":11}
 ```
 → lista kentillä: `numero`, `sukunimi`, `etunimi`, `nimi`, `seura`, `maa`,
-`sarja_nimi`, `badge`/`emit_koodi`, `status`, `aika_sec`, `sija`, `valiajat[]`
+`sarja_nimi`, `badge`/`emit_koodi`, `lasna`, `status`, `aika_sec`, `sija`, `valiajat[]`
+
+`lasna` on boolean (`true`, kun kilpailija on läsnä: ei poissa/ei-lähtenyt/vakantti).
+`status` on `LASNA`, kun läsnäolo on merkitty mutta tulosta ei vielä ole; muuten
+`OK` / `DNS` / `DNF` / `DSQ`.
 
 ### `synkkaa` (Pirilä → JAHOnline)
 ```json
@@ -58,16 +66,20 @@ Bodyyn aina: `"kilpailu_id": <int>`
       "seura":"HSK",
       "sarja_nimi":"H21",
       "badge":123456,
-      "status":"OK",
-      "aika_sec":3456,
-      "sija":3,
-      "valiajat":[{"piste":1,"aika_sec":900}]
+      "lasna":true,
+      "status":"LASNA",
+      "aika_sec":null,
+      "sija":null,
+      "valiajat":[]
     }
   ]
 }
 ```
 
 `luo_puuttuvat:true` luo puuttuvat numerot JAHOnlineen (sarja nimellä).
+
+Emit-luenta (leimantarkastus / `ESILUENTA`) merkitsee kilpailijan läsnäolevaksi
+ja lähettää yhden kilpailijan `synkkaa`-sanoman heti (`lasna: true`).
 
 ## Käyttö HkKisaWinissä
 

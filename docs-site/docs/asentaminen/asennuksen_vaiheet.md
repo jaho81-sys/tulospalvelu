@@ -38,3 +38,8 @@ Ohjelma tekee asennuksen yhteydessä myös ohjelman
 *HkMaaliData*. Tämän pikakuvakkeen käynnistyskansio on sama kuin sen
 sijoituspaikka. Ohjelman *HkKisaWin* pikakuvakkeiden käynnistyskansio on
 yllä toisessa vaiheessa valittu kansio.
+
+Jos kilpailijatiedot julkaistaan JAHOnlinessa, avaa asennuksen jälkeen HkKisaWin
+ja määritä yhteys valikosta **JAHOnline API (kilpailijat)**. Erillistä
+siirto-ohjelmaa ei asenneta. Ohje: [JAHOnline — kaksisuuntainen
+kilpailijasiirto](jahonline.md).

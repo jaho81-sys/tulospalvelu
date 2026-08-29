@@ -13,5 +13,7 @@ ohjelmia ensimmäistä kertaa.
     - [Kansiorakenne](kansiorakenne.md)
 - **Asennuksen toteutus**
     - [Asennuksen vaiheet](asennuksen_vaiheet.md)
+- **JAHOnline (nettitulospalvelu)**
+    - [Kaksisuuntainen kilpailijasiirto](jahonline.md) — ei erillistä siirto-ohjelmaa
 - **Tutustuminen ohjelmiin**
     - [Esimerkkiaineisto](esimerkkiaineisto.md)

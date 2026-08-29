@@ -31,10 +31,12 @@ sivuston sisältö on alun perin tuotu.
 ## JAHOnline-integraatio (kaksisuuntainen)
 
 HkKisaWin ↔ https://jahonline.com kilpailijasiirto (Bearer `api_token`).
+Erillistä siirto-ohjelmaa ei tarvita — kaksisuuntainen synkka on HkKisaWinissä.
 
-- Ohje: [`docs/api-jahonline.md`](docs/api-jahonline.md)
+- Ohje (lähde): [`docs/api-jahonline.md`](docs/api-jahonline.md)
+- Asennusohje nettisivulla: [JAHOnline-integraatio](docs-site/docs/asentaminen/jahonline.md)
 - Valikko: **JAHOnline API (kilpailijat)**
-- Lähdekoodi: `TPsource/V52/cbHk/Api*.cpp`
+- Emit-luenta merkitsee kilpailijan läsnäolevaksi ja lähettää tiedon JAHOnlineen
 
 ## Description
 After ten years, it’s time to start implementing a new version 2.0.
