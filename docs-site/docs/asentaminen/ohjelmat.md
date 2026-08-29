@@ -26,7 +26,7 @@ kansallisten kilpailujen tehtävissä, erityisesti ajanotossa, mutta mahdollises
 myös suunnistuksen leimantarkastuksessa.
 
 Kilpailijatietojen kaksisuuntainen siirto JAHOnline-tulospalveluun on
-rakennettu *HkKisaWiniin* (valikko **JAHOnline API (kilpailijat)**).
+rakennettu *HkKisaWiniin* ja *ViestiWiniin* (valikko **JAHOnline API (synkka)**).
 Erillistä siirto- tai bridge-ohjelmaa ei tarvita. Emit-luenta merkitsee
 lähtijän läsnäolevaksi ja synkkaa tiedon nettiin. Katso
 [Pirilä synkka](jahonline.md).

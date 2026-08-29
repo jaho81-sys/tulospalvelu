@@ -1,6 +1,6 @@
-# JAHOnline API — kaksisuuntainen kilpailijasiirto
+# JAHOnline API — kaksisuuntainen synkka
 
-Pirilä (HkKisaWin) ↔ JAHOnline tulospalvelu.
+Pirilä (HkKisaWin ja ViestiWin) ↔ JAHOnline tulospalvelu.
 
 ## Miksi tämä tapa
 
@@ -12,7 +12,9 @@ JAHOnline käyttää kilpailukohtaista `api_token`-arvoa (hallinta → kilpailu)
 Pirilä lähettää saman avaimen: `Authorization: Bearer <api_token>`.
 
 Erillistä siirto-ohjelmaa, CSV-bridgeä tai MySQL-välikantaa ei tarvita:
-kaksisuuntainen synkka on HkKisaWinissä (valikko **JAHOnline API (kilpailijat)**).
+kaksisuuntainen synkka on HkKisaWinissä ja ViestiWinissä (valikko
+**JAHOnline API (synkka)**). Osanottajat, läsnäolo, maaliajat ja
+online-rastit kulkevat samaa siltaa.
 
 - Asennusohje: [docs-site/docs/asentaminen/jahonline.md](../docs-site/docs/asentaminen/jahonline.md)
 - JAHOnline-sivun `docs/pirila.md` -korvaus: [docs/jahonline-docs/pirila.md](jahonline-docs/pirila.md)
@@ -83,20 +85,59 @@ Bodyyn aina: `"kilpailu_id": <int>`
 Emit-luenta (leimantarkastus / `ESILUENTA`) merkitsee kilpailijan läsnäolevaksi
 ja lähettää yhden kilpailijan `synkkaa`-sanoman heti (`lasna: true`).
 
-## Käyttö HkKisaWinissä
+`synkkaa` sisältää myös `valiajat[]` (online-rastit / väliaikapisteet) ja
+`"tyyppi":"yksilo"` tai `"tyyppi":"viesti"`. Ajanotto / rastileima lähettää
+lisäksi heti:
 
-1. Valikko → **JAHOnline API (kilpailijat)**
+### `tapahtuma` (live online-rasti)
+
+```json
+{
+  "action":"tapahtuma",
+  "kilpailu_id":11,
+  "lahde":"HkKisaWin",
+  "tapahtumat":[
+    {"numero":101,"piste":1,"aika_sec":1234,"lahde":"online"}
+  ]
+}
+```
+
+Viesti (osuus 1-pohjainen JSON:ssa, 0-pohjainen Pirilässä):
+
+```json
+{
+  "action":"tapahtuma",
+  "kilpailu_id":11,
+  "lahde":"ViestiWin",
+  "tyyppi":"viesti",
+  "tapahtumat":[
+    {"numero":42,"osuus":2,"piste":1,"aika_sec":890,"lahde":"online"}
+  ]
+}
+```
+
+- `piste` **0** = maali, **≥ 1** = online-rasti / väliaikapiste
+- Haku: `kilpailijat`-vastauksen `valiajat[]` kirjoitetaan paikalliseen kantaan
+  kun *Vastaanota väliajat* on päällä
+- JAHOnline-bridgen (`kilpailijat_bridge.php`) pitää hyväksyä `action=tapahtuma`
+  ja kirjoittaa `valiajat` / maaliaika (viestissä myös `osuus`)
+
+## Käyttö (HkKisaWin ja ViestiWin)
+
+1. Valikko → **JAHOnline API (synkka)**
 2. Aseta URL, API-avain, `kilpailu_id`
 3. **Testaa (ping)**
 4. **Lähetä kilpailijat nyt** / **Hae kilpailijat nyt**
 5. Automaatio: välilehti *Automaatio* + OK (säie käynnistyy)
+6. Live-väliajat: rastileima ajanotossa → `tapahtuma` heti
 
 Asetukset tallentuvat: `jahonline_api.ini` (exe-kansion viereen).
 
 ## Toteutustiedostot
 
-- `TPsource/V52/cbHk/ApiYhteydet.*` — UI + HTTP + ini
-- `TPsource/V52/cbHk/ApiSaike.*` — synkka (lähetys/haku)
+- `TPsource/V52/cbHk/ApiYhteydet.*` — UI + HTTP + ini (yhteinen)
+- `TPsource/V52/cbHk/ApiSaike.*` — Hk-synkka
+- `TPsource/V52/ViestiWin/ApiSaike.*` — viesti (joukkue + osuus)
 - `TPsource/V52/cbHk/ApiJson.*` — kevyt JSON
-- `TPsource/V52/cbHk/ApiIntegration.*` / `ApiHkIntegration.h` — elinkaari
-- Valikko: `WinHk.*` → `JahonlineApi1`
+- `TPsource/V52/cbHk/ApiIntegration.*` / `ApiHkIntegration.h` / `ApiVIntegration.h`
+- Valikko: `WinHk.*` / `UnitMain.*` → `JahonlineApi1`

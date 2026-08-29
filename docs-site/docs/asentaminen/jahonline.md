@@ -1,10 +1,10 @@
 # Pirilä synkka (JAHOnline)
 
-Kilpailijat, läsnäolo ja ajat siirtyvät **HkKisaWinistä** suoraan
-JAHOnline-tulospalveluun. **Erillistä siirto-ohjelmaa, CSV-bridgeä tai
-MySQL-välikantaa ei tarvita.**
+Kilpailijat, läsnäolo, maaliajat ja online-rastit siirtyvät **HkKisaWinistä**
+ja **ViestiWinistä** suoraan JAHOnline-tulospalveluun. **Erillistä
+siirto-ohjelmaa, CSV-bridgeä tai MySQL-välikantaa ei tarvita.**
 
-HkKisaWin-valikko: **JAHOnline API (kilpailijat)**.
+Valikko (HkKisaWin ja ViestiWin): **JAHOnline API (synkka)**.
 
 Suunnistuksessa osanottajat elävät Pirilässä (IRMA / CSV / käsin). JAHOnline
 näyttää ne synkan jälkeen. Emit-luenta merkitsee lähtijän läsnäolevaksi ja
@@ -12,9 +12,9 @@ lähettää tiedon heti nettiin.
 
 ## Käyttöönotto
 
-1. Asenna HkKisaWin tavalliseen tapaan ([asennuksen vaiheet](asennuksen_vaiheet.md)).
-2. Avaa kilpailu HkKisaWinissä.
-3. Valitse **JAHOnline API (kilpailijat)**.
+1. Asenna HkKisaWin / ViestiWin tavalliseen tapaan ([asennuksen vaiheet](asennuksen_vaiheet.md)).
+2. Avaa kilpailu HkKisaWinissä tai ViestiWinissä.
+3. Valitse **JAHOnline API (synkka)**.
 4. Täytä:
    - **Bridge-URL:** `https://jahonline.com/public/api/kilpailijat_bridge.php`
      (oletus; yleensä ei tarvitse muuttaa)
@@ -23,7 +23,7 @@ lähettää tiedon heti nettiin.
    - **kilpailu_id:** saman kilpailun tunnus JAHOnlinessa
 5. Paina **Testaa (ping)**. Onnistunut ping aktivoi yhteyden.
 6. **Lähetä kilpailijat nyt** vie Pirilän osanottajat (nimet, emit-koodit, ajat,
-   läsnäolo) JAHOnlineen.
+   läsnäolo, online-väliajat) JAHOnlineen.
 7. **Hae kilpailijat nyt** vain jos netistä pitää tuoda päivityksiä takaisin
    paikalliseen `KILP.DAT`-kantaan.
 
@@ -48,6 +48,19 @@ lukijamäärityksen `LUKIJA=…` kanssa. Katso myös
 Automaattinen taustasynkka (välilehti *Automaatio*) lähettää lisäksi koko
 osanottajalistan valitun välein, kun yhteys on aktiivinen.
 
+## Online-rastit (kaksisuuntainen vienti)
+
+Kyllä: online-väliajat kulkevat saman JAHOnline-bridgen kautta, sekä
+henkilökohtaisessa kisassa että viestissä.
+
+- Ajanotto / rastileima → heti `action=tapahtuma` (`piste` 0 = maali, ≥ 1 = online)
+- Täysi lista menee `synkkaa`-sanoman `valiajat[]`-kentässä
+- Haku JAHOnlinesta kirjoittaa väliajat takaisin `KILP.DAT`:iin
+- Viestissä jokaisella rivillä on `osuus` (1, 2, 3…)
+
+JAHOnlinen tulossivu näyttää online-sarakkeet (`sarjat.valia_lkm`) ja
+rastiväliajat vasta leimantarkastuksen jälkeen.
+
 ## Mitä ei enää tarvita
 
 - Erillistä CSV-bridgeä (`pirila_live.php`) tai Sync Manager -työpöytäohjelmaa
@@ -63,4 +76,4 @@ kertatuontiin **ennen** kisaa.
   `docs/pirila.md`): [docs/jahonline-docs/pirila.md](https://github.com/jaho81-sys/tulospalvelu/blob/cursor/api-kilpailijat-kaksisuuntainen-90ec/docs/jahonline-docs/pirila.md)
 - Protokolla: [JAHOnline API](https://github.com/jaho81-sys/tulospalvelu/blob/cursor/api-kilpailijat-kaksisuuntainen-90ec/docs/api-jahonline.md)
   (ping / synkkaa / kilpailijat, Bearer-avain)
-- HkKisaWin-valikko: **JAHOnline API (kilpailijat)**
+- Valikko (HkKisaWin ja ViestiWin): **JAHOnline API (synkka)**

@@ -30,14 +30,16 @@ sivuston sisältö on alun perin tuotu.
 
 ## JAHOnline-integraatio (kaksisuuntainen)
 
-HkKisaWin ↔ https://jahonline.com kilpailijasiirto (Bearer `api_token`).
+HkKisaWin ja ViestiWin ↔ https://jahonline.com (Bearer `api_token`).
+Osanottajat, läsnäolo, maaliajat ja online-rastit kulkevat samaa siltaa.
 Erillistä siirto-ohjelmaa, CSV-bridgeä tai MySQL-välikantaa ei tarvita.
 
 - Ohje (lähde): [`docs/api-jahonline.md`](docs/api-jahonline.md)
 - Pirilä synkka (asennus): [docs-site/docs/asentaminen/jahonline.md](docs-site/docs/asentaminen/jahonline.md)
 - JAHOnline `docs/pirila.md` -korvaus: [`docs/jahonline-docs/pirila.md`](docs/jahonline-docs/pirila.md)
-- Valikko: **JAHOnline API (kilpailijat)**
+- Valikko: **JAHOnline API (synkka)** (HkKisaWin ja ViestiWin)
 - Emit-luenta merkitsee kilpailijan läsnäolevaksi ja lähettää tiedon JAHOnlineen
+- Ajanotto / rastileima lähettää live-väliajan (`action=tapahtuma`)
 
 ## Description
 After ten years, it’s time to start implementing a new version 2.0.
