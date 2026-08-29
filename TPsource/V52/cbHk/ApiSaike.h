@@ -32,4 +32,7 @@ int ApiSynkkaaHaeKaikki(void);
 UnicodeString ApiRakennaKilpailijatJson(void);
 int ApiSovellaKilpailijatJson(const UnicodeString& json);
 
+// Emit-luenta: jonoita kilpailija JAHOnline-läsnäolosynkkaan
+void ApiIlmoitaLasna(int kilpno);
+
 #endif

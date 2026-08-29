@@ -21,6 +21,7 @@ UnicodeString ApiUtf8ToWide(const AnsiString& s);
 bool ApiJsonFindString(const UnicodeString& json, const UnicodeString& key, UnicodeString& out);
 bool ApiJsonFindInt(const UnicodeString& json, const UnicodeString& key, int& out);
 bool ApiJsonFindInt64(const UnicodeString& json, const UnicodeString& key, __int64& out);
+bool ApiJsonFindBool(const UnicodeString& json, const UnicodeString& key, bool& out);
 bool ApiJsonStatusOk(const UnicodeString& json);
 
 // Split top-level array value for key "kilpailijat" into object chunks

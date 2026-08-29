@@ -166,6 +166,23 @@ bool ApiJsonFindInt64(const UnicodeString& json, const UnicodeString& key, __int
 	return true;
 }
 
+bool ApiJsonFindBool(const UnicodeString& json, const UnicodeString& key, bool& out)
+{
+	int i = FindKeyPos(json, key);
+	if (i <= 0)
+		return false;
+	SkipWs(json, i);
+	if (i + 3 <= json.Length() && json.SubString(i, 4).CompareIC(L"true") == 0) {
+		out = true;
+		return true;
+	}
+	if (i + 4 <= json.Length() && json.SubString(i, 5).CompareIC(L"false") == 0) {
+		out = false;
+		return true;
+	}
+	return false;
+}
+
 bool ApiJsonStatusOk(const UnicodeString& json)
 {
 	UnicodeString st;

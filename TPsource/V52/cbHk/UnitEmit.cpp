@@ -37,6 +37,7 @@
 #include "HkMuotoilu.h"
 #include "TpLaitteet.h"
 #include "UnitHylkRap.h"
+#include "ApiHkIntegration.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -1599,6 +1600,11 @@ int __fastcall TFormEmit::tallennaKilpailija(bool kysy)
 		BtnPerKirjaus->Visible = true;
 		BtnOhita->Visible = false;
 		}
+	if (!Kilp.lasna(k_pv)) {
+		wchar_t t = Kilp.tark(k_pv);
+		if (t == L'E' || t == L'P' || t == L'V' || t == L'B')
+			Kilp.set_tark(L'-', k_pv);
+		}
 /*	if (kuntosuunnmoodi && (kuntosuunnmoodi == 2 || Kilp.pv[k_pv].uusi != 'U') &&
 		Kilp.pv[k_pv].badge[1] == 0) {
 		for (; haebdg(seurVapaaBadge) >= 0; seurVapaaBadge++) ;
@@ -1614,6 +1620,8 @@ int __fastcall TFormEmit::tallennaKilpailija(bool kysy)
 	if (DKilp == getpos(Kilp.id()))
 		Kilp.tallenna(DKilp, 0, 0, 0, 0);
 	LeaveCriticalSection(&tall_CriticalSection);
+	if (Kilp.id() > 0)
+		ApiHkIntegration::IlmoitaLasna(Kilp.id());
 	KasittelyKesken = false;
 	Nayta();
 	TallVals();

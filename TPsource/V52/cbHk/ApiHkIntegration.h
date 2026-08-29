@@ -51,6 +51,12 @@ namespace ApiHkIntegration
 	{
 		return TApiIntegration::GetInstance()->OnAktiivinen();
 	}
+
+	// Emit-luenta: läsnäolo JAHOnlineen (no-op ilman API-asetuksia)
+	inline void IlmoitaLasna(int kilpno)
+	{
+		ApiIlmoitaLasna(kilpno);
+	}
 }
 
 //---------------------------------------------------------------------------

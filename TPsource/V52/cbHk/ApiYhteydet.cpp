@@ -354,8 +354,9 @@ void __fastcall TFormApiYhteydet::BtnOhjeClick(TObject *Sender)
 		L"URL: https://jahonline.com/public/api/kilpailijat_bridge.php\n"
 		L"API-avain: hallinnan kilpailun api_token\n"
 		L"kilpailu_id: JAHOnline-kilpailun ID\n\n"
-		L"Lähetä kilpailijat → action=synkkaa (kaikki osanottajat + ajat)\n"
+		L"Lähetä kilpailijat → action=synkkaa (osanottajat, ajat, läsnäolo)\n"
 		L"Hae kilpailijat → action=kilpailijat (päivitys paikalliseen KILP.DAT)\n"
+		L"Emit-luenta merkitsee lähtijän läsnäolevaksi ja synkkaa heti.\n"
 		L"Auth: Authorization: Bearer <api_token>\n"
 	);
 }
