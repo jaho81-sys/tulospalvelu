@@ -83,10 +83,10 @@ __published:
 	void __fastcall EditUrlChange(TObject *Sender);
 
 private:
-	void LueTiedot(void);
-	void KirjoitaTiedot(void);
-	void PaivitaTila(UnicodeString viesti);
-	void TestaaYhteys(void);
+	void __fastcall LueTiedot(void);
+	void __fastcall KirjoitaTiedot(void);
+	void __fastcall PaivitaTila(UnicodeString viesti);
+	void __fastcall TestaaYhteys(void);
 
 public:
 	__fastcall TFormApiYhteydet(TComponent* Owner);
