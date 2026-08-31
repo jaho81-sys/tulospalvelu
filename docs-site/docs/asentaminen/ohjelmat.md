@@ -25,6 +25,12 @@ kuntosuunnistuksissa, mutta se on ainakin toistaisesi parempi monissa
 kansallisten kilpailujen tehtävissä, erityisesti ajanotossa, mutta mahdollisesti
 myös suunnistuksen leimantarkastuksessa.
 
+Kilpailijatietojen kaksisuuntainen siirto JAHOnline-tulospalveluun on
+rakennettu *HkKisaWiniin* ja *ViestiWiniin* (valikko **JAHOnline API (synkka)**).
+Erillistä siirto- tai bridge-ohjelmaa ei tarvita. Emit-luenta merkitsee
+lähtijän läsnäolevaksi ja synkkaa tiedon nettiin. Katso
+[Pirilä synkka](jahonline.md).
+
 Ohjelma *HkKisaWin*
 tarvitsee toimiakseen useita kirjastotiedostoja (dll- ja bpl-tiedostoja), jotka
 asennetaan normaalisti yhdessä ohjelman kanssa samaan

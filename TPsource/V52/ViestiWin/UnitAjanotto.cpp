@@ -29,6 +29,7 @@
 #include "UnitAikavert.h"
 #include "TpLaitteet.h"
 #include "UnitMaalikello.h"
+#include "ApiVIntegration.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -316,8 +317,11 @@ void __fastcall TFormAjanotto::naytaRivi(int grid, int r, int rw, int jono)
 				else if (os < -1)
 					os = haeseurosuus(&kilp);
 				if (os >= 0) {
-					kilp.setMaali(os, upt.piste, pyoristatls(purajak(upt.t), 1));
+					int tm = pyoristatls(purajak(upt.t), 1);
+					kilp.setMaali(os, upt.piste, tm);
 					tallenna(&kilp, d, 0, 0, 0, 0);
+					if (upt.piste >= 0)
+						ApiVIntegration::IlmoitaTapahtuma(upt.kno, os, upt.piste, tm);
 					if (r == aktRivi1) {
 						aktRivi1++;
 						DGajat1->Row = aktRivi1;
@@ -944,8 +948,11 @@ void TFormAjanotto::uusintaTallennus(int rivi)
 		EnterCriticalSection(&tall_CriticalSection);
 		kilp.getrec(d);
 		if (pt.piste >= 0 && pt.osuus < Sarjat[kilp.sarja].osuusluku && pt.piste <= Sarjat[kilp.sarja].valuku[pt.osuus]) {
-			kilp.setMaali(pt.osuus, pt.piste, pyoristatls(purajak(pt.t), 1));
+			int tm = pyoristatls(purajak(pt.t), 1);
+			kilp.setMaali(pt.osuus, pt.piste, tm);
 			tallenna(&kilp,d, 0, 0, 1, 0);
+			if (pt.piste >= 0)
+				ApiVIntegration::IlmoitaTapahtuma(pt.kno, pt.osuus, pt.piste, tm);
 			}
 		LeaveCriticalSection(&tall_CriticalSection);
 		}
@@ -1240,8 +1247,11 @@ void __fastcall TFormAjanotto::DGajat1KeyPress(TObject *Sender, System::WideChar
 					if ((d = getpos(upt.kno)) > 0)
 						kilp.getrec(d);
 					if (d > 0 && kilp.kilpstatus == 0) {
-						kilp.setMaali(upt.osuus, upt.piste, pyoristatls(purajak(upt.t), 1));
+						int tm = pyoristatls(purajak(upt.t), 1);
+						kilp.setMaali(upt.osuus, upt.piste, tm);
 						kilp.Tallenna(d, 0, 0, pakLah, 0);
+						if (upt.piste >= 0)
+							ApiVIntegration::IlmoitaTapahtuma(upt.kno, upt.osuus, upt.piste, tm);
 						}
 					}
 				}

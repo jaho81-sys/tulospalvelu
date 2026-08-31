@@ -23,14 +23,16 @@ Jos olet uusi käyttäjä:
 
 1. **[Asentaminen ja tutustuminen](asentaminen/yleista.md)** — asennusohjeet
    ja yleisperehdytys ohjelmaperheeseen
-2. Kilpailulajin mukaan:
+2. **[Pirilä synkka (JAHOnline)](asentaminen/jahonline.md)** — kilpailijat,
+   läsnäolo ja ajat HkKisaWinistä, ilman erillistä siirto-ohjelmaa
+3. Kilpailulajin mukaan:
     - **[Ensimmäisen suunnistuskilpailun tulospalvelu](suunnistuskilpailu/johdanto.md)**
     - **[Hiihtokilpailun tulospalvelu](hiihtokilpailu/johdanto.md)**
-3. Yksityiskohtaisempi referenssi:
+4. Yksityiskohtaisempi referenssi:
     - **[HkKisaWin-referenssi](hkkisawin/hkkisahelp.md)** (noin 120 sivua,
       kattaa ohjelman kaikki toiminnot)
     - **[ViestiWin-ohjeet](viestiwin/index.md)** (alustavat ohjeet)
-4. **[PDF-manuaalit](pdf-manuaalit.md)** — HkMaali, Emit-leimantarkastus ja
+5. **[PDF-manuaalit](pdf-manuaalit.md)** — HkMaali, Emit-leimantarkastus ja
    TCP-tuki erillisinä PDF-tiedostoina
 
 ## Huomioita dokumentaatiosta

@@ -13,5 +13,7 @@ ohjelmia ensimmäistä kertaa.
     - [Kansiorakenne](kansiorakenne.md)
 - **Asennuksen toteutus**
     - [Asennuksen vaiheet](asennuksen_vaiheet.md)
+- **JAHOnline (nettitulospalvelu)**
+    - [Pirilä synkka](jahonline.md) — HkKisaWin → JAHOnline, ei erillistä siirto-ohjelmaa
 - **Tutustuminen ohjelmiin**
     - [Esimerkkiaineisto](esimerkkiaineisto.md)

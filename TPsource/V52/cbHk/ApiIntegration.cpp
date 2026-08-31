@@ -54,8 +54,9 @@ void TApiIntegration::Alusta(void)
 {
 	if (onAloitettu)
 		return;
-	
+
 	try {
+		ApiConfigLataa();
 		// Luo ja käynnistä API-säie
 		pSaike = new TApiSaike(true);
 		if (pSaike) {

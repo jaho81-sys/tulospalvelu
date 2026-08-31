@@ -24,6 +24,7 @@
 #include "UnitMain.h"
 #include "UnitHenkHaku.h"
 #include "UnitEmithaku.h"
+#include "ApiVIntegration.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -512,6 +513,23 @@ int __fastcall TFormJoukkuetiedot::tallennaTiedot(void)
    LeaveCriticalSection(&tall_CriticalSection);
    Kilp.getrec(dKilp);
    Kilp1 = Kilp;
+   {
+	   int kno = Kilp.KilpNo();
+	   if (kno > 0 && Kilp.sarja >= 0 && Kilp.sarja < sarjaluku) {
+		   int nos = Sarjat[Kilp.sarja].osuusluku;
+		   for (int os = 0; os < nos; os++) {
+			   INT32 tls = Kilp.Maali(os, 0);
+			   if (tls && tls != TMAALI0)
+				   ApiVIntegration::IlmoitaTapahtuma(kno, os, 0, (int)tls);
+			   int nva = Sarjat[Kilp.sarja].valuku[os];
+			   for (int p = 1; p <= nva; p++) {
+				   INT32 va = Kilp.Maali(os, p);
+				   if (va && va != TMAALI0)
+					   ApiVIntegration::IlmoitaTapahtuma(kno, os, p, (int)va);
+			   }
+		   }
+	   }
+   }
    if (!oistuvienlisystentila1->Checked)
 	   salliNumeromuutos = false;
    return(0);

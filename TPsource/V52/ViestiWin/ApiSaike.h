@@ -26,17 +26,13 @@ public:
 	bool OnAktiivinen(void) const { return !pysaytysPyynnon; }
 };
 
-// Manual / thread entry points
 int ApiSynkkaaLahetaKaikki(void);
 int ApiSynkkaaHaeKaikki(void);
 UnicodeString ApiRakennaKilpailijatJson(void);
 int ApiSovellaKilpailijatJson(const UnicodeString& json);
 
-// Emit-luenta: jonoita kilpailija JAHOnline-läsnäolosynkkaan
 void ApiIlmoitaLasna(int kilpno);
-
-// Online-rasti / väliaika (piste 0 = maali, 1+ = online)
-void ApiIlmoitaTapahtuma(int kilpno, int piste, int aikaSec);
+void ApiIlmoitaTapahtuma(int kilpno, int osuus, int piste, int aikaSec);
 int ApiLahetaTapahtumatNyt(void);
 
 #endif

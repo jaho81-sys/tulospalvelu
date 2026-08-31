@@ -618,6 +618,10 @@ object FormMain: TFormMain
         Caption = '&Kirjoita siirtotiedostoon'
         OnClick = Kirjoitasiirtotiedostoon1Click
       end
+      object JahonlineApi1: TMenuItem
+        Caption = '&JAHOnline API (synkka)'
+        OnClick = JahonlineApi1Click
+      end
       object Asetukset1: TMenuItem
         Caption = '&Emit-analyysin asetukset'
         OnClick = Asetukset1Click

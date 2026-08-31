@@ -36,6 +36,7 @@
 #include "TulosUnit.h"
 #include "VertAikaUnit.h"
 #include "TapUnit2.h"
+#include "ApiHkIntegration.h"
 //#include "EmitUnit.h"
 #include "UnitEmit.h"
 #include "TulostusUnit2.h"
@@ -794,6 +795,7 @@ void __fastcall TFormMain::FormCloseQuery(TObject *Sender, bool &CanClose)
 		CanClose = false;
 	  }
 	else {
+		ApiHkIntegration::Lopeta();
 		if (ToimintaTila == 2)
 			talljarj();
 		lopetus1();
@@ -1394,6 +1396,12 @@ void __fastcall TFormMain::Kirjoitasiirtotiedostoon1Click(TObject *Sender)
 	if (FormExport->WindowState == wsMinimized)
 		FormExport->WindowState = wsNormal;
 	FormExport->BringToFront();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TFormMain::JahonlineApi1Click(TObject *Sender)
+{
+	ApiHkIntegration::AvaaMuokkausikkuna(Handle);
 }
 //---------------------------------------------------------------------------
 
@@ -2213,6 +2221,7 @@ void __fastcall TFormMain::Sakkokierrostenseuranta1Click(TObject *Sender)
 void __fastcall TFormMain::FormShow(TObject *Sender)
 {
 	Refresh();
+	ApiHkIntegration::Alusta();
 }
 //---------------------------------------------------------------------------
 

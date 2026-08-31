@@ -29,6 +29,7 @@
 #include "UnitAikavert.h"
 #include "TpLaitteet.h"
 #include "UnitMaalikello.h"
+#include "ApiHkIntegration.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -262,6 +263,8 @@ void __fastcall TFormAjanotto::naytaRivi(int grid, int r, int rw, int jono)
 				kilp.set_tulos(piste, purajak(upt.t));
 				kilp.tallenna(d, 0, 0, 0, 0);
 				LeaveCriticalSection(&tall_CriticalSection);
+				if (piste >= 0)
+					ApiHkIntegration::IlmoitaTapahtuma(upt.kno, piste, (int)kilp.p_aika(piste));
 				if (r == aktRivi1) {
 					aktRivi1++;
 					DGajat1->Row = aktRivi1;
@@ -671,6 +674,8 @@ void __fastcall TFormAjanotto::BtnTall2Click(TObject *Sender)
 			if (upt.kno && va_piste(upt.piste) >= -1 && va_piste(upt.piste) <= Sarjat[kilp.Sarja()].valuku[k_pv])
 				kilp.set_tulos(va_piste(upt.piste), upt.t/AIKAJAK, true);
 			kilp.tallenna(d, 0, 0, 0, 0);
+			if (va_piste(upt.piste) >= 0)
+				ApiHkIntegration::IlmoitaTapahtuma(upt.kno, va_piste(upt.piste), (int)kilp.p_aika(va_piste(upt.piste)));
 			}
 		LeaveCriticalSection(&tall_CriticalSection);
 		}
@@ -984,6 +989,8 @@ void TFormAjanotto::uusintaTallennus(int rivi)
 			(pt.piste == -1 && pvparam[k_pv].hiihtolahto)) {
 			kilp.set_tulos(va_piste(pt.piste), purajak(pt.t), 1);
 			kilp.tallenna(d, 0, 0, 1, 0);
+			if (va_piste(pt.piste) >= 0)
+				ApiHkIntegration::IlmoitaTapahtuma(pt.kno, va_piste(pt.piste), (int)kilp.p_aika(va_piste(pt.piste)));
 			}
 		}
 	if (DGajat1->Row < DGajat1->RowCount-1)
@@ -1249,6 +1256,8 @@ void __fastcall TFormAjanotto::DGajat1KeyPress(TObject *Sender, System::WideChar
 				if (d > 0 && kilp.kilpstatus == 0) {
 					kilp.set_tulos(va_piste(upt.piste), purajak(upt.t));
 					kilp.tallenna(d, 0, 0, pakLah, 0);
+					if (va_piste(upt.piste) >= 0)
+						ApiHkIntegration::IlmoitaTapahtuma(upt.kno, va_piste(upt.piste), (int)kilp.p_aika(va_piste(upt.piste)));
 					}
 				}
 			LeaveCriticalSection(&tall_CriticalSection);

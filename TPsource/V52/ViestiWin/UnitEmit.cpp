@@ -22,6 +22,7 @@
 #include <bstrings.h>
 
 #include "UnitEmit.h"
+#include "ApiVIntegration.h"
 #include "UnitEmitMuutokset.h"
 #include "UnitKirjoitinVal.h"
 #include "UnitMTR.h"
@@ -864,7 +865,10 @@ int __fastcall TFormEmit::ProsEmitMaali(void)
 			}
 		}
 	 if (tallkilp && !esitark && itm.t != TMAALI0*AIKAJAK && Kilp.Maali(Osuus, piste) == TMAALI0) {
-		Kilp.setMaali(Osuus, piste, pyoristatls(purajak(itm.t), 1));
+		int tm = pyoristatls(purajak(itm.t), 1);
+		Kilp.setMaali(Osuus, piste, tm);
+		if (piste >= 0)
+			ApiVIntegration::IlmoitaTapahtuma(Kilp.KilpNo(), Osuus, piste, tm);
 		tallkilp = 1;
 		}
 	return(tallkilp);
@@ -1227,6 +1231,20 @@ void __fastcall TFormEmit::tallennaKilpailija(bool kysy)
 	Kilp.setSelitys(Osuus, EdtSelitys->Text.c_str());
 	tallenna(&Kilp, DKilp, 0, 0, 0, 0);
 	LeaveCriticalSection(&tall_CriticalSection);
+	ApiVIntegration::IlmoitaLasna(Kilp.KilpNo());
+	{
+		INT32 tm = Kilp.Maali(Osuus, 0);
+		if (tm && tm != TMAALI0)
+			ApiVIntegration::IlmoitaTapahtuma(Kilp.KilpNo(), Osuus, 0, (int)tm);
+		int nva = 0;
+		if (Kilp.sarja >= 0 && Kilp.sarja < sarjaluku)
+			nva = Sarjat[Kilp.sarja].valuku[Osuus];
+		for (int p = 1; p <= nva; p++) {
+			INT32 va = Kilp.Maali(Osuus, p);
+			if (va && va != TMAALI0)
+				ApiVIntegration::IlmoitaTapahtuma(Kilp.KilpNo(), Osuus, p, (int)va);
+		}
+	}
 	Nayta();
 	TallVals();
 	if (!EdtKilpno->ReadOnly)

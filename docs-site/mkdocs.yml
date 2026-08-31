@@ -79,6 +79,8 @@ nav:
       - Kansiorakenne: asentaminen/kansiorakenne.md
     - Asennuksen toteutus:
       - Asennuksen vaiheet: asentaminen/asennuksen_vaiheet.md
+    - JAHOnline:
+      - Pirilä synkka: asentaminen/jahonline.md
     - Esimerkkiaineisto: asentaminen/esimerkkiaineisto.md
   - "Suunnistuskilpailun tulospalvelu":
     - Yleiskatsaus: suunnistuskilpailu/index.md

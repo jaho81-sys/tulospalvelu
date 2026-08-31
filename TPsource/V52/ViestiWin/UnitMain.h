@@ -152,6 +152,7 @@ __published:	// IDE-managed Components
 	TMenuItem *Ajanotto31;
 	TMenuItem *Ajanotto41;
 	TMenuItem *Ajanotto1;
+	TMenuItem *JahonlineApi1;
 	TMenuItem *MySQL1;
 	TMenuItem *Sakkoseuranta1;
 	TMenuItem *Kopioiosuustietoja1;
@@ -246,6 +247,7 @@ __published:	// IDE-managed Components
 	void __fastcall Ammunnansakot1Click(TObject *Sender);
 	void __fastcall Ajanotto31Click(TObject *Sender);
 	void __fastcall Ajanotto41Click(TObject *Sender);
+	void __fastcall JahonlineApi1Click(TObject *Sender);
 	void __fastcall MySQL1Click(TObject *Sender);
 	void __fastcall Sakkoseuranta1Click(TObject *Sender);
 	void __fastcall Kopioiosuustietoja1Click(TObject *Sender);

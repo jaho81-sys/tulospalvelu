@@ -113,6 +113,7 @@ __published:	// IDE-managed Components
 	TMenuItem *Help1;
 	TMenuItem *iedot1;
 	TMenuItem *Kirjoitasiirtotiedostoon1;
+	TMenuItem *JahonlineApi1;
 	TMenuItem *Help2;
 	TBitBtn *BitBtn1;
 	TMenuItem *Siirrlistietoja1;
@@ -229,6 +230,7 @@ __published:	// IDE-managed Components
 	void __fastcall iedot1Click(TObject *Sender);
 	void __fastcall ListBox1Click(TObject *Sender);
 	void __fastcall Kirjoitasiirtotiedostoon1Click(TObject *Sender);
+	void __fastcall JahonlineApi1Click(TObject *Sender);
 	void __fastcall Help2Click(TObject *Sender);
 	void __fastcall BitBtn1Click(TObject *Sender);
 	void __fastcall Siirrratakoodit1Click(TObject *Sender);
