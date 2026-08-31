@@ -190,6 +190,7 @@ void __fastcall TFormSarja::naytaOsuudet(void)
 
 void __fastcall TFormSarja::tallOsuudet(void)
 {
+	wchar_t *ctx = NULL;
 	int osluku = 0;
 	wchar_t st[30] = L"", *p;
 
@@ -221,17 +222,17 @@ void __fastcall TFormSarja::tallOsuudet(void)
 		for (int va = 0; va < Sarja1.valuku[os]; va++) {
 			wcsncpy(st, SG1->Cells[os+1][va+5+lisarivit0+lisarivit1+lisarivit2+lisarivit3].c_str(), 29);
 			Sarja1.va_piilota[os][va] = 9;
-			p = wcstok(st, L"/");
+			p = wcstok(st, L"/", &ctx);
 			if (p) {
 				if (p - st == 0) {
 					wcstoansi(Sarja1.va_matka[os][va], p, sizeof(Sarja1.va_matka[os][va])-1);
-					p = wcstok(NULL, L"/");
+					p = wcstok(NULL, L"/", &ctx);
 					}
 				else
 					memset(Sarja1.va_matka[os][va], 0, sizeof(Sarja1.va_matka[os][va]));
 				if (p) {
 					elimwbl(p);
-					if (towupper(*p) == L'N')
+					if (towupper(*p) == L'N' || towupper(*p) == L'P')
 						Sarja1.va_piilota[os][va] = 0;
 					else if(p[wcslen(p)-1] >= L'0' && p[wcslen(p)-1] < L'4')
 						Sarja1.va_piilota[os][va] = p[wcslen(p)-1] - L'0';

@@ -586,13 +586,13 @@ void __fastcall TFormEmit::Paivita(emittp *pEm)
 			if (esiluenta) {
 				if (Kilp.p_aika(0) == 0 && wcswcind(Kilp.tark(), L"TIKHPV") < 0 &&
 					NORMTULOS(Kilp.TLahto()-Nyt()) < FormNaytaTulos->IkkParam.LahtoRaja*MINUUTTI)
-					FormNaytaTulos->NaytaTulos(Kilp.nimi(st, 40, false), L'T', Kilp.TLahto()+t0*TUNTI, 0, 0);
+					FormNaytaTulos->NaytaTulos(Kilp.nimi(st, 40, false), L'T', Kilp.TLahto()+t0*TUNTI, 0, 0, Kilp.id(), -1);
 				else
-					FormNaytaTulos->NaytaTulos(Kilp.nimi(st, 40, false), L'H', Kilp.TLahto()+t0*TUNTI, 0, 0);
+					FormNaytaTulos->NaytaTulos(Kilp.nimi(st, 40, false), L'H', Kilp.TLahto()+t0*TUNTI, 0, 0, Kilp.id(), -1);
 				}
 			else
 				FormNaytaTulos->NaytaTulos(Kilp.nimi(st, 40, false), Kilp.tark(), Kilp.p_aika(0),
-					Kilp.p_sija(0), ntulos[Kilp.Sarja()][0]);
+					Kilp.p_sija(0), ntulos[Kilp.Sarja()][0], Kilp.id(), -1);
 			}
 		if (Kilp.pv[k_pv].vac == 'V')
 			VakTietue = true;
@@ -1774,21 +1774,21 @@ bool __fastcall TFormEmit::OnkoMuutoksia(void)
 	if (Tietue < 0 || DKilp <= 0)
 		return(false);
 	if (
-		ValSNimi != EdtSNimi->Text ||
-		ValENimi != EdtENimi->Text ||
-		ValSeura != EdtSeura->Text ||
-		ValTulos != EdtTulos->Text ||
-		ValMaali != EdtMaali->Text ||
-		ValLahto != EdtLahto->Text ||
-		ValSelitys != EdtSelitys->Text ||
+		(ValSNimi != EdtSNimi->Text) ||
+		(ValENimi != EdtENimi->Text) ||
+		(ValSeura != EdtSeura->Text) ||
+		(ValTulos != EdtTulos->Text) ||
+		(ValMaali != EdtMaali->Text) ||
+		(ValLahto != EdtLahto->Text) ||
+		(ValSelitys != EdtSelitys->Text) ||
 		ValTarkVal != TarkVal->ItemIndex ||
 		(monirata && ValRata != CRata->ItemIndex) ||
 		ValSarja != CSarja->ItemIndex ||
 		ValSalaa != CBSelSN->ItemIndex ||
-		ValLisno != EdtLisno->Text ||
-		ValJoukkue != EdtJoukkue->Text||
-		ValHSeura != HSeura ||
-		ValHSeuralyh != HSeuralyh) {
+		(ValLisno != EdtLisno->Text) ||
+		(ValJoukkue != EdtJoukkue->Text) ||
+		(ValHSeura != HSeura) ||
+		(ValHSeuralyh != HSeuralyh)) {
 		retval = true;
 		}
 	if (!retval && kilpparam.kaksibadge == 2 &&

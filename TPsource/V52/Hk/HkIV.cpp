@@ -39,6 +39,7 @@
 #include "VDeclare.h"
 #endif
 #include "TpLaitteet.h"
+#include "IRfidReader.h"
 
 #include <wincom.h>
 #include <sys/timeb.h>
@@ -194,6 +195,7 @@ int auto_lahtija(INT32 tlahto)
 
 	void luelahdepisteet(void)
 	{
+	wchar_t *ctx = NULL;
 	TextFl * infile;
 	wchar_t *p, *p1, Buf[200];
 	INT16 srj, pst, kdi, kdi2;
@@ -223,7 +225,7 @@ int auto_lahtija(INT32 tlahto)
 	memset(nkdi, 0, sizeof(nkdi));
 	while (!infile->Feof()) {
 		infile->ReadLine(Buf, 200);
-		p = wcstok(Buf, L" ;\t\n");
+		p = wcstok(Buf, L" ;\t\n", &ctx);
 		if (p) {
 			if (!wcscmpU(p, L"KAIKKI"))
 				srj = sarjaluku+1;
@@ -231,9 +233,9 @@ int auto_lahtija(INT32 tlahto)
 				srj = sarjaluku;
 			else
 				srj = haesarja_w(p, false);
-			if (srj >= 0 && (p = wcstok(NULL, L" ;\t\n")) != NULL) {
+			if (srj >= 0 && (p = wcstok(NULL, L" ;\t\n", &ctx)) != NULL) {
 				pst = _wtoi(p);
-				while (pst < kilpparam.valuku+2 && (p = wcstok(NULL, L" ;\t\n")) != NULL) {
+				while (pst < kilpparam.valuku+2 && (p = wcstok(NULL, L" ;\t\n", &ctx)) != NULL) {
 					if ((p1 = wcsstr(p, L"-")) > NULL) {
 						*p1 = 0;
 						kdi = _wtoi(p);
@@ -262,7 +264,7 @@ int auto_lahtija(INT32 tlahto)
 		bool kaikki = false;
 
 		infile->ReadLine(Buf, 200);
-		p = wcstok(Buf, L" ;\t\n");
+		p = wcstok(Buf, L" ;\t\n", &ctx);
 		if (p) {
 			if (!wcscmpU(p, L"KAIKKI")) {
 				srj = sarjaluku;
@@ -272,7 +274,7 @@ int auto_lahtija(INT32 tlahto)
 				srj = sarjaluku;
 			else
 				srj = haesarja_w(p, false);
-			if (srj >= 0 && (p = wcstok(NULL, L" ;\t\n")) != NULL) {
+			if (srj >= 0 && (p = wcstok(NULL, L" ;\t\n", &ctx)) != NULL) {
 				if (towupper(*p) == L'M' || (*p == L'0' && _wtoi(p) == 0))
 					pst = 32766;
 				else if (towupper(*p) == L'L' || _wtoi(p) == -1)
@@ -282,7 +284,7 @@ int auto_lahtija(INT32 tlahto)
 					if (pst > kilpparam.valuku)
 						pst = kilpparam.valuku+1;
 					}
-				while (pst > 0 && (p = wcstok(NULL, L" ;\t\n")) != NULL) {
+				while (pst > 0 && (p = wcstok(NULL, L" ;\t\n", &ctx)) != NULL) {
 					if ((p1 = wcsstr(p, L"-")) > NULL) {
 						*p1 = 0;
 						kdi = _wtoi(p);
@@ -373,6 +375,7 @@ INT lahdejonohaku = 0;
 
 void luelahdejonot(void)
 	{
+	wchar_t *ctx = NULL;
 	TextFl * infile;
 	wchar_t *p, Buf[200];
 	INT16 srj, pst, kdi;
@@ -397,15 +400,15 @@ void luelahdejonot(void)
 	memset(nkdi, 0, sizeof(nkdi));
 	while (!infile->Feof()) {
 		infile->ReadLine(Buf, 200);
-		p = wcstok(Buf, L" ;\t\n");
+		p = wcstok(Buf, L" ;\t\n", &ctx);
 		if (p) {
 			if (!wcscmp(p, L"KAIKKI"))
 				srj = sarjaluku;
 			else
 				srj = haesarja_w(p, false);
-			if (srj >= 0 && (p = wcstok(NULL, L" ;\t\n")) != NULL) {
+			if (srj >= 0 && (p = wcstok(NULL, L" ;\t\n", &ctx)) != NULL) {
 				pst = _wtoi(p);
-				while (pst < kilpparam.valuku+2 && (p = wcstok(NULL, L" ;\t\n")) != NULL) {
+				while (pst < kilpparam.valuku+2 && (p = wcstok(NULL, L" ;\t\n", &ctx)) != NULL) {
 					if (_wtoi(p) > 0)
 						nkdi[srj]++;
 					}
@@ -423,17 +426,17 @@ void luelahdejonot(void)
 	memset(nkdi, 0, sizeof(nkdi));
 	while (!infile->Feof()) {
 		infile->ReadLine(Buf, 200);
-		p = wcstok(Buf, L" ;\t\n");
+		p = wcstok(Buf, L" ;\t\n", &ctx);
 		if (p) {
 			if (!wcscmp(p, L"KAIKKI"))
 				srj = sarjaluku;
 			else
 				srj = haesarja_w(p, false);
-			if (srj >= 0 && (p = wcstok(NULL, L" ;\t\n")) != NULL) {
+			if (srj >= 0 && (p = wcstok(NULL, L" ;\t\n", &ctx)) != NULL) {
 				pst = _wtoi(p);
 				if (pst > MAXJONO)
 					pst = 0;
-				while (pst > 0 && (p = wcstok(NULL, L" ;\t\n")) != NULL) {
+				while (pst > 0 && (p = wcstok(NULL, L" ;\t\n", &ctx)) != NULL) {
 					if ((kdi =_wtoi(p)) > 0) {
 						_swab((char *)&kdi, (char *)&lahdejonot[srj][nkdi[srj]].kdi, 2);
 						_swab((char *)&pst, (char *)&lahdejonot[srj][nkdi[srj]].piste, 2);
@@ -578,6 +581,19 @@ void tall_elahto(int badge, int t)
 		}
 }
 
+// pakotalaika_hyvaksy -- decides whether a new start-gate chip read should
+// be stored under PAKOTALAIKA mode.
+//   stored : value currently in va[start_slot].vatulos
+//   t      : new chip read time
+//   tlahto : competitor's planned start time (detects "no real read yet")
+static bool pakotalaika_hyvaksy(INT32 stored, INT32 t, INT32 tlahto)
+	{
+	return pakotalaikaraja == 0
+		|| stored == TMAALI0
+		|| stored == tlahto
+		|| abs((long)NORMKELLO(t - stored)) <= (long)pakotalaikaraja * SEK;
+	}
+
 void tall_etulos(INT32 badge, INT32 t, INT32 tms, INT r_no, int Jono)
    {
    INT kno, d, piste = -2, jono = 0;
@@ -681,6 +697,16 @@ void tall_etulos(INT32 badge, INT32 t, INT32 tms, INT r_no, int Jono)
 			if (pvparam[k_pv].hiihtolahto && kilp.TLahto(k_pv, true) == kilp.TLahto(k_pv, false)) {
 				kilp.set_tulos(-1, t, 1);
 				tallfl = true;
+				}
+			else if (pakotalaika && !pvparam[k_pv].hiihtolahto) {
+				// PAKOTALAIKA: record forced start time also in non-skiing mode.
+				// First chip read always wins (vatulos still == planned tlahto or == TMAALI0).
+				// Subsequent reads are accepted only if within pakotalaikaraja seconds.
+				// va[0] is the start slot (pst==-1 -> pst+1==0, same slot as tall_ec)
+				if (pakotalaika_hyvaksy(kilp.pv[k_pv].va[0].vatulos, t, kilp.pv[k_pv].tlahto)) {
+					kilp.set_tulos(-1, pyoristatls(t, 1));
+					tallfl = true;
+					}
 				}
 			if (!pvparam[k_pv].hiihtolahto && (kilp.tark() == L'E' || kilp.tark() == L'B')) {
 				kilp.set_tark(L'-');
@@ -2425,10 +2451,10 @@ INT tall_regnly(san_type *vastaus, INT r_no)
 		bt = 0;
 		}
 #ifdef LAJUNEN
-	if (regnly[r_no] == LID_SIRIT) {           // SIRIT
+	if (regnly[r_no] == LID_SIRIT || regnly[r_no] == LID_ZEBRA) {           // SIRIT
 		if (loki && !siritloki)
 			kirjloki((char *) vastaus);
-		if (siritaika(&t, vastaus, &ut, &jono, r_no))
+		if (getRfidReader(r_no)->parseTime(&t, vastaus, &ut, &jono, r_no))
 			return(1);
 		if (ut.kanava == 0)
 			ut.kanava = r_no+1;
@@ -2685,6 +2711,7 @@ INT tall_regnly(san_type *vastaus, INT r_no)
 				break;
 	#endif
 	#ifdef LAJUNEN
+			 case LID_ZEBRA:
 			 case LID_SIRIT:
 			 case LID_FEIG:
 			 case LID_IMPINJ:
@@ -3425,13 +3452,9 @@ void tall_ec(UINT32 bdg, INT valeim, INT32 aika, INT kielto)
 				}
 			// PAKOTALAIKA: start point (pst==-1) identified via start point search - record as forced start time
 			else if (lahdepistehaku && pst == -1 && pakotalaika) {
-					// PAKOTALAIKARAJA: record only if limit is 0 (no restriction),
-					// competitor has no stored time yet (va[0].vatulos==0),
-					// or new time differs from stored by at least pakotalaikaraja seconds.
-					// va[] uses piste+1 indexing (pst==-1 -> va[0] is the start slot),
-					// so va[pst+1] reads the currently stored value for the same slot set_tulos will write.
-					if (pakotalaikaraja == 0 || kilp.pv[k_pv].va[pst+1].vatulos == 0 ||
-					   abs((long)NORMKELLO(vatime - kilp.pv[k_pv].va[pst+1].vatulos)) >= (long)pakotalaikaraja * SEK) {
+					// PAKOTALAIKA: first chip read at start always wins (vatulos == tlahto or TMAALI0).
+					// Subsequent reads accepted only if within pakotalaikaraja seconds.
+					if (pakotalaika_hyvaksy(kilp.pv[k_pv].va[pst+1].vatulos, vatime, kilp.pv[k_pv].tlahto)) {
 						vatime = pyoristatls(vatime, 1);
 						kilp.set_tulos(pst, vatime);
 						EnterCriticalSection(&tall_CriticalSection);

@@ -65,6 +65,7 @@ __fastcall TFormLisatiedot::TFormLisatiedot(TComponent* Owner)
 //---------------------------------------------------------------------------
 void __fastcall TFormLisatiedot::SiirraTiedot(int sellaisinaan)
 {
+	wchar_t *ctx = NULL;
 	int Tunniste, Tieto, TunnPv, TietoPv, TunnSar, TietoSar, LTunn, LTieto, epv, vpv;
 	int nrv = 0, nsiirr = 0, PohjTunniste;
 	wchar_t st[20] = L"", erotin, erottimet[] = L" \t;,";
@@ -242,7 +243,7 @@ void __fastcall TFormLisatiedot::SiirraTiedot(int sellaisinaan)
 						tunnst[LSEURA] = 0;
 						tietost[LSEURA] = 0;
 						if (erotin == L' ')
-							p = wcstok(line, L" \t\n");
+							p = wcstok(line, L" \t\n", &ctx);
 						else
 							p = wcstokch(line, erotin);
 						for (int i = 0; p != NULL; i++) {
@@ -255,7 +256,7 @@ void __fastcall TFormLisatiedot::SiirraTiedot(int sellaisinaan)
 							if (tunnst[0] && tietost[0])
 								break;
 							if (erotin == L' ')
-								p = wcstok(NULL, L" \t\n");
+								p = wcstok(NULL, L" \t\n", &ctx);
 							else
 								p = wcstokch(NULL, erotin);
 							}
@@ -444,7 +445,13 @@ void __fastcall TFormLisatiedot::SiirraTiedot(int sellaisinaan)
 					break;
 				}
 			if (sellaisinaan > 0 && Tunniste == PohjTunniste) {
-				ival = _wtoi(EdtPohjustus->Text.c_str());
+				if (Tieto == 22) {
+					ival = wstrtoaika_vap((EdtPohjustus->Text.c_str()), t0);
+				} else if (Tieto == 23 || Tieto == 36 || Tieto == 37) {
+					ival = wstrtoaika_vap((EdtPohjustus->Text.c_str()), 0);
+				} else {
+					ival = _wtoi(EdtPohjustus->Text.c_str());
+				}
 				wcsncpy(sval, EdtPohjustus->Text.c_str(), LSEURA);
 			}
 			if (sellaisinaan > 0 && ikey != -999999999) {
@@ -541,7 +548,7 @@ void __fastcall TFormLisatiedot::SiirraTiedot(int sellaisinaan)
 					   break;
 					case 16:
 						len = wcslen(sval);
-						p = wcstok(sval, L" ");
+						p = wcstok(sval, L" ", &ctx);
 						wcsncpy(kilp.sukunimi, sval, kilpparam.lsnimi);
 						for (p = sval+wcslen(sval); p < sval+len && !*p; p++) ;
 						wcsncpy(kilp.etunimi, p, kilpparam.lenimi);

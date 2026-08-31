@@ -578,7 +578,7 @@ void __fastcall TFormEmit::Paivita(emittp *pEm)
 		int tls = Kilp.Tulos(Em.osuus, 0);
 		Kilp.Nimi(st, 40, Em.osuus, false);
 		FormNaytaTulos->NaytaTulos(st, Kilp.wTark(Em.osuus, false),
-			tls, Kilp.Sija(Em.osuus, 0), tls - pkarki[Kilp.sarja][Em.osuus][0]);
+			tls, Kilp.Sija(Em.osuus, 0), tls - pkarki[Kilp.sarja][Em.osuus][0], Kilp.KilpNo(), Em.osuus);
 		}
 	UusiTietue = false;
 	TallVals();
@@ -1339,12 +1339,12 @@ bool __fastcall TFormEmit::OnkoMuutoksia(void)
 		return(false);
 	if (
 		ValOsuus != CBOsuus->ItemIndex ||
-		ValSNimi != EdtSNimi->Text ||
-		ValSeura != EdtSeura->Text ||
-		ValTulos != EdtTulos->Text ||
-		ValMaali != EdtMaali->Text ||
-		ValLahto != EdtLahto->Text ||
-		ValSelitys != EdtSelitys->Text ||
+		(ValSNimi != EdtSNimi->Text) ||
+		(ValSeura != EdtSeura->Text) ||
+		(ValTulos != EdtTulos->Text) ||
+		(ValMaali != EdtMaali->Text) ||
+		(ValLahto != EdtLahto->Text) ||
+		(ValSelitys != EdtSelitys->Text) ||
 		ValTarkVal != TarkVal->ItemIndex ||
 		ValRata != CRata->ItemIndex ||
 		ValSarja != CSarja->ItemIndex) {
