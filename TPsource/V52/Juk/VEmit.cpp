@@ -1090,11 +1090,21 @@ int haeVapaaKoodi(int badge)
 	return(0);
 }
 
+// Rekisteröi emit-koodin (badge) joukkueelle kno emit-indeksiin.
+// d = joukkueen tietueen positio; jos 0, joukkueen olemassaolo varmistetaan
+//     getpos():lla. Jos joukkuetta ei vielä löydy indeksistä (esim. juuri
+//     lisättävä joukkue), kutsujan on annettava positio, ettei rekisteröinti
+//     epäonnistu vääränä positiivisena.
+// Paluu: 0 = rekisteröity (tai koodi jo tällä joukkueella),
+//        1 = joukkuetta ei löydy datasta,
+//        2 = koodi jo toisella joukkueella.
 INT addbadge(INT32 badge, INT kno, INT d, int toinen, INT msgfl)
    {
    INT i;
    char msg[50];
 
+   // Ilman tunnettua positiota (d==0) ei rekisteröidä koodia joukkueelle,
+   // jota ei vielä löydy datasta.
    if (!d && (i = getpos(kno)) <= 0)
       return(1);
    i = haebdg(badge, &toinen);
@@ -1782,6 +1792,19 @@ int getratano(wchar_t *tunnus)
    return(-1);
    }
 
+INT32 lukijakoodit[4] = {250, 240, 253, 243};
+
+INT onlukija(INT koodi)
+{
+	unsigned int i;
+	const unsigned int koodimaara = sizeof(lukijakoodit)/sizeof(INT32);
+	
+	for (i = 0; i < koodimaara; i++)
+		if (koodi == lukijakoodit[i])
+			return(1);
+	return(0);
+}
+
 INT haelukija(emittp *em)
    {
    int i;
@@ -1797,15 +1820,14 @@ INT haelukija(emittp *em)
          return((i+49)%50);
       }
    for (i = 0; i < 49; i++) {
-      if (em->ctrltime[i+1] < em->ctrltime[i] && 
-         (em->ctrlcode[i] == 250 || (em->ctrlcode[i] > 121 && em->ctrlcode[i] < 126)))
+      if (em->ctrltime[i+1] < em->ctrltime[i] && onlukija(em->ctrlcode[i]))
          return(i);
       if (em->ctrltime[(i+2)%50] < em->ctrltime[i] && 
-         em->ctrlcode[i] == 250 && em->ctrlcode[i+1] != 250)
+         onlukija(em->ctrlcode[i]) && !onlukija(em->ctrlcode[i+1]))
          return(i);
 	  }
    for (i = 0; i <= 49; i++) {
-      if ((em->ctrlcode[i] == 250 || (em->ctrlcode[i] > 121 && em->ctrlcode[i] < 126)) &&
+      if (onlukija(em->ctrlcode[i]) &&
          em->ctrlcode[(i+1)%50] != em->ctrlcode[i] && em->ctrlcode[(i+2)%50] != em->ctrlcode[i])
          break;
       }
@@ -1831,15 +1853,10 @@ int vatulkinta(emittp *em, int *valiajat)
 	memset(alku, 0, sizeof(alku));
 	memset(lukijat, 0, sizeof(lukijat));
 	n = 0;
-	for (i = 0; i < 50; i++) {
-		if (em->ctrlcode[i] == 254) {
-			ala = i-1;
-			yla = i-1;
-			break;
-			}
-		}
+
+
 	for (m = ala; m <= yla; m++) {
-		if (em->ctrlcode[m] != 250)
+		if (!onlukija(em->ctrlcode[m]))
 			continue;
 		lukijat[n] = m;
 		i = m;
@@ -1918,7 +1935,7 @@ int vatulkinta(emittp *em, int *valiajat)
 				}
 			if (rst <= 0)
 				break;
-			if (em->ctrlcode[j] == 250 || em->ctrlcode[j] == 254)
+			if (onlukija(em->ctrlcode[j]))
 				break;
 			i = (i + MAXEMITVA - 1) % MAXEMITVA;
 			}
@@ -2018,7 +2035,7 @@ INT tarkista(emittp *em, kilptietue *pkilp, INT *tulkinta, int lukija, INT haku)
 //   while (!em->ctrlcode[j] && j) j--;
 //   if (!j) return(rt->rastiluku);
 
-   if (lukija < 0)
+   if (lukija <= 0)
 		lukija = haelukija(em);
    if (lukija < 0)
 	   return(-1);
@@ -3413,6 +3430,7 @@ static void lue_rogsakot(void)
 
 INT lue_radat(INT r)
    {
+	wchar_t *ctx = NULL;
    TextFl *rata_file;
    INT i, j, ir, tn, tn1, kdi[MAXNRASTI], rno, nr = 0, vapaajarj = 0, ensilm = 1;
    wchar_t line[300], *p;
@@ -3460,7 +3478,7 @@ INT lue_radat(INT r)
    for (;;) {
 	  if (rata_file->ReadLine(line, 298) == NULL || wcslen(line) < 4)
 		  break;
-	  p = wcstok(line, L" \t");
+	  p = wcstok(line, L" \t", &ctx);
 	  wcstoansi(rnimi, p, 39);
 	  rnimi[39] = 0;
 	  elimbl2(rnimi);
@@ -3481,10 +3499,10 @@ INT lue_radat(INT r)
 		nrata = rno++;
 		strcpy(rata[nrata].rata, rnimi);
 
-	  p = wcstok(NULL, L" \t");
+	  p = wcstok(NULL, L" \t", &ctx);
 	  if (p) {
 		 rata[nrata].ennakko = _wtoi(p);
-		 p = wcstok(NULL, L" \t");
+		 p = wcstok(NULL, L" \t", &ctx);
 		 if (p) rata[nrata].maalilaji = _wtoi(p);
 		 }
 	  ir = 0;
@@ -3494,7 +3512,7 @@ INT lue_radat(INT r)
 		 if (rata_file->ReadLine(line, 298) == NULL) goto esc;
 		 if (emitfl < 0)
 			continue;
-		 p = wcstok(line, L" \t");
+		 p = wcstok(line, L" \t", &ctx);
 		 for (j = 0; j < 40; j++) {
 			tn = 0;
 			if (p) {
@@ -3529,7 +3547,7 @@ INT lue_radat(INT r)
 			   kdi[ir] = tn;
 			   ir++;
 			   }
-			p = wcstok(NULL, L" \t");
+			p = wcstok(NULL, L" \t", &ctx);
 			}
 		 }
 	  rata[nrata].rastiluku = ir;

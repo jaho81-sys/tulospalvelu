@@ -32,6 +32,7 @@
 #include <sys/stat.h>
 #include <dos.h>
 #include "HkDeclare.h"
+#include "TpLaitteet.h"
 #include "console.h"
 
 void rem_pr(void);
@@ -303,7 +304,13 @@ void lukumaarat()
 				for (nc1 = 0; nc1 < NREGNLY; nc1++) {
 					if (regnly[nc1] > 0) {
 						yb++;
-						sprintf(ln, " %2d %8.8s  ", nc1+1, aikatostr_ls(as, regnlyhetki[nc1], t0));
+						// ZEBRA: lukijan juokseva kello = PC-nykyaika + mitattu poikkeama.
+						// Muut lukijat (SIRIT ym.) ennallaan: viimeksi nahty -aika.
+						if (regnly[nc1] == LID_ZEBRA && zebraOffsetState[nc1] == 1)
+							sprintf(ln, " %2d %8.8s  ", nc1+1,
+								aikatostr_ls(as, t_time_l(biostime(0,0), t0) + zebraOffsetDs[nc1], t0));
+						else
+							sprintf(ln, " %2d %8.8s  ", nc1+1, aikatostr_ls(as, regnlyhetki[nc1], t0));
 						if ((comtype[MAX_LAHPORTTI+nc1] & comtpTCP) && !TCPyht_on(hComm[MAX_LAHPORTTI+nc1])) {
 							fg = 0;
 							bg = 7;
@@ -466,6 +473,7 @@ static void valitselahtosarja(void)
 /*
 static void	sprintsiirrot(void)
 	{
+	wchar_t *ctx = NULL;
    wchar_t ch,tc,ce = L'O';
    static INT tarfl0;
    extern INT errno;
@@ -655,16 +663,16 @@ static void	sprintsiirrot(void)
 			siirto = 0;
 			if (ohjefile->ReadLine(ln, 78)) {
 				r++;
-				p = wcstok(ln, L" ,;\t\n");
+				p = wcstok(ln, L" ,;\t\n", &ctx);
 				if (p) {
 					wcscpy(s1, p);
-					p = wcstok(NULL, L" ,;\t\n");
+					p = wcstok(NULL, L" ,;\t\n", &ctx);
 					if (p) {
 						wcscpy(s2, p);
-						p = wcstok(NULL, L" ,;\t\n");
+						p = wcstok(NULL, L" ,;\t\n", &ctx);
 						if (p) {
 							siirto = _wtol(p);
-							p = wcstok(NULL, L" ,;\t\n");
+							p = wcstok(NULL, L" ,;\t\n", &ctx);
 							if (p) {
 								lk = _wtoi(p);
 								}
@@ -865,6 +873,7 @@ int pyyda_vaihdavaihe(int vaihe, int kielto)
 
 void asetukset()
    {
+	wchar_t *ctx = NULL;
    wchar_t ch,tc,ce = L'O';
    char che;
    extern scr asetusvalikko;
@@ -948,16 +957,16 @@ void asetukset()
                siirto = 0;
                if (fgetws(ln, 78, ohjefile)) {
                   r++;
-                  p = wcstok(ln, L" ,;\t\n");
+                  p = wcstok(ln, L" ,;\t\n", &ctx);
                   if (p) {
                      wcscpy(s1, p);
-                     p = wcstok(NULL, L" ,;\t\n");
+                     p = wcstok(NULL, L" ,;\t\n", &ctx);
                      if (p) {
                         wcscpy(s2, p);
-                        p = wcstok(NULL, L" ,;\t\n");
+                        p = wcstok(NULL, L" ,;\t\n", &ctx);
                         if (p) {
                            siirto = _wtol(p);
-                           p = wcstok(NULL, L" ,;\t\n");
+                           p = wcstok(NULL, L" ,;\t\n", &ctx);
 									if (p) {
                               lk = _wtoi(p);
                               }

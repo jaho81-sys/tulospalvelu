@@ -953,8 +953,9 @@ bool emittp::LueEdellinen(int *kno)
 INT onlukija(INT koodi)
 	{
 	unsigned int i;
+	const unsigned int koodimaara = sizeof(lukijakoodit)/sizeof(INT32);
 
-	for (i = 0; i < sizeof(lukijakoodit)/sizeof(INT); i++)
+	for (i = 0; i < koodimaara; i++)
 		if (koodi != 0 && koodi == lukijakoodit[i])
 			return(1);
 	return(0);
@@ -1193,6 +1194,7 @@ void vaihda_badge(UINT32 badge)
 
 INT add(void *em)
 	{
+	wchar_t *ctx = NULL;
 	INT  i, exfl = 0;
 	INT  dataf;
 	kilptietue kilp;
@@ -2854,6 +2856,7 @@ static int TarkKilpailijat(void)
 
 INT lue_radat(INT r)
    {
+   wchar_t *ctx = NULL;
    TextFl *rata_file;
    INT i, j, ir, tn, srj, kdi[MAXNRASTI], rno, nr = 0, vapaajarj = 0, ensilm = 1;
    wchar_t line[300], msg[80], *p, rnimi[12];
@@ -2895,7 +2898,7 @@ INT lue_radat(INT r)
 		if (rata_file->ReadLine(line, 298) == NULL || wcslen(line) < 4)
 			break;
 		if (i % 3 == 0) {
-			p = wcstok(line, L" \t");
+			p = wcstok(line, L" \t", &ctx);
 			rno++;
 			}
 		}
@@ -2910,7 +2913,7 @@ INT lue_radat(INT r)
 	for (;;) {
 		if (rata_file->ReadLine(line, 298) == NULL || wcslen(line) < 4)
 			break;
-		p = wcstok(line, L" \t");
+		p = wcstok(line, L" \t", &ctx);
 		wcsncpy(rnimi, p, 12);
 		rnimi[11] = 0;
 		elimwbl2(rnimi);
@@ -2925,10 +2928,10 @@ INT lue_radat(INT r)
 			}
 		srj = rno++;
 		wcscpy(rata[srj].tunnus, rnimi);
-		p = wcstok(NULL, L" \t");
+		p = wcstok(NULL, L" \t", &ctx);
 		if (p) {
 			rata[srj].ennakko = _wtoi(p);
-			p = wcstok(NULL, L" \t");
+			p = wcstok(NULL, L" \t", &ctx);
 			if (p)
 				rata[srj].maalilaji = _wtoi(p);
 			}
@@ -2938,7 +2941,7 @@ INT lue_radat(INT r)
 		 if (emitfl < 0) {
 			continue;
 			}
-		 p = wcstok(line, L" \t");
+		 p = wcstok(line, L" \t", &ctx);
 		 for (j = 0; j < 40; j++) {
 			if (!p) {
 				if (i == 0 || !vapaajarj)
@@ -2986,7 +2989,7 @@ INT lue_radat(INT r)
 			   }
 			if (!p)
 				break;
-			p = wcstok(NULL, L" \t");
+			p = wcstok(NULL, L" \t", &ctx);
 			}
 		 }
 	  rata[srj].rastiluku = ir;

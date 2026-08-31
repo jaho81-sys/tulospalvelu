@@ -375,6 +375,26 @@ static wchar_t *html_avaus(tulostusparamtp *tulprm, const wchar_t *wtitle, int l
 	return(0);
 }
 
+static void LisaaLahtoaika(wchar_t *wline, tulostusparamtp *tulprm, int srj)
+{
+	if (!tulprm->lahtoluettelo || Sarjat[srj].lahto == TMAALI0)
+		return;
+	wchar_t wtm[14]; AIKATOWSTRS(wtm, Sarjat[srj].lahto, t0); wtm[8] = 0;
+	// Erota edellisestä tekstistä pilkulla vain jos rivillä on jo sisältöä; nipistä
+	// lopun välilyönnit pois, ettei pilkku jää roikkumaan välilyöntien perään.
+	int len = (int) wcslen(wline);
+	while (len > 0 && wline[len-1] == L' ')
+		len--;
+	wline[len] = 0;
+	const wchar_t *sep = len ? L", " : L"";
+	wchar_t label[24];
+	if (tulprm->language > 0)
+		swprintf(label, L"%sStart: %s", sep, wtm);
+	else
+		swprintf(label, L"%sLähtö: %s", sep, wtm);
+	wcscat(wline, label);
+}
+
 static void setflds(FldFrmtTp *fld, FldFrmtTp* fld0, int maxfldno, int n_fld0)
 {
 	memset(fld, 0, maxfldno*sizeof(FldFrmtTp));
@@ -4553,7 +4573,7 @@ static void htmlsarjaotsikot(int *srj, tulostusparamtp *tulprm, int ei_lukum, in
 			else if (tulprm->viimos) {
 				Sarjat[*srj].Sarjanimi(snimi, true);
 				wcscat(wline, snimi);
-				if (!Sarjat[*srj].psarjanimi[0] && Sarjat[*srj].matka[0][0]) {
+				if ((!Sarjat[*srj].psarjanimi[0] || tulprm->lahtoluettelo) && Sarjat[*srj].matka[0][0]) {
 					wcscat(wline, L" - (");
 					for (int o = tulprm->osuus > 15 ? tulprm->osuus : 0; o <= tulprm->osuus; o++) {
 						if (Sarjat[*srj].matka[0][0] && Sarjat[*srj].matka[o][0]) {
@@ -4569,17 +4589,12 @@ static void htmlsarjaotsikot(int *srj, tulostusparamtp *tulprm, int ei_lukum, in
 					if (wcslen(wline) > 2)
 						wcscat(wline, L" km)");
 					}
+				LisaaLahtoaika(wline, tulprm, *srj);
 				wcscat(wline, L"</span>\n");
 				tulprm->writehtml(wline);
 //				putfld(tulprm, wline, 0, 180, 0, 0);
 //				endline(tulprm, 1);
-				if (tulprm->lahtoluettelo) {
-					if (tulprm->language == 0)
-						swprintf(wline,L"<p>Ilmoittautuneita : %d", nilm[*srj]);
-					else
-						swprintf(wline,L"<p>Participants : %d", nilm[*srj]);
-					}
-				else {
+				if (!tulprm->lahtoluettelo) {
 					wline[0] = 0;
 	//				if (kilpparam.maxnosuus == 1)
 	//					na = nilm[*srj] - ntulos[*srj][tulprm->osuus][tulprm->piste] - nkesk[*srj][tulprm->osuus] -
@@ -4935,6 +4950,12 @@ static void kirjoitinpaaotsikot(int *l, int *sv, int *srj, tulostusparamtp *tulp
 			putfld(tulprm, kilpailu, 0, wcslen(kilpailu), 0, 0);
 			endline(tulprm, 1);
 			paaots_pois(tulprm);
+			if (tulostus_lisateksti_tul[0]) {
+				aliots_on(tulprm);
+				putfld(tulprm, tulostus_lisateksti_tul, 0, (int)wcslen(tulostus_lisateksti_tul), 0, 0);
+				endline(tulprm, 1);
+				aliots_pois(tulprm);
+				}
 			(*l)++;
 			}
 		}
@@ -5028,7 +5049,9 @@ static void kirjoitinjatko_otsikot(int *l, int *srj, tulostusparamtp *tulprm)
 	if (tulprm->viimos == L'K' || tulprm->monios)
 		swprintf(wline,L"%-10s",snimi);
 	else if (tulprm->viimos == L'V') {
-		if (tulprm->language > 0)
+		if (tulprm->lahtoluettelo)
+			wcscpy(wline, snimi);
+		else if (tulprm->language > 0)
 			swprintf(wline,L"%-10s    Finish",snimi);
 		else
 			swprintf(wline,L"%-10s    Yhteistulokset",snimi);
@@ -5052,6 +5075,7 @@ static void kirjoitinjatko_otsikot(int *l, int *srj, tulostusparamtp *tulprm)
 				swprintf(wline,L"%-10s  %d. osuus, %d. väliaika",snimi,tulprm->osuus+1,tulprm->piste);
 			}
 		}
+	LisaaLahtoaika(wline, tulprm, *srj);
 	putfld(tulprm, wline, 0, wcslen(wline), 0, 0);
 	endline(tulprm, 1);
 	if (tulprm->tulmuot.otsikot) {
@@ -5122,9 +5146,13 @@ static void kirjoitinalkuotsikot(int *l, int *srj, tulostusparamtp *tulprm, int 
 				}
 			else if (tulprm->viimos) {
 				Sarjat[*srj].Sarjanimi(snimi, true);
-				putfld(tulprm, snimi, 0, 10, 0, 0);
-				if (!Sarjat[*srj].psarjanimi[0] && Sarjat[*srj].matka[0][0]) {
-					wcscpy(wline, L"(");
+				wline[0] = 0;
+				if (tulprm->lahtoluettelo)
+					wcscpy(wline, snimi);
+				else
+					putfld(tulprm, snimi, 0, 10, 0, 0);
+				if ((!Sarjat[*srj].psarjanimi[0] || tulprm->lahtoluettelo) && Sarjat[*srj].matka[0][0]) {
+					wcscat(wline, wline[0] ? L" (" : L"(");
 					for (int o = tulprm->osuus > 15 ? tulprm->osuus : 0; o < tulprm->osuus; o++) {
 						if (Sarjat[*srj].matka[o][0]) {
 							MbsToWcs(wline+wcslen(wline), Sarjat[*srj].matka[o], 20);
@@ -5141,7 +5169,8 @@ static void kirjoitinalkuotsikot(int *l, int *srj, tulostusparamtp *tulprm, int 
 						MbsToWcs(wline+wcslen(wline), Sarjat[*srj].matka[tulprm->osuus], 20);
 					wcscat(wline, L" km)");
 					}
-				putfld(tulprm, wline, prtflds[3].pos, 58, 0, 0);
+				LisaaLahtoaika(wline, tulprm, *srj);
+				putfld(tulprm, wline, tulprm->lahtoluettelo ? 0 : prtflds[3].pos, wcslen(wline), 0, 0);
 				endline(tulprm, 1);
 				(*l)++;
 				(*l)++;
@@ -6607,6 +6636,11 @@ void htmlalku(wchar_t *wtitle, wchar_t *wheader, int frame, tulostusparamtp *tul
 		tulprm->writehtml(L"<H2 CLASS=otsikko>");
 		tulprm->writehtml(wheader);
 		tulprm->writehtml(L"</H2>\n");
+		if (tulostus_lisateksti_tul[0]) {
+			tulprm->writehtml(L"<H3>");
+			tulprm->writehtml(tulostus_lisateksti_tul);
+			tulprm->writehtml(L"</H3>\n");
+			}
 		}
 	}
 
@@ -6793,6 +6827,8 @@ int autofile(void)
 		if (aftulparam.kohde == L'H') {
 			htmlalku(aftulparam.title, aftulparam.header, 0, &aftulparam);
 			for (int srj = 0; srj < sarjaluku; srj++) {
+				aftulparam.osuus = Sarjat[srj].ntosuus - 1;
+				aftulparam.piste = 0;
 				if (aftulparam.sarjalista[srj] && ntulos[srj][aftulparam.osuus][aftulparam.piste]) {
 					tulostasarja(&srj, &aftulparam, &l, &sv, TRUE);
 					kirjoitettu = true;
@@ -6804,7 +6840,7 @@ int autofile(void)
 		}
 // #ifdef EI_OLE
 	else {
-		wchar_t buf[100], *p, *p1;
+		wchar_t buf[100], *p, *p1, *ctx = NULL;
 		int nt;
 //		aftulparam.yksihtml = false;
 		for (int srj = -1;;) {
@@ -6814,16 +6850,16 @@ int autofile(void)
 					break;
 				if (aflst->ReadLine(buf, 98) == NULL)
 					continue;
-				p = wcstok(buf, L" ;\t\n");
+				p = wcstok(buf, L" ;\t\n", &ctx);
 				if (!p || (srj = haesarja_w(p, true)) < 0)
 					continue;
-				if ((p = wcstok(NULL, L" ;\t\n")) == 0)
+				if ((p = wcstok(NULL, L" ;\t\n", &ctx)) == 0)
 					continue;
 				aftulparam.osuus = _wtoi(p) - 1;
-				if ((p = wcstok(NULL, L" ;\t\n")) == 0)
+				if ((p = wcstok(NULL, L" ;\t\n", &ctx)) == 0)
 					continue;
 				aftulparam.piste = _wtoi(p);
-				p1 = wcstok(NULL, L" ;\t\n");
+				p1 = wcstok(NULL, L" ;\t\n", &ctx);
 				}
 			else {
 				srj++;
@@ -7247,7 +7283,7 @@ void haeseura(wchar_t *seura);
 void luepiirit(wchar_t *flname)
    {
    TextFl *piirifile;
-   wchar_t line[61], *p, *flnm0 = L"PIIRIT.LST";
+   wchar_t line[61], *p, *ctx = NULL, *flnm0 = L"PIIRIT.LST";
    INT k;
 
    piirifile = new TextFl(flname != NULL ? flname : flnm0, L"rt");
@@ -7257,7 +7293,7 @@ void luepiirit(wchar_t *flname)
 			break;
 		 if (line[wcslen(line)-1] == L'\n')
 			line[wcslen(line)-1] = 0;
-		 p = wcstok(line, L" \t");
+		 p = wcstok(line, L" \t", &ctx);
 		 if ((k = _wtoi(p)) == 0)
 			break;
 		 if (k >= piiriluku)
@@ -8224,7 +8260,7 @@ int seur_rata(int sarja, tulostusparamtp *tulprm)
    static int init;
    static hajtp *haj;
    hajtp *haj0;
-   wchar_t line[20], *p;
+   wchar_t line[20], *p, *ctx = NULL;
    int srj=0, os=0;
    static bool tiedostosta = false;
 
@@ -8274,9 +8310,9 @@ int seur_rata(int sarja, tulostusparamtp *tulprm)
 			}
 		 else {
 			haj = (hajtp *) calloc(sizeof(hajtp), 1);
-			p = wcstok(line, L" \t");
+			p = wcstok(line, L" \t", &ctx);
 			wcsncpy(haj->rata, p, HAJONTA);
-			p = wcstok(NULL, L" \t");
+			p = wcstok(NULL, L" \t", &ctx);
 			if (p)
 				wcsncpy(haj->ratapit, p, 5);
 			if (!haj0)

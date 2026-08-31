@@ -31,6 +31,7 @@
 #include "UnitLisaTekstit.h"
 #include "UnitMain.h"
 #include "UnitSHLTul.h"
+#include "VMuotoilu.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -91,6 +92,7 @@ void __fastcall TTulosteForm::TabSheetKirjoitinEnter(TObject *Sender)
 
 void TTulosteForm::enumPrinters(TComboBox *CBkirj)
 {
+	wchar_t *ctx = NULL;
    PRINTER_INFO_1 PrinterEnum[400];
    wchar_t wPrinterName[120];
    DWORD cbNeeded, cReturned, cLisa;
@@ -157,7 +159,7 @@ void TTulosteForm::enumPrinters(TComboBox *CBkirj)
 		 // String will be in form L"printername,drivername,portname".
 			if (!GetProfileStringW(L"windows", L"device", L",,,", wcBuffer, MAXBUFFERSIZE) <= 0) {
 			   // Printer name precedes first L"," character...
-			   wcstok(wcBuffer, L",");
+			   wcstok(wcBuffer, L",", &ctx);
 
 			   // If given buffer too small, set required size and fail...
 			   if ((DWORD)wcslen(wcBuffer) >= 120) {
@@ -213,6 +215,19 @@ void __fastcall TTulosteForm::FormCreate(TObject *Sender)
 //	CBViimLeima->Checked = maalileimasin < 0;
 	TabSheetKirjoitinEnter(Sender);
 	Englanninkielisetotsikot1->Checked = (lsttulparam.language == 1);
+
+	LblLisaTekstiTul = new TLabel(this);
+	LblLisaTekstiTul->Parent = TabSheetTulokset;
+	LblLisaTekstiTul->Caption = L"Lisäteksti:";
+	LblLisaTekstiTul->Left = 8;
+	LblLisaTekstiTul->Top = 92;
+
+	EdtLisaTekstiTul = new TEdit(this);
+	EdtLisaTekstiTul->Parent = TabSheetTulokset;
+	EdtLisaTekstiTul->Left = 8;
+	EdtLisaTekstiTul->Top = 108;
+	EdtLisaTekstiTul->Width = GroupBox2->Width;
+	EdtLisaTekstiTul->MaxLength = 200;
 }
 //---------------------------------------------------------------------------
 void yhtveto(wchar_t kohde, wchar_t tiedlaji, wchar_t yvlaji, wchar_t *listflnm, wchar_t merkit,
@@ -423,6 +438,7 @@ void __fastcall TTulosteForm::ButtonTulostaClick(TObject *Sender)
 				if (CBOsuussijat->Checked)
 					Options |= 0x08000000;
 				}
+			wcscpy(tulostus_lisateksti_tul, EdtLisaTekstiTul->Text.c_str());
 			RiviLuku =
 			list(kohde[KohdeIndex],
 				tiedtyyppi[CBTiedLaji->ItemIndex],
@@ -444,6 +460,7 @@ void __fastcall TTulosteForm::ButtonTulostaClick(TObject *Sender)
 				UnicodeString(RiviLuku)+ " riviä kirjoitettu").c_str(), L"Valmis", MB_OK);
 			else
 				Application->MessageBoxW(L"Pyydetty tuloste laadittu", L"Valmis", MB_OK);
+			tulostus_lisateksti_tul[0] = 0;
 			break;
 			}
 		if (SeuraLista)
