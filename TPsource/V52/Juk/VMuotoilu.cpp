@@ -76,8 +76,8 @@ FldFrmtTp fileflds[] = {
 	F_SAK, L"Sakot", L"Sakot",121,0, 1, 1,                   	// 13: sakot
 	F_TARK, L"Hyväks.", L"T", 133, 1, 0, 1,               // 14: Leimantarkastus
 	F_PIST, L"Pisteet", L"Pisteet", 133, 0, 1, 1,              	// 15: pisteet
-	F_OSASJ, L"Os-sija", L"OsSj", 136, 0, 1, 1,              // 16: osuussija suluissa OsTls-kentässä
-	F_OSATLS, L"Os-tulos", L"OsTls", 136,16, 1, 1,            // 17: osuuden tulos (sija)
+	F_OSASJ, L"Os-sija", L"OsSj", 136, 4, 1, 1,              // 16: osuuden tai väliajan sija
+	F_OSATLS, L"Os-tulos", L"OsTls", 142,10, 1, 1,            // 17: osuuden tulos tai väliaika
 	F_SEURSJ, L"Seur.sj.", L"Sj.", 126, 0, 0, 1,       		// 18: seuraava osatulos
 	0, 0, 0, 0, 0, 0
 	};
@@ -101,8 +101,8 @@ FldFrmtTp fileflds_suunn[] = {
 	F_SAK, L"Sakot", L"Sakot",121,0, 1, 1,                   	// 13: sakot
 	F_TARK, L"Hyväks.", L"T", 133, 1, 0, 1,               // 14: Leimantarkastus
 	F_PIST, L"Pisteet", L"Pisteet", 133, 0, 1, 1,              	// 15: pisteet
-	F_OSASJ, L"Os-sija", L"OsSj", 136, 0, 1, 1,              // 16: osuussija suluissa OsTls-kentässä
-	F_OSATLS, L"Os-tulos", L"OsTls", 136,16, 1, 1,            // 17: osuuden tulos (sija)
+	F_OSASJ, L"Os-sija", L"OsSj", 136, 4, 1, 1,              // 16: osuuden tai väliajan sija
+	F_OSATLS, L"Os-tulos", L"OsTls", 142,10, 1, 1,            // 17: osuuden tulos tai väliaika
 	F_SEURSJ, L"Seur.sj.", L"Sj.", 126, 0, 0, 1,       		// 18: seuraava osatulos
 	0, 0, 0, 0, 0, 0
 	};
@@ -120,15 +120,15 @@ FldFrmtTp filefldsk[] = {
 	F_BADGE, L"Badge", L"Badge", 50,0, 1, 1,                 // 9: badge
 	F_RATA, L"Rata", L"Rata", 110,0, 0, 1,                   // 9: badge
 	F_OSSRA, L"OsSeura", L"OsSeura", 110,0, 0, 1,              	// 10: seura
-	F_TLS, L"Tulos", L"Tulos", 66,10, 1, 2,                 	// 11: tulos (vain joukkuerivi)
+	F_TLS, L"Tulos", L"Tulos", 66,10, 1, 3,                 	// 11: tulos
 	F_ERO, L"Ero", L"Ero",  80, 0, 1, 3,                  	// 12: ero kärkeen
 	F_SAK, L"Sakot", L"Sakot",80, 0, 1, 1,                   	// 13: sakot
 	F_TARK, L"Hyväks.", L"T", 78, 0, 0, 1,               // 14: Leimantarkastus
 	F_PIST, L"Pisteet", L"Pisteet", 80, 0, 1, 1,              	// 15: pisteet
-	F_OSASJ, L"Os-sija", L"OsSj", 85, 0, 1, 1,              // 16: osuussija suluissa OsTls-kentässä
-	F_OSATLS, L"Os-tulos", L"Os / jk", 66,28, 1, 1,            // 17: osuustulos (sija)  joukkuetulos (sija)
+	F_OSASJ, L"Os-sija", L"OsSj", 85, 4, 1, 1,              // 16: osuuden tai väliajan sija
+	F_OSATLS, L"Os-tulos", L"OsTls", 93,10, 1, 1,            // 17: osuuden tulos tai väliaika
 	F_OSOTS, L"Os-ots", L"Osuus", 6, 8, 0, 1,       		    // 18: osuuden otsikko
-	F_VSJ, L"Vaihtosj", L"VaihtoSj", 60, 0, 1, 1,                // : sija suluissa joukkuetuloksen perässä
+	F_VSJ, L"Vaihtosj", L"VaihtoSj", 60, 4, 1, 1,                // : sija vaihdossa
 	0, 0, 0, 0, 0, 0
 	};
 
@@ -151,8 +151,8 @@ FldFrmtTp prtflds_suunn[] = {
 	F_SAK, L"Sakot", L"Sakot",730,0, 1, 1,                   	// 13: sakot
 	F_TARK, L"Hyväks.", L"T", 835, 1, 0, 1,               // 14: Leimantarkastus
 	F_PIST, L"Pisteet", L"Pisteet", 840, 0, 1, 1,              	// 15: pisteet
-	F_OSASJ, L"Os-sija", L"OsSj", 825, 0, 1, 1,              // 16: osuussija suluissa OsTulos-kentässä
-	F_OSATLS, L"Os-tulos", L"OsTulos", 850, 16, 1, 1,            // 17: osuuden tulos (sija)
+	F_OSASJ, L"Os-sija", L"OsSj", 825, 0, 1, 1,              // 16: osuuden tai väliajan sija
+	F_OSATLS, L"Os-tulos", L"OsTulos", 850, 8, 1, 1,            // 17: osuuden tulos tai väliaika
 	F_SEURSJ, L"Seur.sj.", L"Sj.", 860, 0, 0, 1,       		// 18: seuraava osatulos
 	0, 0, 0, 0, 0, 0
 	};
@@ -176,8 +176,8 @@ FldFrmtTp prtflds[] = {
 	F_SAK, L"Sakot", L"Sakot",730,0, 1, 1,                   	// 13: sakot
 	F_TARK, L"Hyväks.", L"T", 835, 0, 0, 1,               // 14: Leimantarkastus
 	F_PIST, L"Pisteet", L"Pisteet", 840, 0, 1, 1,              	// 15: pisteet
-	F_OSASJ, L"Os-sija", L"OsSj", 825, 0, 1, 1,              // 16: osuussija suluissa OsTulos-kentässä
-	F_OSATLS, L"Os-tulos", L"OsTulos", 850, 16, 1, 1,            // 17: osuuden tulos (sija)
+	F_OSASJ, L"Os-sija", L"OsSj", 825, 0, 1, 1,              // 16: osuuden tai väliajan sija
+	F_OSATLS, L"Os-tulos", L"OsTulos", 850, 8, 1, 1,            // 17: osuuden tulos tai väliaika
 	F_SEURSJ, L"Seur.sj.", L"Sj.", 860, 0, 0, 1,       		// 18: seuraava osatulos
 	0, 0, 0, 0, 0, 0
 	};
@@ -195,15 +195,15 @@ FldFrmtTp prtfldsk[] = {
 	F_BADGE, L"Badge", L"Badge", 400,0, 1, 1,                 // 9: badge
 	F_RATA, L"Rata", L"Rata", 450,0, 0, 1,                 // 9: badge
 	F_OSSRA, L"OsSeura", L"OsSeura", 400,0, 0, 1,              	// 10: seura
-	F_TLS, L"Tulos", L"Tulos", 590,10, 1, 2,                 	// 11: tulos (vain joukkuerivi)
+	F_TLS, L"Tulos", L"Tulos", 590,10, 1, 3,                 	// 11: tulos
 	F_ERO, L"Ero", L"Ero",  710,0, 1, 3,                  	// 12: ero kärkeen
 	F_SAK, L"Sakot", L"Sakot",730,0, 1, 1,                   	// 13: sakot
 	F_TARK, L"Hyväks.", L"T", 840, 0, 0, 1,               // 14: Leimantarkastus
 	F_PIST, L"Pisteet", L"Pisteet", 840, 0, 1, 1,              	// 15: pisteet
-	F_OSASJ, L"Os-sija", L"OsSj", 770, 0, 1, 1,              // 16: osuussija suluissa OsTls-kentässä
-	F_OSATLS, L"Os-tulos", L"Os / jk", 590,28, 1, 1,            // 17: osuustulos (sija)  joukkuetulos (sija)
+	F_OSASJ, L"Os-sija", L"OsSj", 770, 4, 1, 1,              // 16: osuuden tai väliajan sija
+	F_OSATLS, L"Os-tulos", L"OsTulos", 810,10, 1, 1,            // 17: osuuden tulos tai väliaika
 	F_OSOTS, L"Os-ots", L"Osuus", 50, 8, 0, 1,       		    // 18: osuuden otsikko
-	F_VSJ, L"Vaihtosj", L"VaihtoSj", 540, 0, 1, 1,                // : sija suluissa joukkuetuloksen perässä
+	F_VSJ, L"Vaihtosj", L"VaihtoSj", 540, 4, 1, 1,                // : sija vaihdossa
 	0, 0, 0, 0, 0, 0
 	};
 

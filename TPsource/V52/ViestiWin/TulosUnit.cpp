@@ -88,11 +88,11 @@ seurIkkParamClass::seurIkkParamClass(void)
 	ColW[2] = 36;		// Kilpno
 	ColW[3] = 200;		// Joukkue
 	ColW[4] = 35;		// Maa
-	ColW[5] = 80 + 25*vuorokaudet;		// Tulos (sija OsJarj-tilassa)
+	ColW[5] = 60 + 25*vuorokaudet;		// Tulos
 	ColW[6] = (kilpparam.maxnosuus == 1 ? 140 : 320);		// Nimi
-	ColW[7] = 90;		// Os.tulos (sija)
+	ColW[7] = 55;		// Os.tulos
 	ColW[8] = 40;		// Sakot
-	ColW[9] = 0;		// Os.sija (suluissa Ostls-kentässä)
+	ColW[9] = 36;		// Os.sija
 	ColW[10] = 140;		// Seur.nimi
 }
 //---------------------------------------------------------------------------
@@ -149,9 +149,9 @@ void __fastcall TTilanneForm::FormSetup(TObject *Sender)
 	IkkParam.Ero = EroVal->Checked;
 	IkkParam.OsJarj = JarjVal->ItemIndex == 1 && IkkParam.Va == 0;
 
-	nCol = 8;
+	nCol = 9;
 	if (Sarjat[IkkParam.Sarja].maxpaikat) {
-		nCol = 9;
+		nCol = 10;
 		}
 	if (IkkParam.Lihavoitu) {
 		TulosGrid->Font->Style = TFontStyles() << fsBold;
@@ -199,6 +199,8 @@ void __fastcall TTilanneForm::FormSetup(TObject *Sender)
 		ColLj[iCol] = 9;
 		TulosGrid->ColWidths[iCol++] = IkkParam.ColW[8] * Screen->PixelsPerInch * lev / 10 / ppi0;
 		}
+	ColLj[iCol] = 10;
+	TulosGrid->ColWidths[iCol++] = IkkParam.ColW[9] * Screen->PixelsPerInch * lev / 10 / ppi0;
 	iCol = 0;
 	if (IkkParam.Va < 0) {
 		TulosGrid->Cells[iCol++][0] = L"Nro";
@@ -227,6 +229,8 @@ void __fastcall TTilanneForm::FormSetup(TObject *Sender)
 		}
 	if (kilpparam.alalaji == L'D' && IkkParam.Osuus == Sarjat[IkkParam.Sarja].osuusluku -1)
 		TulosGrid->ColCount--;
+	else
+		TulosGrid->Cells[iCol++][0] = UnicodeString((IkkParam.OsJarj ? L"Jk.sj" : L"Os.sj"));
 
 	wdt = TulosGrid->Left + 24 * Screen->PixelsPerInch/96;
 	for (int cb = 0; cb < TulosGrid->ColCount; cb++) {
@@ -493,15 +497,6 @@ void __fastcall TTilanneForm::PaivitaGrid(bool scroll)
 						}
 					}
 				TulosGrid->Cells[5][k] = wln;
-				if (IkkParam.OsJarj) {
-					int jksj = psija(kilp.kilpno, Sarja, Osuus, 0);
-					if (jksj > 0) {
-						wchar_t sjst[16];
-						_itow(jksj, sjst, 10);
-						liita_sija_suluissa(wln, sjst);
-						TulosGrid->Cells[5][k] = wln;
-						}
-					}
 				}
 			if (kilpparam.maxnosuus == 1 || IkkParam.OsJarj) {
 				TulosGrid->Cells[6][k] = kilp.Nimi(wln, OSNIMIL, aos, NimiJarj);
@@ -526,18 +521,22 @@ void __fastcall TTilanneForm::PaivitaGrid(bool scroll)
 							t = kilp.osTulos(Osuus, Va, false);
 						aikatowstr_cols_n(wln+lisa, t, 0, 0, kilpparam.laika2);
 						elimwzb1(wln+lisa);
-						{
-							int ossj = psija(kilp.kilpno, Sarja, Osuus, kilpparam.valuku+1);
-							wchar_t sjst[16];
-							if (ossj > 0) {
-								_itow(ossj, sjst, 10);
-								liita_sija_suluissa(wln, sjst);
-								}
-						}
 						TulosGrid->Cells[7][k] = wln;
 						iCol = 8;
 						if (Sarjat[Sarja].maxpaikat) {
 							TulosGrid->Cells[iCol++][k] = kilp.Ampsakot(Osuus, wst);
+							}
+						if (IkkParam.OsJarj) {
+							TulosGrid->Cells[iCol++][k] =
+								psija(kilp.kilpno, Sarja, Osuus, 0);
+							}
+						else {
+							if (Va <= 0) {
+								TulosGrid->Cells[iCol++][k] =
+									psija(kilp.kilpno, Sarja, Osuus, kilpparam.valuku+1);
+								}
+							else
+								TulosGrid->Cells[iCol++][k] = L" ";
 							}
 						}
 					else {
@@ -546,6 +545,7 @@ void __fastcall TTilanneForm::PaivitaGrid(bool scroll)
 						if (Sarjat[Sarja].maxpaikat) {
 							TulosGrid->Cells[iCol++][k] = L" ";
 							}
+						TulosGrid->Cells[iCol++][k] = L" ";
 						}
 					}
 				}
@@ -588,15 +588,13 @@ void __fastcall TTilanneForm::PaivitaGrid(bool scroll)
 						}
 					aikatowstr_cols_n(wln+lisa, t, 0, 0, kilpparam.laika2);
 					elimwzb1(wln+lisa);
-					if (Sarjat[Sarja].nosuus[Osuus] == 1) {
-						int ossj = psija(kilp.kilpno, Sarja, aos, kilpparam.valuku+1);
-						wchar_t sjst[16];
-						if (ossj > 0) {
-							_itow(ossj, sjst, 10);
-							liita_sija_suluissa(wln, sjst);
-							}
-						}
 					TulosGrid->Cells[7][k] = UnicodeString(wln);
+					if (Sarjat[Sarja].nosuus[Osuus] == 1) {
+						TulosGrid->Cells[8][k] =
+							UnicodeString(psija(kilp.kilpno, Sarja, aos, kilpparam.valuku+1));
+						}
+					else
+						TulosGrid->Cells[8][k] = L" ";
 /*
 					else {
 						if (!Va) {
@@ -610,6 +608,7 @@ void __fastcall TTilanneForm::PaivitaGrid(bool scroll)
 					}
 				else {
 					TulosGrid->Cells[7][k] = UnicodeString(L" ");
+					TulosGrid->Cells[8][k] = UnicodeString(L" ");
 					}
 				}
 			j++;

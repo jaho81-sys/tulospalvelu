@@ -44,8 +44,8 @@ object FormOsuus: TFormOsuus
     ParentFont = False
   end
   object Label4: TLabel
-    Left = 13
-    Top = 77
+    Left = 289
+    Top = 49
     Width = 31
     Height = 16
     Caption = 'Maali'
@@ -57,7 +57,7 @@ object FormOsuus: TFormOsuus
     ParentFont = False
   end
   object Label5: TLabel
-    Left = 185
+    Left = 13
     Top = 49
     Width = 31
     Height = 16
@@ -75,7 +75,6 @@ object FormOsuus: TFormOsuus
     Width = 22
     Height = 16
     Caption = 'Sija'
-    Visible = False
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -85,7 +84,7 @@ object FormOsuus: TFormOsuus
   end
   object Label7: TLabel
     Left = 13
-    Top = 49
+    Top = 77
     Width = 52
     Height = 16
     Caption = 'Osuustls'
@@ -102,7 +101,6 @@ object FormOsuus: TFormOsuus
     Width = 58
     Height = 16
     Caption = 'Osuussija'
-    Visible = False
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -239,8 +237,8 @@ object FormOsuus: TFormOsuus
     TabOrder = 12
   end
   object TMaali: TEdit
-    Left = 74
-    Top = 73
+    Left = 332
+    Top = 45
     Width = 79
     Height = 24
     TabStop = False
@@ -254,9 +252,9 @@ object FormOsuus: TFormOsuus
     TabOrder = 13
   end
   object Tulos: TEdit
-    Left = 230
+    Left = 74
     Top = 45
-    Width = 100
+    Width = 76
     Height = 24
     TabStop = False
     Font.Charset = DEFAULT_CHARSET
@@ -274,7 +272,6 @@ object FormOsuus: TFormOsuus
     Width = 36
     Height = 24
     TabStop = False
-    Visible = False
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -286,8 +283,8 @@ object FormOsuus: TFormOsuus
   end
   object OsTls: TEdit
     Left = 74
-    Top = 45
-    Width = 100
+    Top = 73
+    Width = 76
     Height = 24
     TabStop = False
     Font.Charset = DEFAULT_CHARSET
@@ -305,7 +302,6 @@ object FormOsuus: TFormOsuus
     Width = 36
     Height = 24
     TabStop = False
-    Visible = False
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
