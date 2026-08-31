@@ -1774,21 +1774,21 @@ bool __fastcall TFormEmit::OnkoMuutoksia(void)
 	if (Tietue < 0 || DKilp <= 0)
 		return(false);
 	if (
-		ValSNimi != EdtSNimi->Text ||
-		ValENimi != EdtENimi->Text ||
-		ValSeura != EdtSeura->Text ||
-		ValTulos != EdtTulos->Text ||
-		ValMaali != EdtMaali->Text ||
-		ValLahto != EdtLahto->Text ||
-		ValSelitys != EdtSelitys->Text ||
+		(ValSNimi != EdtSNimi->Text) ||
+		(ValENimi != EdtENimi->Text) ||
+		(ValSeura != EdtSeura->Text) ||
+		(ValTulos != EdtTulos->Text) ||
+		(ValMaali != EdtMaali->Text) ||
+		(ValLahto != EdtLahto->Text) ||
+		(ValSelitys != EdtSelitys->Text) ||
 		ValTarkVal != TarkVal->ItemIndex ||
 		(monirata && ValRata != CRata->ItemIndex) ||
 		ValSarja != CSarja->ItemIndex ||
 		ValSalaa != CBSelSN->ItemIndex ||
-		ValLisno != EdtLisno->Text ||
-		ValJoukkue != EdtJoukkue->Text||
-		ValHSeura != HSeura ||
-		ValHSeuralyh != HSeuralyh) {
+		(ValLisno != EdtLisno->Text) ||
+		(ValJoukkue != EdtJoukkue->Text) ||
+		(ValHSeura != HSeura) ||
+		(ValHSeuralyh != HSeuralyh)) {
 		retval = true;
 		}
 	if (!retval && kilpparam.kaksibadge == 2 &&

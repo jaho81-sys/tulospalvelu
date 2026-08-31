@@ -1339,12 +1339,12 @@ bool __fastcall TFormEmit::OnkoMuutoksia(void)
 		return(false);
 	if (
 		ValOsuus != CBOsuus->ItemIndex ||
-		ValSNimi != EdtSNimi->Text ||
-		ValSeura != EdtSeura->Text ||
-		ValTulos != EdtTulos->Text ||
-		ValMaali != EdtMaali->Text ||
-		ValLahto != EdtLahto->Text ||
-		ValSelitys != EdtSelitys->Text ||
+		(ValSNimi != EdtSNimi->Text) ||
+		(ValSeura != EdtSeura->Text) ||
+		(ValTulos != EdtTulos->Text) ||
+		(ValMaali != EdtMaali->Text) ||
+		(ValLahto != EdtLahto->Text) ||
+		(ValSelitys != EdtSelitys->Text) ||
 		ValTarkVal != TarkVal->ItemIndex ||
 		ValRata != CRata->ItemIndex ||
 		ValSarja != CSarja->ItemIndex) {

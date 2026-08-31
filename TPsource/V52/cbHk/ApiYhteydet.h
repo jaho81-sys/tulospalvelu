@@ -73,7 +73,7 @@ __published:
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall BtnOKClick(TObject *Sender);
 	void __fastcall BtnPeruutaClick(TObject *Sender);
-	void __fastcall BtnYhteysTesti(TObject *Sender);
+	void __fastcall BtnYhteysTestiClick(TObject *Sender);
 	void __fastcall BtnLahetaNytClick(TObject *Sender);
 	void __fastcall BtnHaeNytClick(TObject *Sender);
 	void __fastcall BtnPaivitaTilaClick(TObject *Sender);

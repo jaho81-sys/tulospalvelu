@@ -107,7 +107,7 @@ object FormApiYhteydet: TFormApiYhteydet
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 4
-        OnClick = BtnYhteysTesti
+        OnClick = BtnYhteysTestiClick
       end
       object BtnLahetaNyt: TButton
         Left = 170

@@ -311,7 +311,7 @@ void __fastcall TFormApiYhteydet::TestaaYhteys(void)
 	}
 }
 
-void __fastcall TFormApiYhteydet::BtnYhteysTesti(TObject *Sender)
+void __fastcall TFormApiYhteydet::BtnYhteysTestiClick(TObject *Sender)
 {
 	TestaaYhteys();
 }
