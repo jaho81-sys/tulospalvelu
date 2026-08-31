@@ -1,6 +1,5 @@
 #include <vcl.h>
 #pragma hdrstop
-#include <Winsock2.h>
 #include <wininet.h>
 #include <stdio.h>
 
@@ -9,7 +8,6 @@
 #include "ApiSaike.h"
 #include "ApiIntegration.h"
 
-#pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "wininet.lib")
 
 #pragma package(smart_init)
@@ -115,6 +113,61 @@ UnicodeString ApiBridgeUrl(void)
 	return url;
 }
 
+// Avoid WinINet URL_COMPONENTSW: bcc32 sees both the SDK type and
+// Winapi::Wininet::URL_COMPONENTSW and reports E2015.
+static bool ParseHttpUrl(const UnicodeString& url, UnicodeString& host,
+	INTERNET_PORT& port, UnicodeString& path, bool& https)
+{
+	UnicodeString u = url.Trim();
+	https = false;
+	port = INTERNET_DEFAULT_HTTP_PORT;
+	host = L"";
+	path = L"/";
+
+	int prefix = 0;
+	if (u.Pos(L"https://") == 1) {
+		https = true;
+		port = INTERNET_DEFAULT_HTTPS_PORT;
+		prefix = 8;
+	} else if (u.Pos(L"http://") == 1) {
+		prefix = 7;
+	} else {
+		return false;
+	}
+
+	UnicodeString rest = u.SubString(prefix + 1, u.Length() - prefix);
+	int hash = rest.Pos(L"#");
+	if (hash > 0)
+		rest = rest.SubString(1, hash - 1);
+
+	int slash = rest.Pos(L"/");
+	int qmark = rest.Pos(L"?");
+	int hostEnd = rest.Length() + 1;
+	if (slash > 0 && (qmark == 0 || slash < qmark))
+		hostEnd = slash;
+	else if (qmark > 0)
+		hostEnd = qmark;
+
+	UnicodeString hostport = hostEnd > 1 ? rest.SubString(1, hostEnd - 1) : UnicodeString(L"");
+	if (hostEnd <= rest.Length())
+		path = rest.SubString(hostEnd, rest.Length() - hostEnd + 1);
+	else
+		path = L"/";
+	if (path.IsEmpty() || path[1] == L'?')
+		path = UnicodeString(L"/") + path;
+
+	int colon = hostport.LastDelimiter(L":");
+	if (colon > 0 && colon < hostport.Length()) {
+		host = hostport.SubString(1, colon - 1);
+		port = (INTERNET_PORT)_wtoi(hostport.SubString(colon + 1, hostport.Length() - colon).c_str());
+		if (port == 0)
+			port = https ? INTERNET_DEFAULT_HTTPS_PORT : INTERNET_DEFAULT_HTTP_PORT;
+	} else {
+		host = hostport;
+	}
+	return !host.IsEmpty();
+}
+
 static bool HttpRequest(const wchar_t* method, const UnicodeString& url,
 	const UnicodeString& body, UnicodeString& vastaus)
 {
@@ -123,37 +176,26 @@ static bool HttpRequest(const wchar_t* method, const UnicodeString& url,
 	if (!hInternet)
 		return false;
 
-	URL_COMPONENTSW uc = {0};
-	uc.dwStructSize = sizeof(uc);
-	wchar_t host[256] = {0};
-	wchar_t path[1024] = {0};
-	wchar_t extra[512] = {0};
-	uc.lpszHostName = host;
-	uc.dwHostNameLength = 255;
-	uc.lpszUrlPath = path;
-	uc.dwUrlPathLength = 1023;
-	uc.lpszExtraInfo = extra;
-	uc.dwExtraInfoLength = 511;
-
-	if (!InternetCrackUrlW(url.c_str(), 0, 0, &uc)) {
+	UnicodeString host, path;
+	INTERNET_PORT port = INTERNET_DEFAULT_HTTP_PORT;
+	bool https = false;
+	if (!ParseHttpUrl(url, host, port, path, https)) {
 		InternetCloseHandle(hInternet);
 		return false;
 	}
 
-	INTERNET_PORT port = uc.nPort;
 	DWORD flags = INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE;
-	if (uc.nScheme == INTERNET_SCHEME_HTTPS)
+	if (https)
 		flags |= INTERNET_FLAG_SECURE;
 
-	HINTERNET hConnect = InternetConnectW(hInternet, host, port, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+	HINTERNET hConnect = InternetConnectW(hInternet, host.c_str(), port, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
 	if (!hConnect) {
 		InternetCloseHandle(hInternet);
 		return false;
 	}
 
-	UnicodeString fullPath = UnicodeString(path) + UnicodeString(extra);
 	const wchar_t* acceptTypes[] = { L"*/*", NULL };
-	HINTERNET hRequest = HttpOpenRequestW(hConnect, method, fullPath.c_str(), NULL, NULL, acceptTypes, flags, 0);
+	HINTERNET hRequest = HttpOpenRequestW(hConnect, method, path.c_str(), NULL, NULL, acceptTypes, flags, 0);
 	if (!hRequest) {
 		InternetCloseHandle(hConnect);
 		InternetCloseHandle(hInternet);
