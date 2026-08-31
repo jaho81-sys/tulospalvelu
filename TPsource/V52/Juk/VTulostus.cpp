@@ -1783,6 +1783,8 @@ static INT naytatulos(kilptietue *kilp, tulostusparamtp *tulprm, int osuus, INT 
 						}
 					woas[oasl] = 0;
 					elimwz(woas);
+					liita_sija_suluissa(woas, whksj);
+					whksj[0] = 0;
 					}
 				else {
 					osuustlsst(kilp, tulprm, osuus, woas, 12);
@@ -2080,11 +2082,12 @@ static INT texttulos(kilptietue *kilp, tulostusparamtp *tulprm, int osuus, INT s
 					if (osuus > 0 && (kilp->Maali(osuus-1, va) !=
 						TMAALI0 || kilp->ostiet[osuus].ylahto != TMAALI0)) {
 						AIKATOWSTRS(woas, osuustulos(kilp,osuus,0),0);
-						if (fld[F_OSASJ].len)
-							_itow(kilp->ostiet[osuus].ossija, whksj, 10);
+						_itow(kilp->ostiet[osuus].ossija, whksj, 10);
 						}
 					woas[oasl] = 0;
 					elimwz(woas);
+					liita_sija_suluissa(woas, whksj);
+					whksj[0] = 0;
 					}
 				else {
 					osuustlsst(kilp, tulprm, osuus, woas, 58);
@@ -2242,11 +2245,12 @@ static INT htmltulos(kilptietue *kilp, tulostusparamtp *tulprm, int osuus, INT s
 				if (osuus > 0 && (kilp->Maali(osuus-1, va) !=
 					TMAALI0 || kilp->ostiet[osuus].ylahto != TMAALI0)) {
 					AIKATOWSTRS(woas, osuustulos(kilp,osuus,0),0);
-					if (fld[F_OSASJ].len)
-						_itow(kilp->ostiet[osuus].ossija, whksj, 10);
+					_itow(kilp->ostiet[osuus].ossija, whksj, 10);
 					}
 				woas[oasl] = 0;
 				elimwz(woas);
+				liita_sija_suluissa(woas, whksj);
+				whksj[0] = 0;
 				}
 			else {
 				osuustlsst(kilp, tulprm, osuus, woas, 58);
@@ -2403,11 +2407,12 @@ static INT prttulos(kilptietue *kilp, tulostusparamtp *tulprm, int osuus, INT sj
 					if (osuus > 0 && (kilp->Maali(osuus-1, va) !=
 						TMAALI0 || kilp->ostiet[osuus].ylahto != TMAALI0)) {
 						AIKATOWSTRS(woas, osuustulos(kilp,osuus,0),0);
-						if (fld[F_OSASJ].len)
-							_itow(kilp->ostiet[osuus].ossija, whksj, 10);
+						_itow(kilp->ostiet[osuus].ossija, whksj, 10);
 						}
 					woas[oasl] = 0;
 					elimwz(woas);
+					liita_sija_suluissa(woas, whksj);
+					whksj[0] = 0;
 					}
 				else {
 					osuustlsst(kilp, tulprm, osuus, woas, 58);
@@ -2851,17 +2856,14 @@ static int htmlkaikkitiivis(kilptietue *kilp, tulostusparamtp *tulprm, int sj)
 static int htmlkaikki_osrivi(kilptietue *kilp, tulostusparamtp *tulprm, int sj,
 	FldFrmtTp *fld, int (*kntjrj_2)[3], int n_knt, int osuus, int yosuus, int &khfl)
 {
-   wchar_t as[26], oas[16], st[80], stsj[20] = L"", st1[80], st2[20], *class_str = L" ";
+   wchar_t as[40], oas[40], st[80], stsj[20] = L"", st1[80], st2[20], *class_str = L" ";
 
 	wmemset(oas, L' ',kilpparam.laika2);
 	stsj[0] = 0;
 	st1[0] = 0;
 	st2[0] = 0;
 	as[0] = 0;
-	if (!tulprm->piilotatulos && fld[F_OSASJ].len) {
-		st2[0] = L' ';
-		st2[1] = 0;
-		}
+	st2[0] = 0;
 	if (kilpparam.alalaji == L'D') {
 		if (kilp->Maali(0, 0) == TMAALI0)
 		_itow(kilp->ostiet[osuus].badge[0], as, 10);
@@ -2882,7 +2884,7 @@ static int htmlkaikki_osrivi(kilptietue *kilp, tulostusparamtp *tulprm, int sj,
 					oas[kilpparam.laika2] = 0;
 					elimwz(oas);
 					}
-				if (!tulprm->piilotasijat && kilpparam.maxnosuus == 1 && fld[F_OSASJ].len) {
+				if (!tulprm->piilotasijat && kilpparam.maxnosuus == 1) {
 					_itow(kilp->osSija(osuus), st2, 10);
 					}
 				}
@@ -2933,21 +2935,24 @@ static int htmlkaikki_osrivi(kilptietue *kilp, tulostusparamtp *tulprm, int sj,
 					swprintf(st, L"Leg %s", wosuuskoodi(kilp->sarja, osuus, 0, 0));
 				break;
 			case F_TLS:
-				wcscpy(st, as);
+				os_jk_tulos_str(st, L"", L"", as, stsj);
 				break;
 			case F_SAK:
 				wcscpy(st, st1);
 				break;
 			case F_OSASJ :
-				if (!tulprm->piilotatulos && (osuus || Sarjat[kilp->sarja].nosuus[0] > 1) && !kilpparam.rogaining)
-					wcscpy(st, st2);
 				break;
 			case F_OSATLS :
-				if (!tulprm->piilotatulos && (osuus || Sarjat[kilp->sarja].nosuus[0] > 1) && !kilpparam.rogaining)
-					wcscpy(st, oas);
+				if (!tulprm->piilotatulos && (osuus || Sarjat[kilp->sarja].nosuus[0] > 1) && !kilpparam.rogaining) {
+					if (fld[F_TLS].akt & 1)
+						os_jk_tulos_str(st, oas, st2, L"", L"");
+					else
+						os_jk_tulos_str(st, oas, st2, as, stsj);
+					}
+				else if (!tulprm->piilotatulos && !(fld[F_TLS].akt & 1))
+					os_jk_tulos_str(st, L"", L"", as, stsj);
 				break;
 			case F_VSJ:
-				wcscpy(st, stsj);
 				break;
 			case F_NIMI:
 				opt = tulprm->tulmuot.etusuku == -1 ? 1 : 0;
@@ -3232,7 +3237,15 @@ static int prtkaikki(kilptietue *kilp, tulostusparamtp *tulprm, int sj)
 				swprintf(st, L"%d laps", oluku);
 			else
 				swprintf(st, L"%d kierrosta", oluku);
-			putfld(tulprm, st, fld[F_OSATLS].pos, fld[F_OSATLS].len, fld[F_OSATLS].oik,0);
+			if (fld[F_OSATLS].pos != fld[F_TLS].pos)
+				putfld(tulprm, st, fld[F_OSATLS].pos, fld[F_OSATLS].len, fld[F_OSATLS].oik,0);
+			else if (as[0]) {
+				wchar_t tmp[80];
+				swprintf(tmp, L"%s %s", st, as);
+				wcscpy(as, tmp);
+				}
+			else
+				wcscpy(as, st);
 			}
 		putfld(tulprm, as, fld[F_TLS].pos, fld[F_TLS].len, fld[F_TLS].oik,0);
 //#ifdef FIS
@@ -3317,12 +3330,7 @@ static int prtkaikki(kilptietue *kilp, tulostusparamtp *tulprm, int sj)
 			}
 		st[0] = 0;
 		st1[0] = 0;
-		if (fld[F_OSASJ].len) {
-			st2[0] = L' ';
-			st2[1] = 0;
-			}
-		else
-			st2[0] = 0;
+		st2[0] = 0;
 		if (kilpparam.alalaji == L'D') {
 			if (kilp->Maali(0, 0) == TMAALI0)
 			_itow(kilp->ostiet[osuus].badge[0], as, 10);
@@ -3343,7 +3351,7 @@ static int prtkaikki(kilptietue *kilp, tulostusparamtp *tulprm, int sj)
 						oas[kilpparam.laika2] = 0;
 						elimwz(oas);
 						}
-					if (!tulprm->piilotasijat && kilpparam.maxnosuus == 1 && fld[F_OSASJ].len) {
+					if (!tulprm->piilotasijat && kilpparam.maxnosuus == 1) {
 						_itow(kilp->osSija(osuus), st2, 10);
 						}
 					}
@@ -3387,15 +3395,15 @@ static int prtkaikki(kilptietue *kilp, tulostusparamtp *tulprm, int sj)
 				st1[0] = 0;
 				}
 			if ((osuus || Sarjat[kilp->sarja].nosuus[0] > 1) && !kilpparam.rogaining) {
-				putfld(tulprm, oas, fld[F_OSATLS].pos, fld[F_OSATLS].len, fld[F_OSATLS].oik, 0);
-				if (st2[0])
-					putfld(tulprm, st2, fld[F_OSASJ].pos, fld[F_OSASJ].len, fld[F_OSASJ].oik, 0);
+				os_jk_tulos_str(st1, oas, st2, as, st);
+				putfld(tulprm, st1, fld[F_OSATLS].pos, fld[F_OSATLS].len, fld[F_OSATLS].oik, 0);
 				}
-			if (kilpparam.rogaining && osuus)
+			else if (kilpparam.rogaining && osuus)
 				putfld(tulprm, oas, fld[F_TLS].pos, fld[F_TLS].len, fld[F_TLS].oik, 0);
-			else
-				putfld(tulprm, as, fld[F_TLS].pos, fld[F_TLS].len, fld[F_TLS].oik, 0);
-			putfld(tulprm, st, fld[F_VSJ].pos, fld[F_VSJ].len, fld[F_VSJ].oik, 0);
+			else {
+				os_jk_tulos_str(st1, L"", L"", as, st);
+				putfld(tulprm, st1, fld[F_OSATLS].pos, fld[F_OSATLS].len, fld[F_OSATLS].oik, 0);
+				}
 			endline(tulprm, 0);
 			nr++;
 			}

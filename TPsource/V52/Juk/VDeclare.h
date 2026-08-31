@@ -105,6 +105,10 @@ void prop_sulj(kilptietue *kilp, int osuus);
 void haesija(kilptietue *kilp, int osuus, INT piste, INT yhd, int *keskeyta);
 INT intsija(__int64 tl, INT *p, int osuus, INT piste, INT yhd, int *keskeyta);
 int psija(int kno, int srj, int os, int va);
+int tuloskentta_ok(const wchar_t *s);
+void liita_sija_suluissa(wchar_t *aika, const wchar_t *sija);
+void os_jk_tulos_str(wchar_t *dst, const wchar_t *osaika, const wchar_t *ossija,
+	const wchar_t *jkaika, const wchar_t *jksija);
 void merk_kilp_yl(kilptietue *kilp, int osuus);
 void merk_yl(kilptietue *kilp);
 void merk_yht_lahdot(int srj, bool nayta);

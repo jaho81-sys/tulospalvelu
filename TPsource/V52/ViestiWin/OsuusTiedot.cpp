@@ -140,7 +140,29 @@ void __fastcall TFormOsuus::naytaTiedot(void)
 		 }
 		tl = osuustulos(&kilp, os, 0);
 		aikatowstr_cols_n(line, tl, 0, 0, laika);
+		{
+		wchar_t sjst[16];
+		int ossj = psija(kilp.kilpno, kilp.sarja, os, kilpparam.maxvaluku+1);
+		if (ossj > 0) {
+			_itow(ossj, sjst, 10);
+			liita_sija_suluissa(line, sjst);
+			}
+		}
 		OsTls->Text = line;
+		{
+		wchar_t tln[80];
+		int jksj;
+		wcsncpy(tln, Tulos->Text.c_str(), 79);
+		tln[79] = 0;
+		jksj = psija(kilp.kilpno, kilp.sarja, os, 0);
+		if (jksj > 0 && tuloskentta_ok(tln) && tln[0] != L'K' && tln[0] != L'H' &&
+			tln[0] != L'S' && tln[0] != L'E') {
+			wchar_t sjst[16];
+			_itow(jksj, sjst, 10);
+			liita_sija_suluissa(tln, sjst);
+			Tulos->Text = tln;
+			}
+		}
 		Sija->Text = psija(kilp.kilpno, kilp.sarja, os, 0);
 		OsSija->Text = psija(kilp.kilpno, kilp.sarja, os, kilpparam.maxvaluku+1);
 		Ekoodi->Text = kilp.ostiet[os].badge[0];

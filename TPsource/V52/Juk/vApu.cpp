@@ -346,6 +346,49 @@ void asetaEraLahto(int era, int aika)
 	LeaveCriticalSection(&tall_CriticalSection);
 }
 
+int tuloskentta_ok(const wchar_t *s)
+{
+	return s && s[0] && s[0] != L' ';
+}
+
+void liita_sija_suluissa(wchar_t *aika, const wchar_t *sija)
+{
+	if (!tuloskentta_ok(aika) || !tuloskentta_ok(sija))
+		return;
+	if (sija[0] == L'0' && sija[1] == 0)
+		return;
+	wcscat(aika, L" (");
+	wcscat(aika, sija);
+	wcscat(aika, L")");
+}
+
+void os_jk_tulos_str(wchar_t *dst, const wchar_t *osaika, const wchar_t *ossija,
+	const wchar_t *jkaika, const wchar_t *jksija)
+{
+	wchar_t a[48], b[48];
+
+	a[0] = 0;
+	b[0] = 0;
+	dst[0] = 0;
+	if (tuloskentta_ok(osaika)) {
+		wcscpy(a, osaika);
+		liita_sija_suluissa(a, ossija);
+		}
+	if (tuloskentta_ok(jkaika)) {
+		wcscpy(b, jkaika);
+		liita_sija_suluissa(b, jksija);
+		}
+	if (a[0] && b[0]) {
+		wcscpy(dst, a);
+		wcscat(dst, L"  ");
+		wcscat(dst, b);
+		}
+	else if (a[0])
+		wcscpy(dst, a);
+	else if (b[0])
+		wcscpy(dst, b);
+}
+
 int psija(int kno, int srj, int os, int va)
    {
    int  sj,d,nt, p, yhd = 0;
