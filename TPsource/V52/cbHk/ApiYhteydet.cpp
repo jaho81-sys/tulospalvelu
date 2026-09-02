@@ -17,12 +17,49 @@ TFormApiYhteydet *FormApiYhteydet;
 
 apiconfigtp apiconfig;
 
-static UnicodeString ConfigPolku(void)
+static UnicodeString PolkuKansioon(UnicodeString dir)
+{
+	if (dir.IsEmpty())
+		return dir;
+	wchar_t last = dir[dir.Length()];
+	if (last != L'\\' && last != L'/')
+		dir += L"\\";
+	return dir;
+}
+
+UnicodeString ApiConfigExePolku(void)
 {
 	wchar_t buf[MAX_PATH];
 	GetModuleFileNameW(NULL, buf, MAX_PATH);
-	UnicodeString dir = ExtractFilePath(UnicodeString(buf));
-	return dir + L"jahonline_api.ini";
+	return PolkuKansioon(ExtractFilePath(UnicodeString(buf))) + L"jahonline_api.ini";
+}
+
+UnicodeString ApiConfigPolku(void)
+{
+	return PolkuKansioon(GetCurrentDir()) + L"jahonline_api.ini";
+}
+
+static void ApiConfigLueTiedostosta(const UnicodeString& polku)
+{
+	wchar_t tmp[512];
+	GetPrivateProfileStringW(L"jahonline", L"url", apiconfig.apiUrl, tmp, 512, polku.c_str());
+	wcsncpy(apiconfig.apiUrl, tmp, sizeof(apiconfig.apiUrl)/2 - 1);
+	apiconfig.apiUrl[sizeof(apiconfig.apiUrl)/2 - 1] = 0;
+	GetPrivateProfileStringW(L"jahonline", L"api_key", L"", tmp, 512, polku.c_str());
+	wcsncpy(apiconfig.apiKey, tmp, sizeof(apiconfig.apiKey)/2 - 1);
+	apiconfig.apiKey[sizeof(apiconfig.apiKey)/2 - 1] = 0;
+	apiconfig.apiPort = GetPrivateProfileIntW(L"jahonline", L"port", 0, polku.c_str());
+	apiconfig.kilpailuId = GetPrivateProfileIntW(L"jahonline", L"kilpailu_id", 0, polku.c_str());
+	apiconfig.lahetysvali = GetPrivateProfileIntW(L"jahonline", L"vali", 10, polku.c_str());
+	apiconfig.lahetaKilpailijat = GetPrivateProfileIntW(L"jahonline", L"laheta_kilpailijat", 1, polku.c_str());
+	apiconfig.vastaanottaKilpailijat = GetPrivateProfileIntW(L"jahonline", L"vastaanotta_kilpailijat", 1, polku.c_str());
+	apiconfig.lahetaValiajat = GetPrivateProfileIntW(L"jahonline", L"laheta_valiajat", 1, polku.c_str());
+	apiconfig.vastaanottaValiajat = GetPrivateProfileIntW(L"jahonline", L"vastaanotta_valiajat", 1, polku.c_str());
+	apiconfig.lahetaTulokset = GetPrivateProfileIntW(L"jahonline", L"laheta_tulokset", 1, polku.c_str());
+	apiconfig.vastaanottaEiLahteneet = GetPrivateProfileIntW(L"jahonline", L"vastaanotta_dns", 1, polku.c_str());
+	apiconfig.kaynnissa = GetPrivateProfileIntW(L"jahonline", L"kaynnissa", 0, polku.c_str());
+	if (apiconfig.lahetysvali < 2)
+		apiconfig.lahetysvali = 2;
 }
 
 void ApiConfigNollaa(void)
@@ -43,32 +80,21 @@ void ApiConfigNollaa(void)
 void ApiConfigLataa(void)
 {
 	ApiConfigNollaa();
-	UnicodeString polku = ConfigPolku();
+	UnicodeString polku = ApiConfigPolku();
+	UnicodeString exe = ApiConfigExePolku();
+	if (!FileExists(polku) && polku.CompareIC(exe) != 0 && FileExists(exe)) {
+		CopyFileW(exe.c_str(), polku.c_str(), TRUE);
+		if (!FileExists(polku))
+			polku = exe;
+	}
 	if (!FileExists(polku))
 		return;
-
-	wchar_t tmp[512];
-	GetPrivateProfileStringW(L"jahonline", L"url", apiconfig.apiUrl, tmp, 512, polku.c_str());
-	wcsncpy(apiconfig.apiUrl, tmp, sizeof(apiconfig.apiUrl)/2 - 1);
-	GetPrivateProfileStringW(L"jahonline", L"api_key", L"", tmp, 512, polku.c_str());
-	wcsncpy(apiconfig.apiKey, tmp, sizeof(apiconfig.apiKey)/2 - 1);
-	apiconfig.apiPort = GetPrivateProfileIntW(L"jahonline", L"port", 0, polku.c_str());
-	apiconfig.kilpailuId = GetPrivateProfileIntW(L"jahonline", L"kilpailu_id", 0, polku.c_str());
-	apiconfig.lahetysvali = GetPrivateProfileIntW(L"jahonline", L"vali", 10, polku.c_str());
-	apiconfig.lahetaKilpailijat = GetPrivateProfileIntW(L"jahonline", L"laheta_kilpailijat", 1, polku.c_str());
-	apiconfig.vastaanottaKilpailijat = GetPrivateProfileIntW(L"jahonline", L"vastaanotta_kilpailijat", 1, polku.c_str());
-	apiconfig.lahetaValiajat = GetPrivateProfileIntW(L"jahonline", L"laheta_valiajat", 1, polku.c_str());
-	apiconfig.vastaanottaValiajat = GetPrivateProfileIntW(L"jahonline", L"vastaanotta_valiajat", 1, polku.c_str());
-	apiconfig.lahetaTulokset = GetPrivateProfileIntW(L"jahonline", L"laheta_tulokset", 1, polku.c_str());
-	apiconfig.vastaanottaEiLahteneet = GetPrivateProfileIntW(L"jahonline", L"vastaanotta_dns", 1, polku.c_str());
-	apiconfig.kaynnissa = GetPrivateProfileIntW(L"jahonline", L"kaynnissa", 0, polku.c_str());
-	if (apiconfig.lahetysvali < 2)
-		apiconfig.lahetysvali = 2;
+	ApiConfigLueTiedostosta(polku);
 }
 
 void ApiConfigTallenna(void)
 {
-	UnicodeString polku = ConfigPolku();
+	UnicodeString polku = ApiConfigPolku();
 	WritePrivateProfileStringW(L"jahonline", L"url", apiconfig.apiUrl, polku.c_str());
 	WritePrivateProfileStringW(L"jahonline", L"api_key", apiconfig.apiKey, polku.c_str());
 	WritePrivateProfileStringW(L"jahonline", L"port", IntToStr(apiconfig.apiPort).c_str(), polku.c_str());
@@ -257,6 +283,7 @@ void __fastcall TFormApiYhteydet::FormShow(TObject *Sender)
 {
 	ApiConfigLataa();
 	LueTiedot();
+	PaivitaTila(L"Asetukset: " + ApiConfigPolku());
 	PaivitaTila(L"Asetukset ladattu. Testaa yhteys Bearer-pingillä.");
 }
 
@@ -281,6 +308,8 @@ void __fastcall TFormApiYhteydet::LueTiedot(void)
 		LabelYhteysTila->Caption = L"EI AKTIIVINEN";
 		LabelYhteysTila->Font->Color = clRed;
 	}
+	if (LabelIniPolku)
+		LabelIniPolku->Caption = L"Asetustiedosto (kilpailun kansio):\r\n" + ApiConfigPolku();
 }
 
 void __fastcall TFormApiYhteydet::KirjoitaTiedot(void)
@@ -403,6 +432,8 @@ void __fastcall TFormApiYhteydet::BtnOhjeClick(TObject *Sender)
 		L"Online-rasti / ajanotto → action=tapahtuma (piste, aika_sec)\n"
 		L"ViestiWin: sama protokolla + kenttä osuus (1-pohjainen).\n"
 		L"Emit-luenta merkitsee lähtijän läsnäolevaksi ja synkkaa heti.\n"
+		L"Asetukset tallennetaan kilpailun kansion jahonline_api.ini -tiedostoon\n"
+		L"ja luetaan sieltä, kun kilpailu avataan.\n"
 		L"Auth: Authorization: Bearer <api_token>\n"
 	);
 }
@@ -415,9 +446,8 @@ void __fastcall TFormApiYhteydet::BtnOKClick(TObject *Sender)
 {
 	KirjoitaTiedot();
 	ApiConfigTallenna();
-	if (apiconfig.kaynnissa)
-		TApiIntegration::GetInstance()->Alusta();
-	PaivitaTila(L"Asetukset tallennettu.");
+	TApiIntegration::GetInstance()->Alusta();
+	PaivitaTila(L"Asetukset tallennettu: " + ApiConfigPolku());
 	Close();
 }
 

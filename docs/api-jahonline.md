@@ -153,7 +153,10 @@ Viesti (osuus 1-pohjainen JSON:ssa, 0-pohjainen Pirilässä):
    (ei odota `lahetysvali`-väliä)
 7. Live-väliajat: rastileima ajanotossa → `tapahtuma` heti
 
-Asetukset tallentuvat: `jahonline_api.ini` (exe-kansion viereen).
+Asetukset tallentuvat kilpailun kansioon: `jahonline_api.ini`.
+Tiedosto luetaan automaattisesti, kun kilpailu avataan (`Initialisoi`).
+Jos kilpailun kansiossa ei ole tiedostoa, vanha exe-kansion `jahonline_api.ini`
+kopioidaan sinne ensimmäisellä avauksella.
 
 ## Toteutustiedostot
 

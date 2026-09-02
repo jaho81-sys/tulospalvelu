@@ -27,8 +27,10 @@ lähettää tiedon heti nettiin.
 7. **Hae kilpailijat nyt** vain jos netistä pitää tuoda päivityksiä takaisin
    paikalliseen `KILP.DAT`-kantaan.
 
-Asetukset tallentuvat tiedostoon `jahonline_api.ini` ohjelman exe-kansion viereen.
-Salaisuuksia ei tarvitse asettaa muualle.
+Asetukset tallentuvat tiedostoon `jahonline_api.ini` **kilpailun kansioon**
+(sama hakemisto kuin `laskenta.cfg` / `KILP.DAT`). Tiedosto luetaan, kun
+kilpailu avataan. Jos kansiossa ei ole tiedostoa, vanha exe-kansion ini
+kopioidaan sinne.
 
 ## Läsnäolo emit-luennasta
 

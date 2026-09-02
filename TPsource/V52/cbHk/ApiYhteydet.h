@@ -50,6 +50,7 @@ __published:
 	TButton *BtnLahetaNyt;
 	TButton *BtnHaeNyt;
 	TLabel *LabelYhteysTila;
+	TLabel *LabelIniPolku;
 
 	TCheckBox *CBLahetaKilpailijat;
 	TCheckBox *CBVastaanottaKilpailijat;
@@ -99,6 +100,8 @@ extern PACKAGE apiconfigtp apiconfig;
 void ApiConfigNollaa(void);
 void ApiConfigLataa(void);
 void ApiConfigTallenna(void);
+UnicodeString ApiConfigPolku(void);
+UnicodeString ApiConfigExePolku(void);
 UnicodeString ApiBridgeUrl(void);
 bool ApiHttpPostJson(const UnicodeString& url, const UnicodeString& jsonBody, UnicodeString& vastaus);
 bool ApiHttpGetAuth(const UnicodeString& url, UnicodeString& vastaus);

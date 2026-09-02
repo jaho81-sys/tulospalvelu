@@ -287,6 +287,7 @@ void __fastcall TFormMain::Initialisoi(wchar_t *kilphak, wchar_t *cfgflnm)
 			luetapahtumat();
 		}
 	setBrowserEmulation();
+	ApiVIntegration::KilpailuAvattu();
 }
 //---------------------------------------------------------------------------
 
@@ -545,19 +546,6 @@ void LukumaaratTh(LPVOID lpCn)
 
 void __fastcall TFormMain::onShow(TObject *Sender)
 {
-	ApiVIntegration::Alusta();
-/*
-   static int init;
-
-	if (!init) {
-		aloitus(_argc, _argv);
-		if (alkulayout[0])
-			HaeIkkunat(GetCurrentDir()+UnicodeString("\\")+alkulayout);
-		lkmThreadOn = 1;
-		hLkmThread = _beginthread(LukumaaratTh, 20480, 0);
-		}
-	init = 1;
-*/
 }
 //---------------------------------------------------------------------------
 

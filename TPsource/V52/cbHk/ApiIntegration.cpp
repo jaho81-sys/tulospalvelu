@@ -29,7 +29,7 @@ TApiIntegration* gApiIntegration = NULL;
 
 //---------------------------------------------------------------------------
 TApiIntegration::TApiIntegration()
-	: pSaike(NULL), onAloitettu(false)
+	: pSaike(NULL), onAloitettu(false), kilpailuAvattu(false)
 {
 }
 
@@ -54,21 +54,29 @@ void TApiIntegration::Alusta(void)
 {
 	if (onAloitettu)
 		return;
+	if (!kilpailuAvattu)
+		return;
 
 	try {
-		ApiConfigLataa();
-		// Luo ja käynnistä API-säie
 		pSaike = new TApiSaike(true);
 		if (pSaike) {
+			pSaike->FreeOnTerminate = false;
 			pSaike->Resume();
 			onAloitettu = true;
 		}
 	} catch (...) {
 		onAloitettu = false;
+		pSaike = NULL;
 	}
 }
 
-//---------------------------------------------------------------------------
+void TApiIntegration::KilpailuAvattu(void)
+{
+	kilpailuAvattu = true;
+	ApiConfigLataa();
+	Alusta();
+}
+
 void TApiIntegration::Lopeta(void)
 {
 	if (!onAloitettu || !pSaike)

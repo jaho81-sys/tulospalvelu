@@ -13,8 +13,8 @@
 //    #include "ApiHkIntegration.h"
 // 3. Lisää WinHk.h:n julkisiin metodeihin:
 //    void __fastcall ApiSettingsClick(TObject *Sender);
-// 4. Lisää WinHk.cpp:n FormShow-funktioon:
-//    TApiIntegration::GetInstance()->Alusta();
+// 4. Lisää WinHk.cpp:n Initialisoi-funktioon (kilpailu auki):
+//    TApiIntegration::GetInstance()->KilpailuAvattu();
 // 5. Lisää WinHk.cpp:n FormClose-funktioon:
 //    TApiIntegration::GetInstance()->Lopeta();
 
@@ -38,6 +38,12 @@ namespace ApiHkIntegration
 	inline void Alusta()
 	{
 		TApiIntegration::GetInstance()->Alusta();
+	}
+
+	// Lataa jahonline_api.ini kilpailun kansiosta ja käynnistä säie
+	inline void KilpailuAvattu()
+	{
+		TApiIntegration::GetInstance()->KilpailuAvattu();
 	}
 	
 	// API-säikeen pysäyttäminen
