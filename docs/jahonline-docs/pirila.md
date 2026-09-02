@@ -87,6 +87,7 @@ siirto-ohjelmaa.
 | Emit-rastit | rastiväliajat-näkymä, vain maalissa olevilta |
 | Läsnä / DNS / DNF / DSQ | `lasna` + `status` (`LASNA` / `OK` / `DNS` / `DNF` / `DSQ`) |
 | Lähtöaika | `lahto_aika` / `pirila_lahto_at` / `lahto_sec` → `kilpailijat` + sarjan `lahdot` |
+| Maaliaika | `aika_sec` = tuloksen sekunnit (45:00 → 2700), ei Pirilän ms-tikkejä |
 
 ## Seuranta / tulokset
 

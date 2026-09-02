@@ -128,6 +128,25 @@ static UnicodeString ApiLahtoKentat(INT32 tl)
 		+ L",\"lahto_sec\":" + IntToStr(sec);
 }
 
+// JAHOnline aika_sec = whole seconds of race result.
+// Pirilä stores times as ticks (SEK = 1000 ms). Do not send ticks as aika_sec.
+static int ApiTulosSec(INT32 tl)
+{
+	if (tl <= 0 || tl == TMAALI0)
+		return 0;
+	return (int)(tl / SEK);
+}
+
+static INT32 ApiSecToTicks(__int64 sec)
+{
+	if (sec <= 0)
+		return 0;
+	// Values this large are leftover Pirilä ticks, not seconds.
+	if (sec >= (__int64)100000)
+		return (INT32)sec;
+	return (INT32)(sec * (__int64)SEK);
+}
+
 static INT32 ApiKilpailijanLahto(kilptietue& kilp, int ipv)
 {
 	INT32 tl = kilp.TLahto(ipv);
@@ -165,10 +184,13 @@ static UnicodeString ApiKilpailijaObj(kilptietue& kilp, int ipv)
 			INT32 va = kilp.pv[ipv].va[p].vatulos;
 			if (va <= 0)
 				continue;
+			int vsec = ApiTulosSec(va);
+			if (vsec <= 0)
+				continue;
 			if (!vfirst) valia += L",";
 			vfirst = false;
 			valia += L"{\"piste\":" + IntToStr(p)
-				+ L",\"aika_sec\":" + IntToStr((int)va)
+				+ L",\"aika_sec\":" + IntToStr(vsec)
 				+ L",\"sija\":" + IntToStr((int)kilp.pv[ipv].va[p].vasija)
 				+ L"}";
 		}
@@ -190,10 +212,13 @@ static UnicodeString ApiKilpailijaObj(kilptietue& kilp, int ipv)
 	arr += L",\"lasna\":" + ApiJsonBool(onLasna);
 	arr += L",\"status\":" + ApiJsonString(StatusMerkki(tark, onLasna, tls > 0));
 	arr += L",\"keskhyl\":" + ApiJsonString(UnicodeString(tark));
-	if (tls > 0)
-		arr += L",\"aika_sec\":" + IntToStr((int)tls);
-	else
-		arr += L",\"aika_sec\":null";
+	{
+		int tsec = ApiTulosSec(tls);
+		if (tsec > 0)
+			arr += L",\"aika_sec\":" + IntToStr(tsec);
+		else
+			arr += L",\"aika_sec\":null";
+	}
 	INT16 sija = 0;
 	if (kilp.pv)
 		sija = kilp.pv[ipv].ysija;
@@ -327,7 +352,7 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 						kilp.set_tark(L'-', ipv);
 				}
 				if (aikaSec >= 0)
-					kilp.tall_tulos_pv(aikaSec, ipv, 0);
+					kilp.tall_tulos_pv(ApiSecToTicks(aikaSec), ipv, 0);
 				{
 					UnicodeString lahtoAika;
 					if (ApiJsonFindString(o, L"lahto_aika", lahtoAika) && !lahtoAika.IsEmpty())
@@ -346,7 +371,7 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 							if (piste > 60)
 								continue;
 							if (ApiJsonFindInt64(vas[v], L"aika_sec", va64) && va64 > 0)
-								kilp.pv[ipv].va[piste].vatulos = (INT32)va64;
+								kilp.pv[ipv].va[piste].vatulos = ApiSecToTicks(va64);
 							if (ApiJsonFindInt(vas[v], L"sija", vasija) && vasija >= 0)
 								kilp.pv[ipv].va[piste].vasija = (INT16)vasija;
 						}
@@ -433,6 +458,9 @@ void ApiIlmoitaTapahtuma(int kilpno, int piste, int aikaSec)
 		return;
 	if (!apiconfig.lahetaValiajat && piste != 0)
 		return;
+	int tsec = ApiTulosSec(aikaSec);
+	if (tsec <= 0)
+		return;
 
 	TapJonoAlusta();
 	EnterCriticalSection(&tapJonoCS);
@@ -440,7 +468,7 @@ void ApiIlmoitaTapahtuma(int kilpno, int piste, int aikaSec)
 		ApiTapahtuma t;
 		t.numero = kilpno;
 		t.piste = piste;
-		t.aikaSec = aikaSec;
+		t.aikaSec = tsec;
 		tapJono[tapJonoN++] = t;
 	}
 	LeaveCriticalSection(&tapJonoCS);
