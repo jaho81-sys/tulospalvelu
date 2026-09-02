@@ -17,6 +17,11 @@ namespace ApiVIntegration
 		TApiIntegration::GetInstance()->Alusta();
 	}
 
+	inline void KilpailuAvattu()
+	{
+		TApiIntegration::GetInstance()->KilpailuAvattu();
+	}
+
 	inline void Lopeta()
 	{
 		TApiIntegration::GetInstance()->Lopeta();

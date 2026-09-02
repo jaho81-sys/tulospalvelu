@@ -24,8 +24,8 @@ Lähdekoodi: [jaho81-sys/tulospalvelu](https://github.com/jaho81-sys/tulospalvel
 6. **Hae kilpailijat nyt** vain jos netistä pitää tuoda päivityksiä takaisin
    `KILP.DAT`:iin.
 
-Asetukset tallentuvat tiedostoon `jahonline_api.ini` ohjelman exe-kansion
-viereen.
+Asetukset tallentuvat tiedostoon `jahonline_api.ini` **kilpailun kansioon**.
+Tiedosto luetaan, kun kilpailu avataan.
 
 Suunnistuksessa osanottajat elävät Pirilässä (IRMA / CSV / käsin). JAHOnline
 näyttää ne synkan jälkeen — erillistä ilmoittautumislomaketta ei käytetä.

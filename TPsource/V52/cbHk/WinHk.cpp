@@ -381,6 +381,7 @@ void __fastcall TFormMain::Initialisoi(wchar_t *kilphak, wchar_t *cfgflnm)
 	if (DeveloperMode) {
 		Tulostaulut1->Visible = true;
 	}
+	ApiHkIntegration::KilpailuAvattu();
 }
 //---------------------------------------------------------------------------
 
@@ -2235,7 +2236,6 @@ void __fastcall TFormMain::Sakkokierrostenseuranta1Click(TObject *Sender)
 void __fastcall TFormMain::FormShow(TObject *Sender)
 {
 	Refresh();
-	ApiHkIntegration::Alusta();
 }
 //---------------------------------------------------------------------------
 

@@ -31,6 +31,7 @@ private:
 	static TApiIntegration* pInstance;
 	TApiSaike* pSaike;
 	bool onAloitettu;
+	bool kilpailuAvattu;
 	
 public:
 	TApiIntegration();
@@ -41,6 +42,7 @@ public:
 	// Lifecycle methods
 	void Alusta(void);
 	void Lopeta(void);
+	void KilpailuAvattu(void);
 	
 	// Query methods
 	bool OnAktiivinen(void) const { return onAloitettu && pSaike != NULL; }

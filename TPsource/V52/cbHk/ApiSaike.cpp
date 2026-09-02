@@ -58,14 +58,12 @@ static int ApiIpv(void)
 __fastcall TApiSaike::TApiSaike(bool CreateSuspended)
 	: TThread(CreateSuspended), pysaytysPyynnon(false), viiveMs(10000)
 {
-	Priority = tpLower;
 	FreeOnTerminate = false;
 }
 
 __fastcall TApiSaike::~TApiSaike(void)
 {
-	PyynnoPysaytys();
-	WaitFor();
+	pysaytysPyynnon = true;
 }
 
 void TApiSaike::PyynnoPysaytys(void)
@@ -216,6 +214,9 @@ UnicodeString ApiRakennaKilpailijatJson(void)
 	bool first = true;
 	int ipv = ApiIpv();
 
+	if (nrec < 2)
+		return UnicodeString(L"[]");
+
 	for (int d = 1; d < nrec; d++) {
 		kilptietue kilp;
 		kilp.GETREC(d);
@@ -239,6 +240,8 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 	std::vector<UnicodeString> objs;
 	int n = ApiJsonExtractObjectArray(json, L"kilpailijat", objs);
 	if (n <= 0)
+		return 0;
+	if (nrec < 2)
 		return 0;
 
 	int ipv = 0;
@@ -523,6 +526,8 @@ static int ApiSynkkaaJonosta(void)
 	LeaveCriticalSection(&lasnaJonoCS);
 	if (n <= 0)
 		return 0;
+	if (nrec < 2)
+		return 0;
 	if (apiconfig.kilpailuId <= 0 || apiconfig.apiKey[0] == 0)
 		return -1;
 
@@ -564,6 +569,8 @@ void __fastcall TApiSaike::Kasittele(void)
 {
 	if (!apiconfig.kaynnissa)
 		return;
+	if (nrec < 2)
+		return;
 
 	if (apiconfig.lahetaKilpailijat || apiconfig.lahetaTulokset || apiconfig.lahetaValiajat) {
 		int n = ApiSynkkaaLahetaKaikki();
@@ -592,7 +599,6 @@ void __fastcall TApiSaike::Kasittele(void)
 
 void __fastcall TApiSaike::Execute(void)
 {
-	ApiConfigLataa();
 	while (!pysaytysPyynnon) {
 		viiveMs = apiconfig.lahetysvali * 1000;
 		if (viiveMs < 2000)

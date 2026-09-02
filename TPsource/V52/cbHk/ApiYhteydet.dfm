@@ -65,6 +65,15 @@ object FormApiYhteydet: TFormApiYhteydet
         Font.Style = [fsBold]
         ParentFont = False
       end
+      object LabelIniPolku: TLabel
+        Left = 16
+        Top = 236
+        Width = 560
+        Height = 36
+        AutoSize = False
+        Caption = 'Asetustiedosto: kilpailun kansio\jahonline_api.ini'
+        WordWrap = True
+      end
       object EditUrl: TEdit
         Left = 16
         Top = 36
