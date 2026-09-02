@@ -443,6 +443,17 @@ void ApiIlmoitaTapahtuma(int kilpno, int piste, int aikaSec)
 	LeaveCriticalSection(&tapJonoCS);
 }
 
+// C wrappers for HkDat.cpp (same signatures as HkDeclare.h; console has empty stubs)
+void api_ilmoita_kilpailija(int kilpno)
+{
+	ApiIlmoitaLasna(kilpno);
+}
+
+void api_ilmoita_tapahtuma(int kilpno, int piste, int aikaSec)
+{
+	ApiIlmoitaTapahtuma(kilpno, piste, aikaSec);
+}
+
 static UnicodeString ApiTapahtumatJson(const ApiTapahtuma* ev, int n)
 {
 	UnicodeString arr = L"[";
@@ -592,8 +603,7 @@ void __fastcall TApiSaike::Execute(void)
 			Sleep(200);
 			if (!pysaytysPyynnon) {
 				ApiSynkkaaJonosta();
-				if (apiconfig.lahetaValiajat)
-					ApiLahetaTapahtumatNyt();
+				ApiLahetaTapahtumatNyt();
 			}
 		}
 	}

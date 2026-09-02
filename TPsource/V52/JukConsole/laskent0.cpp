@@ -36,6 +36,8 @@
 #pragma hdrstop
 
 void addtapahtuma(kilptietue *kilp, int osuus, int piste) {}
+void api_ilmoita_kilpailija(int kilpno) {}
+void api_ilmoita_tapahtuma(int kilpno, int osuus, int piste, int aikaSec) {}
 void paivita_aikanaytto(void) {}
 void sendTestLopetus(void) {}
 
