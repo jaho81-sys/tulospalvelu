@@ -284,7 +284,10 @@ void __fastcall TFormApiYhteydet::FormShow(TObject *Sender)
 	ApiConfigLataa();
 	LueTiedot();
 	PaivitaTila(L"Asetukset: " + ApiConfigPolku());
-	PaivitaTila(L"Asetukset ladattu. Testaa yhteys Bearer-pingillä.");
+	if (!TApiIntegration::GetInstance()->OnKilpailuAvattu())
+		PaivitaTila(L"Kilpailua ei ole avattu — synkkaa ei käynnistetä ennen kuin kisa on auki.");
+	else
+		PaivitaTila(L"Asetukset ladattu. Testaa (ping) käynnistää synkan, Lopeta synkka pysäyttää sen.");
 }
 
 void __fastcall TFormApiYhteydet::LueTiedot(void)
@@ -300,14 +303,7 @@ void __fastcall TFormApiYhteydet::LueTiedot(void)
 	CBLahetaTulokset->Checked = apiconfig.lahetaTulokset != 0;
 	CBVastaanottaEiLahteneet->Checked = apiconfig.vastaanottaEiLahteneet != 0;
 	EditLahetysvali->Text = IntToStr(apiconfig.lahetysvali);
-
-	if (apiconfig.kaynnissa) {
-		LabelYhteysTila->Caption = L"AKTIIVINEN";
-		LabelYhteysTila->Font->Color = clGreen;
-	} else {
-		LabelYhteysTila->Caption = L"EI AKTIIVINEN";
-		LabelYhteysTila->Font->Color = clRed;
-	}
+	NaytaYhteysTila();
 	if (LabelIniPolku)
 		LabelIniPolku->Caption = L"Asetustiedosto (kilpailun kansio):\r\n" + ApiConfigPolku();
 }
@@ -331,6 +327,23 @@ void __fastcall TFormApiYhteydet::KirjoitaTiedot(void)
 		apiconfig.lahetysvali = 2;
 }
 
+void __fastcall TFormApiYhteydet::NaytaYhteysTila(void)
+{
+	bool kay = apiconfig.kaynnissa != 0
+		&& TApiIntegration::GetInstance()->OnAktiivinen()
+		&& TApiIntegration::GetInstance()->OnKilpailuAvattu();
+	if (kay) {
+		LabelYhteysTila->Caption = L"AKTIIVINEN";
+		LabelYhteysTila->Font->Color = clGreen;
+	} else {
+		LabelYhteysTila->Caption = L"EI AKTIIVINEN";
+		LabelYhteysTila->Font->Color = clRed;
+	}
+	if (BtnLopetaSynkka)
+		BtnLopetaSynkka->Enabled = kay
+			|| TApiIntegration::GetInstance()->OnAktiivinen();
+}
+
 void __fastcall TFormApiYhteydet::PaivitaTila(UnicodeString viesti)
 {
 	UnicodeString aika = FormatDateTime(L"hh:nn:ss", Now());
@@ -345,6 +358,13 @@ void __fastcall TFormApiYhteydet::TestaaYhteys(void)
 	KirjoitaTiedot();
 	ApiConfigTallenna();
 
+	if (!TApiIntegration::GetInstance()->OnKilpailuAvattu()) {
+		PaivitaTila(L"VIRHE: avaa kilpailu ensin. Synkkaa ei käynnistetä ilman avattua kisaa.");
+		apiconfig.kaynnissa = 0;
+		ApiConfigTallenna();
+		NaytaYhteysTila();
+		return;
+	}
 	if (apiconfig.kilpailuId <= 0) {
 		PaivitaTila(L"VIRHE: aseta kilpailu_id (JAHOnline)");
 		return;
@@ -361,25 +381,30 @@ void __fastcall TFormApiYhteydet::TestaaYhteys(void)
 
 	if (!ApiHttpPostJson(url, body, vastaus)) {
 		PaivitaTila(L"VIRHE: HTTP-pyyntö epäonnistui");
-		apiconfig.kaynnissa = 0;
-		LabelYhteysTila->Caption = L"EI AKTIIVINEN";
-		LabelYhteysTila->Font->Color = clRed;
+		LopetaSynkka();
 		return;
 	}
 
 	if (ApiJsonStatusOk(vastaus)) {
 		PaivitaTila(L"OK: " + vastaus.SubString(1, 180));
 		apiconfig.kaynnissa = 1;
-		LabelYhteysTila->Caption = L"AKTIIVINEN";
-		LabelYhteysTila->Font->Color = clGreen;
 		ApiConfigTallenna();
 		TApiIntegration::GetInstance()->Alusta();
+		NaytaYhteysTila();
+		PaivitaTila(L"Synkka käynnissä. Lopeta synkka -nappi pysäyttää sen.");
 	} else {
 		PaivitaTila(L"VIRHE vastaus: " + vastaus.SubString(1, 240));
-		apiconfig.kaynnissa = 0;
-		LabelYhteysTila->Caption = L"EI AKTIIVINEN";
-		LabelYhteysTila->Font->Color = clRed;
+		LopetaSynkka();
 	}
+}
+
+void __fastcall TFormApiYhteydet::LopetaSynkka(void)
+{
+	apiconfig.kaynnissa = 0;
+	ApiConfigTallenna();
+	TApiIntegration::GetInstance()->Lopeta();
+	NaytaYhteysTila();
+	PaivitaTila(L"Synkka lopetettu.");
 }
 
 void __fastcall TFormApiYhteydet::BtnYhteysTestiClick(TObject *Sender)
@@ -387,10 +412,20 @@ void __fastcall TFormApiYhteydet::BtnYhteysTestiClick(TObject *Sender)
 	TestaaYhteys();
 }
 
+void __fastcall TFormApiYhteydet::BtnLopetaSynkkaClick(TObject *Sender)
+{
+	KirjoitaTiedot();
+	LopetaSynkka();
+}
+
 void __fastcall TFormApiYhteydet::BtnLahetaNytClick(TObject *Sender)
 {
 	KirjoitaTiedot();
 	ApiConfigTallenna();
+	if (!TApiIntegration::GetInstance()->OnKilpailuAvattu()) {
+		PaivitaTila(L"VIRHE: avaa kilpailu ensin.");
+		return;
+	}
 	int n = ApiSynkkaaLahetaKaikki();
 	PaivitaTila(L"Lähetys valmis, rivejä: " + IntToStr(n));
 }
@@ -399,6 +434,10 @@ void __fastcall TFormApiYhteydet::BtnHaeNytClick(TObject *Sender)
 {
 	KirjoitaTiedot();
 	ApiConfigTallenna();
+	if (!TApiIntegration::GetInstance()->OnKilpailuAvattu()) {
+		PaivitaTila(L"VIRHE: avaa kilpailu ensin.");
+		return;
+	}
 	int n = ApiSynkkaaHaeKaikki();
 	PaivitaTila(L"Haku valmis, päivitetty: " + IntToStr(n));
 }
@@ -432,6 +471,9 @@ void __fastcall TFormApiYhteydet::BtnOhjeClick(TObject *Sender)
 		L"Online-rasti / ajanotto → action=tapahtuma (piste, aika_sec = tuloksen sekunnit)\n"
 		L"ViestiWin: sama protokolla + kenttä osuus (1-pohjainen).\n"
 		L"Emit-luenta merkitsee lähtijän läsnäolevaksi ja synkkaa heti.\n"
+		L"Testaa (ping) käynnistää taustasynkan, kun kilpailu on auki.\n"
+		L"Lopeta synkka pysäyttää taustasäikeen.\n"
+		L"Synkkaa ei käynnistetä, jos kisaa ei ole avattu.\n"
 		L"Asetukset tallennetaan kilpailun kansion jahonline_api.ini -tiedostoon\n"
 		L"ja luetaan sieltä, kun kilpailu avataan.\n"
 		L"Auth: Authorization: Bearer <api_token>\n"
@@ -446,7 +488,8 @@ void __fastcall TFormApiYhteydet::BtnOKClick(TObject *Sender)
 {
 	KirjoitaTiedot();
 	ApiConfigTallenna();
-	TApiIntegration::GetInstance()->Alusta();
+	if (apiconfig.kaynnissa && TApiIntegration::GetInstance()->OnKilpailuAvattu())
+		TApiIntegration::GetInstance()->Alusta();
 	PaivitaTila(L"Asetukset tallennettu: " + ApiConfigPolku());
 	Close();
 }

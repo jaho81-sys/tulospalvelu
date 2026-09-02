@@ -52,12 +52,19 @@ TApiIntegration* TApiIntegration::GetInstance(void)
 //---------------------------------------------------------------------------
 void TApiIntegration::Alusta(void)
 {
-	if (onAloitettu)
-		return;
 	if (!kilpailuAvattu)
+		return;
+	if (onAloitettu && pSaike)
 		return;
 
 	try {
+		if (pSaike) {
+			pSaike->PyynnoPysaytys();
+			pSaike->WaitFor();
+			delete pSaike;
+			pSaike = NULL;
+			onAloitettu = false;
+		}
 		pSaike = new TApiSaike(true);
 		if (pSaike) {
 			pSaike->FreeOnTerminate = false;
@@ -74,25 +81,34 @@ void TApiIntegration::KilpailuAvattu(void)
 {
 	kilpailuAvattu = true;
 	ApiConfigLataa();
-	Alusta();
+	// Resume background sync only when this competition's ini has kaynnissa=1
+	// (set by a successful ping). Never start before a competition is open.
+	if (apiconfig.kaynnissa)
+		Alusta();
+}
+
+void TApiIntegration::KilpailuSuljettu(void)
+{
+	Lopeta();
+	kilpailuAvattu = false;
 }
 
 void TApiIntegration::Lopeta(void)
 {
-	if (!onAloitettu || !pSaike)
-		return;
-	
-	try {
-		if (pSaike) {
-			pSaike->PyynnoPysaytys();
-			pSaike->WaitFor();
-			delete pSaike;
-			pSaike = NULL;
-		}
+	if (!pSaike) {
 		onAloitettu = false;
+		return;
+	}
+
+	try {
+		pSaike->PyynnoPysaytys();
+		pSaike->WaitFor();
+		delete pSaike;
 	} catch (...) {
 		// Virhe pysäyttäessä
 	}
+	pSaike = NULL;
+	onAloitettu = false;
 }
 
 //---------------------------------------------------------------------------

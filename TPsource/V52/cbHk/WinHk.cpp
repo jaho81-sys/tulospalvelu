@@ -253,6 +253,7 @@ void __fastcall TFormMain::Initialisoi(wchar_t *kilphak, wchar_t *cfgflnm)
 	int k;
 	wchar_t path[200], *p;
 
+	ApiHkIntegration::KilpailuSuljettu();
 	if (kilphak == NULL || kilphak[0] == 0) {
 		wcsncpy(path, cfgflnm, 198);
 		for (p = path+wcslen(path)-1; p > path; p--) {
@@ -797,7 +798,7 @@ void __fastcall TFormMain::FormCloseQuery(TObject *Sender, bool &CanClose)
 		CanClose = false;
 	  }
 	else {
-		ApiHkIntegration::Lopeta();
+		ApiHkIntegration::KilpailuSuljettu();
 		if (ToimintaTila == 2)
 			talljarj();
 		lopetus1();

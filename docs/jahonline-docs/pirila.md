@@ -18,10 +18,11 @@ Lähdekoodi: [jaho81-sys/tulospalvelu](https://github.com/jaho81-sys/tulospalvel
      (oletus)
    - **API-avain:** tämän kilpailun `api_token` (Hallinta → Kilpailu)
    - **kilpailu_id:** tämän kilpailun tunnus
-4. Paina **Testaa (ping)**.
+4. Paina **Testaa (ping)** (kilpailun pitää olla auki).
 5. **Lähetä kilpailijat nyt** vie osanottajat (nimet, emit, ajat, lähtöajat,
    läsnäolo, online-väliajat) Pirilästä JAHOnlineen.
-6. **Hae kilpailijat nyt** vain jos netistä pitää tuoda päivityksiä takaisin
+6. **Lopeta synkka** pysäyttää taustasynkan.
+7. **Hae kilpailijat nyt** vain jos netistä pitää tuoda päivityksiä takaisin
    `KILP.DAT`:iin.
 
 Asetukset tallentuvat tiedostoon `jahonline_api.ini` **kilpailun kansioon**.
@@ -46,7 +47,8 @@ JAHOnline-lähetys ei vaadi `comfl`-asemaverkkoa: tarvitaan `kilpailu_id` ja
 API-avain. Jono lähtee noin 200 ms välein.
 
 Taustasynkka (välilehti *Automaatio*) lähettää lisäksi koko listan valitun välein
-(`lahetysvali`, oletus 10 s) kun ping on onnistunut.
+(`lahetysvali`, oletus 10 s) kun ping on onnistunut. **Lopeta synkka** pysäyttää
+säikeen. Synkkaa ei käynnistetä, jos kilpailua ei ole avattu.
 
 ## API
 

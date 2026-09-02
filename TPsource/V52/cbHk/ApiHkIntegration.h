@@ -40,10 +40,15 @@ namespace ApiHkIntegration
 		TApiIntegration::GetInstance()->Alusta();
 	}
 
-	// Lataa jahonline_api.ini kilpailun kansiosta ja käynnistä säie
+	// Lataa jahonline_api.ini kilpailun kansiosta. Säie vain jos kaynnissa=1.
 	inline void KilpailuAvattu()
 	{
 		TApiIntegration::GetInstance()->KilpailuAvattu();
+	}
+
+	inline void KilpailuSuljettu()
+	{
+		TApiIntegration::GetInstance()->KilpailuSuljettu();
 	}
 	
 	// API-säikeen pysäyttäminen

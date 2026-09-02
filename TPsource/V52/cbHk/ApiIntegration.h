@@ -43,9 +43,11 @@ public:
 	void Alusta(void);
 	void Lopeta(void);
 	void KilpailuAvattu(void);
+	void KilpailuSuljettu(void);
 	
 	// Query methods
 	bool OnAktiivinen(void) const { return onAloitettu && pSaike != NULL; }
+	bool OnKilpailuAvattu(void) const { return kilpailuAvattu; }
 	TApiSaike* GetSaike(void) const { return pSaike; }
 	
 	// Configuration methods
