@@ -47,6 +47,7 @@ __published:
 	TLabel *LabelKilpailuId;
 	TEdit *EditKilpailuId;
 	TButton *BtnYhteysTesti;
+	TButton *BtnLopetaSynkka;
 	TButton *BtnLahetaNyt;
 	TButton *BtnHaeNyt;
 	TLabel *LabelYhteysTila;
@@ -75,6 +76,7 @@ __published:
 	void __fastcall BtnOKClick(TObject *Sender);
 	void __fastcall BtnPeruutaClick(TObject *Sender);
 	void __fastcall BtnYhteysTestiClick(TObject *Sender);
+	void __fastcall BtnLopetaSynkkaClick(TObject *Sender);
 	void __fastcall BtnLahetaNytClick(TObject *Sender);
 	void __fastcall BtnHaeNytClick(TObject *Sender);
 	void __fastcall BtnPaivitaTilaClick(TObject *Sender);
@@ -87,7 +89,9 @@ private:
 	void __fastcall LueTiedot(void);
 	void __fastcall KirjoitaTiedot(void);
 	void __fastcall PaivitaTila(UnicodeString viesti);
+	void __fastcall NaytaYhteysTila(void);
 	void __fastcall TestaaYhteys(void);
+	void __fastcall LopetaSynkka(void);
 
 public:
 	__fastcall TFormApiYhteydet(TComponent* Owner);

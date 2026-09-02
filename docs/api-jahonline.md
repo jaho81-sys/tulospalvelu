@@ -92,10 +92,12 @@ ja lähettää yhden kilpailijan `synkkaa`-sanoman heti (`lasna: true`).
 Osanottaja- ja tulosmuutokset (nimi, seura, emit, **lähtöaika**, maali, status)
 lähtevät nettiin samalla hetkellä kuin Pirilän sisäinen tiedonsiirto (`laheta`
 `tallenna`-funktiossa). Ero: JAHOnline-jono ei vaadi `comfl` / RS-232 / TCP-asemaverkkoa.
-Säie tyhjentää jonon noin 200 ms välein, kun `kilpailu_id` ja API-avain on asetettu.
+Säie tyhjentää jonon noin 200 ms välein, kun kilpailu on auki, **Testaa (ping)**
+on onnistunut (`kaynnissa`) ja taustasäie on käynnissä. Ilman avattua kisaa
+synkkaa ei käynnistetä. **Lopeta synkka** pysäyttää säikeen ja nollaa `kaynnissa`.
 
 Koko lista lähtee lisäksi Automaatio-välilehden välein (`lahetysvali`, oletus 10 s,
-minimi 2 s) kun **Testaa (ping)** on onnistunut (`kaynnissa`). Tiedonsiirron
+minimi 2 s) kun synkka on käynnissä. Tiedonsiirron
 `YHTEYS=` / `COM=` -parametrit koskevat vain asemien välistä liikennettä, ei nettiä.
 
 Lähtöaika menee kentissä `lahto_aika` ja `pirila_lahto_at` (kellonaika `HH:MM:SS`)
@@ -145,13 +147,14 @@ Viesti (osuus 1-pohjainen JSON:ssa, 0-pohjainen Pirilässä):
 
 1. Valikko → **JAHOnline API (synkka)**
 2. Aseta URL, API-avain, `kilpailu_id`
-3. **Testaa (ping)**
+3. **Testaa (ping)** (vain kun kilpailu on auki — käynnistää taustasynkan)
 4. **Lähetä kilpailijat nyt** / **Hae kilpailijat nyt**
-5. Automaatio: välilehti *Automaatio* + **Testaa (ping)** + OK
+5. **Lopeta synkka** pysäyttää taustasäikeen
+6. Automaatio: välilehti *Automaatio* + **Testaa (ping)** + OK
    (`lahetysvali` = koko listan lähetysväli, oletus 10 s)
-6. Osanottajakaavakkeen tallennus / lähtöajan muutos → `synkkaa` noin 200 ms:ssa
-   (ei odota `lahetysvali`-väliä)
-7. Live-väliajat: rastileima ajanotossa → `tapahtuma` heti
+7. Osanottajakaavakkeen tallennus / lähtöajan muutos → `synkkaa` noin 200 ms:ssa
+   kun synkka on käynnissä
+8. Live-väliajat: rastileima ajanotossa → `tapahtuma` heti
 
 Asetukset tallentuvat kilpailun kansioon: `jahonline_api.ini`.
 Tiedosto luetaan automaattisesti, kun kilpailu avataan (`Initialisoi`).

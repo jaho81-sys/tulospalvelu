@@ -194,6 +194,7 @@ void __fastcall TFormMain::Initialisoi(wchar_t *kilphak, wchar_t *cfgflnm)
 	wchar_t path[200], *p, wst[100];
 	char st[200];
 
+	ApiVIntegration::KilpailuSuljettu();
 	if (kilphak == NULL || kilphak[0] == 0) {
 		wcsncpy(path, cfgflnm, 198);
 		for (p = path+wcslen(path)-1; p > path; p--) {
@@ -971,7 +972,7 @@ void __fastcall TFormMain::FormCloseQuery(TObject *Sender, bool &CanClose)
 	  CanClose = false;
 	  }
    else {
-	  ApiVIntegration::Lopeta();
+	  ApiVIntegration::KilpailuSuljettu();
 	  lopetus1();
 	  Sleep(500);
 	  }

@@ -118,6 +118,15 @@ object FormApiYhteydet: TFormApiYhteydet
         TabOrder = 4
         OnClick = BtnYhteysTestiClick
       end
+      object BtnLopetaSynkka: TButton
+        Left = 16
+        Top = 360
+        Width = 140
+        Height = 32
+        Caption = 'Lopeta synkka'
+        TabOrder = 7
+        OnClick = BtnLopetaSynkkaClick
+      end
       object BtnLahetaNyt: TButton
         Left = 170
         Top = 320

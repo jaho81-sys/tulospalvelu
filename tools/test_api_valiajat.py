@@ -84,9 +84,12 @@ def test_source_hooks():
         "ViestiWin/UnitAjanotto.cpp": ["IlmoitaTapahtuma"],
         "ViestiWin/UnitEmit.cpp": ["IlmoitaTapahtuma", "IlmoitaLasna"],
         "ViestiWin/UnitJoukkuetiedot.cpp": ["IlmoitaTapahtuma"],
-        "ViestiWin/UnitMain.cpp": ["JahonlineApi1Click", "ApiVIntegration"],
+        "ViestiWin/UnitMain.cpp": ["JahonlineApi1Click", "ApiVIntegration", "KilpailuSuljettu"],
         "ViestiWin/UnitMain.dfm": ["JAHOnline API (synkka)"],
-        "cbHk/ApiYhteydet.dfm": ["online-rastit"],
+        "cbHk/ApiYhteydet.dfm": ["online-rastit", "Lopeta synkka"],
+        "cbHk/ApiYhteydet.cpp": ["avaa kilpailu ensin", "LopetaSynkka", "OnKilpailuAvattu"],
+        "cbHk/ApiIntegration.cpp": ["KilpailuSuljettu", "if (!kilpailuAvattu)"],
+        "cbHk/WinHk.cpp": ["KilpailuSuljettu", "KilpailuAvattu"],
     }
     for rel, needles in files.items():
         path = os.path.join(ROOT, "TPsource", "V52", rel)
@@ -97,12 +100,31 @@ def test_source_hooks():
     print("ok source hooks")
 
 
+def test_synkka_not_started_without_kilpailu():
+    integ = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "ApiIntegration.cpp"),
+                 encoding="utf-8", errors="replace").read()
+    yht = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "ApiYhteydet.cpp"),
+               encoding="utf-8", errors="replace").read()
+    assert "if (!kilpailuAvattu)" in integ
+    assert "void TApiIntegration::KilpailuSuljettu(void)" in integ
+    assert "OnKilpailuAvattu()" in yht
+    assert "void __fastcall TFormApiYhteydet::LopetaSynkka(void)" in yht
+    assert "BtnLopetaSynkkaClick" in yht
+    # Opening a competition must not start the thread unless kaynnissa.
+    avattu = integ.split("void TApiIntegration::KilpailuAvattu(void)", 1)[1]
+    avattu = avattu.split("void TApiIntegration::KilpailuSuljettu(void)", 1)[0]
+    assert "if (apiconfig.kaynnissa)" in avattu
+    assert avattu.find("if (apiconfig.kaynnissa)") < avattu.find("Alusta()")
+    print("ok synkka lifecycle")
+
+
 def main():
     test_tapahtuma_yksilo()
     test_tapahtuma_viesti()
     test_valiajat_apply()
     test_cpp_json_actions()
     test_source_hooks()
+    test_synkka_not_started_without_kilpailu()
     print("all ok")
     return 0
 
