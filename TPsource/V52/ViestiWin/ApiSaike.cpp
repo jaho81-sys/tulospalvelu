@@ -51,6 +51,22 @@ static bool ApiAikaOk(INT32 a)
 	return a != 0 && a != TMAALI0;
 }
 
+// JAHOnline synkka: lahto_aika / pirila_lahto_at (kellonaika) + lahto_sec (sekunnit vuorokaudesta).
+static UnicodeString ApiLahtoKentat(INT32 tl)
+{
+	if (tl == TMAALI0)
+		return L",\"lahto_aika\":null,\"pirila_lahto_at\":null,\"lahto_sec\":null";
+	wchar_t st[24];
+	aikatowstr_cols_n(st, tl, t0, 0, 8);
+	int sec = (int)(tl / SEK + (INT32)t0 * 3600L);
+	sec %= 86400;
+	if (sec < 0)
+		sec += 86400;
+	return UnicodeString(L",\"lahto_aika\":") + ApiJsonString(st)
+		+ L",\"pirila_lahto_at\":" + ApiJsonString(st)
+		+ L",\"lahto_sec\":" + IntToStr(sec);
+}
+
 __fastcall TApiSaike::TApiSaike(bool CreateSuspended)
 	: TThread(CreateSuspended), pysaytysPyynnon(false), viiveMs(10000)
 {
@@ -176,6 +192,7 @@ static UnicodeString ApiOsuusObj(kilptietue& kilp, int os)
 		arr += L",\"sija\":" + IntToStr((int)sija);
 	else
 		arr += L",\"sija\":null";
+	arr += ApiLahtoKentat(kilp.Lahto(os));
 	arr += L",\"valiajat\":" + valia;
 	arr += L",\"tyyppi\":\"viesti\"";
 	arr += L"}";
@@ -286,6 +303,11 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 			}
 			if (aikaSec >= 0)
 				kilp.setMaali(os, 0, aikaSec);
+			{
+				UnicodeString lahtoAika;
+				if (ApiJsonFindString(o, L"lahto_aika", lahtoAika) && !lahtoAika.IsEmpty())
+					kilp.ostiet[os].ylahto = wstrtoaika_vap(lahtoAika.c_str(), t0);
+			}
 			if (sija >= 0)
 				kilp.setSija(os, 0, sija);
 

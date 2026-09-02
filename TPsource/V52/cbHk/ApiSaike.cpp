@@ -114,6 +114,33 @@ static wchar_t StatusMerkkiin(const UnicodeString& st)
 	return L' ';
 }
 
+// JAHOnline synkka: lahto_aika / pirila_lahto_at (kellonaika) + lahto_sec (sekunnit vuorokaudesta).
+static UnicodeString ApiLahtoKentat(INT32 tl)
+{
+	if (tl == TMAALI0)
+		return L",\"lahto_aika\":null,\"pirila_lahto_at\":null,\"lahto_sec\":null";
+	wchar_t st[24];
+	aikatowstr_cols_n(st, tl, t0, 0, 8);
+	int sec = (int)(tl / SEK + (INT32)t0 * 3600L);
+	sec %= 86400;
+	if (sec < 0)
+		sec += 86400;
+	return UnicodeString(L",\"lahto_aika\":") + ApiJsonString(st)
+		+ L",\"pirila_lahto_at\":" + ApiJsonString(st)
+		+ L",\"lahto_sec\":" + IntToStr(sec);
+}
+
+static INT32 ApiKilpailijanLahto(kilptietue& kilp, int ipv)
+{
+	INT32 tl = kilp.TLahto(ipv);
+	if (tl == TMAALI0) {
+		int srj = kilp.Sarja(ipv);
+		if (srj >= 0 && srj < sarjaluku)
+			tl = Sarjat[srj].enslahto[ipv];
+	}
+	return tl;
+}
+
 static UnicodeString ApiKilpailijaObj(kilptietue& kilp, int ipv)
 {
 	int numero = kilp.id();
@@ -176,6 +203,7 @@ static UnicodeString ApiKilpailijaObj(kilptietue& kilp, int ipv)
 		arr += L",\"sija\":" + IntToStr((int)sija);
 	else
 		arr += L",\"sija\":null";
+	arr += ApiLahtoKentat(ApiKilpailijanLahto(kilp, ipv));
 	arr += L",\"valiajat\":" + valia;
 	arr += L",\"tyyppi\":\"yksilo\"";
 	arr += L"}";
@@ -297,6 +325,11 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 				}
 				if (aikaSec >= 0)
 					kilp.tall_tulos_pv(aikaSec, ipv, 0);
+				{
+					UnicodeString lahtoAika;
+					if (ApiJsonFindString(o, L"lahto_aika", lahtoAika) && !lahtoAika.IsEmpty())
+						kilp.tall_lajat_pv(wstrtoaika_vap(lahtoAika.c_str(), t0), ipv);
+				}
 				if (sija >= 0)
 					kilp.pv[ipv].ysija = (INT16)sija;
 				if (apiconfig.vastaanottaValiajat || apiconfig.vastaanottaKilpailijat) {

@@ -19,8 +19,8 @@ Lähdekoodi: [jaho81-sys/tulospalvelu](https://github.com/jaho81-sys/tulospalvel
    - **API-avain:** tämän kilpailun `api_token` (Hallinta → Kilpailu)
    - **kilpailu_id:** tämän kilpailun tunnus
 4. Paina **Testaa (ping)**.
-5. **Lähetä kilpailijat nyt** vie osanottajat (nimet, emit, ajat, läsnäolo,
-   online-väliajat) Pirilästä JAHOnlineen.
+5. **Lähetä kilpailijat nyt** vie osanottajat (nimet, emit, ajat, lähtöajat,
+   läsnäolo, online-väliajat) Pirilästä JAHOnlineen.
 6. **Hae kilpailijat nyt** vain jos netistä pitää tuoda päivityksiä takaisin
    `KILP.DAT`:iin.
 
@@ -53,7 +53,7 @@ Taustasynkka (välilehti *Automaatio*) lähettää koko listan valitun välein.
 | Action | Suunta | Käyttö |
 |--------|--------|--------|
 | `ping` | — | Yhteystesti |
-| `synkkaa` | Pirilä → JAHOnline | Osanottajat, ajat, läsnäolo, `valiajat[]` |
+| `synkkaa` | Pirilä → JAHOnline | Osanottajat, ajat, lähtöajat, läsnäolo, `valiajat[]` |
 | `kilpailijat` | JAHOnline → Pirilä | Haku `KILP.DAT`:iin (myös väliajat) |
 | `tapahtuma` | live molempiin | Online-rasti heti (`piste`, `aika_sec`, viestissä `osuus`) |
 
@@ -78,6 +78,7 @@ siirto-ohjelmaa.
 | Online-väliaika | `valiajat` (adminin `valia_lkm`) |
 | Emit-rastit | rastiväliajat-näkymä, vain maalissa olevilta |
 | Läsnä / DNS / DNF / DSQ | `lasna` + `status` (`LASNA` / `OK` / `DNS` / `DNF` / `DSQ`) |
+| Lähtöaika | `lahto_aika` / `pirila_lahto_at` / `lahto_sec` → `kilpailijat` + sarjan `lahdot` |
 
 ## Seuranta / tulokset
 

@@ -49,7 +49,8 @@ Bodyyn aina: `"kilpailu_id": <int>`
 {"action":"kilpailijat","kilpailu_id":11}
 ```
 → lista kentillä: `numero`, `sukunimi`, `etunimi`, `nimi`, `seura`, `maa`,
-`sarja_nimi`, `badge`/`emit_koodi`, `lasna`, `status`, `aika_sec`, `sija`, `valiajat[]`
+`sarja_nimi`, `badge`/`emit_koodi`, `lasna`, `status`, `aika_sec`, `sija`,
+`lahto_aika` / `pirila_lahto_at` / `lahto_sec`, `valiajat[]`
 
 `lasna` on boolean (`true`, kun kilpailija on läsnä: ei poissa/ei-lähtenyt/vakantti).
 `status` on `LASNA`, kun läsnäolo on merkitty mutta tulosta ei vielä ole; muuten
@@ -74,6 +75,9 @@ Bodyyn aina: `"kilpailu_id": <int>`
       "status":"LASNA",
       "aika_sec":null,
       "sija":null,
+      "lahto_aika":"10:05:00",
+      "pirila_lahto_at":"10:05:00",
+      "lahto_sec":36300,
       "valiajat":[]
     }
   ]
@@ -84,6 +88,12 @@ Bodyyn aina: `"kilpailu_id": <int>`
 
 Emit-luenta (leimantarkastus / `ESILUENTA`) merkitsee kilpailijan läsnäolevaksi
 ja lähettää yhden kilpailijan `synkkaa`-sanoman heti (`lasna: true`).
+
+Lähtöaika menee kentissä `lahto_aika` ja `pirila_lahto_at` (kellonaika `HH:MM:SS`)
+sekä `lahto_sec` (sekunnit vuorokaudesta). HkKisaWin käyttää kilpailijan `tlahto`-
+arvoa, tai sarjan ensimmäistä lähtöä jos henkilökohtaista ei ole. ViestiWin
+käyttää `Lahto(osuus)` (osuuden `ylahto` tai sarjan lähtö). JAHOnline kirjoittaa
+nämä `kilpailijat.pirila_lahto_at`-kenttään ja synkkaa sarjan `lahdot`-rivin.
 
 `synkkaa` sisältää myös `valiajat[]` (online-rastit / väliaikapisteet) ja
 `"tyyppi":"yksilo"` tai `"tyyppi":"viesti"`. Ajanotto / rastileima lähettää
