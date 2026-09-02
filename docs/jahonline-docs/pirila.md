@@ -40,7 +40,13 @@ HkKisaWin:
 3. lähettää heti `synkkaa`-sanoman (`lasna: true`, status `LASNA` jos tulosta
    ei vielä ole)
 
-Taustasynkka (välilehti *Automaatio*) lähettää koko listan valitun välein.
+Osanottaja- ja tulosmuutokset (myös lähtöaika) lähtevät tallennuksen yhteydessä
+heti, samaan tapaan kuin Pirilän sisäinen tiedonsiirto (`tallenna` → `laheta`).
+JAHOnline-lähetys ei vaadi `comfl`-asemaverkkoa: tarvitaan `kilpailu_id` ja
+API-avain. Jono lähtee noin 200 ms välein.
+
+Taustasynkka (välilehti *Automaatio*) lähettää lisäksi koko listan valitun välein
+(`lahetysvali`, oletus 10 s) kun ping on onnistunut.
 
 ## API
 

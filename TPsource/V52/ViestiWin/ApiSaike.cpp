@@ -413,6 +413,17 @@ void ApiIlmoitaTapahtuma(int kilpno, int osuus, int piste, int aikaSec)
 	LeaveCriticalSection(&tapJonoCS);
 }
 
+// C wrappers for vdat.cpp (same signatures as VDeclare.h; console has empty stubs)
+void api_ilmoita_kilpailija(int kilpno)
+{
+	ApiIlmoitaLasna(kilpno);
+}
+
+void api_ilmoita_tapahtuma(int kilpno, int osuus, int piste, int aikaSec)
+{
+	ApiIlmoitaTapahtuma(kilpno, osuus, piste, aikaSec);
+}
+
 static int ApiLahetaTapahtumat(const ApiTapahtuma* ev, int n)
 {
 	if (n <= 0)
@@ -563,8 +574,7 @@ void __fastcall TApiSaike::Execute(void)
 			Sleep(200);
 			if (!pysaytysPyynnon) {
 				ApiSynkkaaJonosta();
-				if (apiconfig.lahetaValiajat)
-					ApiLahetaTapahtumatNyt();
+				ApiLahetaTapahtumatNyt();
 			}
 		}
 	}

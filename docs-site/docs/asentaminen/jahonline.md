@@ -45,8 +45,14 @@ Lähdön esiluenta otetaan käyttöön parametrilla `ESILUENTA` yhdessä
 lukijamäärityksen `LUKIJA=…` kanssa. Katso myös
 [Emitkoodien kirjaus ja lähtijöiden kirjaus](../hkkisawin/6.11_emitkoodien_lukeminen_kilpailijoille.md).
 
+Osanottajakaavakkeen tallennus (nimi, seura, emit, lähtöaika, tulos) jonoittaa
+muutoksen samaan tapaan kuin Pirilän sisäinen tiedonsiirto. Jono lähtee nettiin
+noin 200 ms välein, kun API-avain ja `kilpailu_id` on asetettu. Asemaverkon
+`YHTEYS=` / `comfl` ei ole edellytys.
+
 Automaattinen taustasynkka (välilehti *Automaatio*) lähettää lisäksi koko
-osanottajalistan valitun välein, kun yhteys on aktiivinen.
+osanottajalistan valitun välein (`lahetysvali`, oletus 10 s), kun ping on
+onnistunut.
 
 ## Online-rastit (kaksisuuntainen vienti)
 

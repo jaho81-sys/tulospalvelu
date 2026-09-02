@@ -806,6 +806,17 @@ void tallenna(kilptietue *ekilp, int d, int comtarfl, int kielto,
 #endif
 					}
 				}  // comfl
+			// Same change moment as tiedonsiirto: queue JAHOnline (no comfl needed).
+			api_ilmoita_kilpailija(kilp.kilpno);
+			for (os = 0; os < Sarjat[kilp.sarja].osuusluku; os++) {
+				for (va = 0; va <= kilpparam.maxvaluku; va++) {
+					if (erot.os[os].aika[va]) {
+						INT32 tm = kilp.Maali(os, va);
+						if (tm && tm != TMAALI0)
+							api_ilmoita_tapahtuma(kilp.kilpno, os, va, (int)tm);
+						}
+					}
+				}
 		  sjfl[kilp.sarja] = TRUE;
 		  lukumaarat();
 		  paivita_aikanaytto();
