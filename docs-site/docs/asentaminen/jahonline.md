@@ -23,7 +23,7 @@ lähettää tiedon heti nettiin.
    - **kilpailu_id:** saman kilpailun tunnus JAHOnlinessa
 5. Paina **Testaa (ping)**. Onnistunut ping aktivoi yhteyden.
 6. **Lähetä kilpailijat nyt** vie Pirilän osanottajat (nimet, emit-koodit, ajat,
-   läsnäolo, online-väliajat) JAHOnlineen.
+   lähtöajat, läsnäolo, online-väliajat) JAHOnlineen.
 7. **Hae kilpailijat nyt** vain jos netistä pitää tuoda päivityksiä takaisin
    paikalliseen `KILP.DAT`-kantaan.
 
