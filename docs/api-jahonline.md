@@ -104,6 +104,11 @@ arvoa, tai sarjan ensimmäistä lähtöä jos henkilökohtaista ei ole. ViestiWi
 käyttää `Lahto(osuus)` (osuuden `ylahto` tai sarjan lähtö). JAHOnline kirjoittaa
 nämä `kilpailijat.pirila_lahto_at`-kenttään ja synkkaa sarjan `lahdot`-rivin.
 
+`aika_sec` on **tuloksen kokonaissekunnit** (maali − lähtö), ei Pirilän
+sisäisiä millisekunteja (`SEK = 1000`) eikä kellonaikaa. Esim. 45:00 → `2700`.
+Lähtökello on erikseen `lahto_sec` (sekunnit vuorokaudesta). ViestiWinissä
+`aika_sec` on osuuden juoksuaika (`osTulos`), ei `Maali()`-kellonaika.
+
 `synkkaa` sisältää myös `valiajat[]` (online-rastit / väliaikapisteet) ja
 `"tyyppi":"yksilo"` tai `"tyyppi":"viesti"`. Ajanotto / rastileima lähettää
 lisäksi heti:
@@ -136,6 +141,7 @@ Viesti (osuus 1-pohjainen JSON:ssa, 0-pohjainen Pirilässä):
 ```
 
 - `piste` **0** = maali, **≥ 1** = online-rasti / väliaikapiste
+- `aika_sec` samoin kokonaissekunteina (esim. `1234` ≈ 20:34), ei millisekunteina
 - Haku: `kilpailijat`-vastauksen `valiajat[]` kirjoitetaan paikalliseen kantaan
   kun *Vastaanota väliajat* on päällä
 - JAHOnline-bridgen (`kilpailijat_bridge.php`) pitää hyväksyä `action=tapahtuma`

@@ -67,6 +67,73 @@ static UnicodeString ApiLahtoKentat(INT32 tl)
 		+ L",\"lahto_sec\":" + IntToStr(sec);
 }
 
+// JAHOnline aika_sec = whole seconds of race/leg result.
+// Pirilä stores times as ticks (SEK = 1000 ms). Maali() is clock-of-day.
+static int ApiTulosSec(INT32 tl)
+{
+	if (tl <= 0 || tl == TMAALI0)
+		return 0;
+	return (int)(tl / SEK);
+}
+
+static INT32 ApiSecToTicks(__int64 sec)
+{
+	if (sec <= 0)
+		return 0;
+	if (sec >= (__int64)100000)
+		return (INT32)sec;
+	return (INT32)(sec * (__int64)SEK);
+}
+
+static INT32 ApiViestiTulosTicks(kilptietue& kilp, int os, int va)
+{
+	INT32 ot = kilp.osTulos(os, va);
+	if (ot > 0)
+		return ot;
+	INT32 maali = kilp.Maali(os, va);
+	if (!ApiAikaOk(maali))
+		return 0;
+	INT32 lahto = kilp.Lahto(os);
+	if (lahto != TMAALI0)
+		return NORMTULOS(maali - lahto);
+	if (kilp.sarja >= 0 && kilp.sarja < sarjaluku)
+		return NORMTULOS(maali - Sarjat[kilp.sarja].lahto);
+	return 0;
+}
+
+static INT32 ApiViestiInboundMaali(kilptietue& kilp, int os, __int64 sec)
+{
+	if (sec <= 0)
+		return TMAALI0;
+	INT32 tulosTicks = ApiSecToTicks(sec);
+	if (sec >= (__int64)100000)
+		return tulosTicks;
+	INT32 lahto = kilp.Lahto(os);
+	if (lahto == TMAALI0)
+		return tulosTicks;
+	return lahto + tulosTicks;
+}
+
+static int ApiViestiTapahtumaSec(int kilpno, int osuus, int piste, INT32 maaliTicks)
+{
+	if (!ApiAikaOk(maaliTicks))
+		return 0;
+	int d = getpos(kilpno);
+	if (d > 0) {
+		kilptietue kilp;
+		kilp.getrec(d);
+		INT32 ot = kilp.osTulos(osuus, piste);
+		if (ot > 0)
+			return ApiTulosSec(ot);
+		INT32 lahto = kilp.Lahto(osuus);
+		if (lahto != TMAALI0)
+			return ApiTulosSec(NORMTULOS(maaliTicks - lahto));
+		if (kilp.sarja >= 0 && kilp.sarja < sarjaluku)
+			return ApiTulosSec(NORMTULOS(maaliTicks - Sarjat[kilp.sarja].lahto));
+	}
+	return ApiTulosSec(maaliTicks);
+}
+
 __fastcall TApiSaike::TApiSaike(bool CreateSuspended)
 	: TThread(CreateSuspended), pysaytysPyynnon(false), viiveMs(10000)
 {
@@ -141,7 +208,8 @@ static UnicodeString ApiOsuusObj(kilptietue& kilp, int os)
 	kilp.SukuNimi(suku, 79, os);
 	kilp.EtuNimi(etu, 79, os);
 
-	INT32 tls = kilp.Maali(os, 0);
+	INT32 maaliKello = kilp.Maali(os, 0);
+	INT32 tls = ApiViestiTulosTicks(kilp, os, 0);
 	wchar_t tark = kilp.wTark(os);
 	bool onLasna = kilp.osHyv(os) || tark == L'-' || tark == L'T';
 	if (tark == L'P' || tark == L'E' || tark == L'V' || tark == L'B')
@@ -150,13 +218,14 @@ static UnicodeString ApiOsuusObj(kilptietue& kilp, int os)
 	UnicodeString valia = L"[";
 	bool vfirst = true;
 	for (int p = 1; p <= nva; p++) {
-		INT32 va = kilp.Maali(os, p);
-		if (!ApiAikaOk(va))
+		INT32 va = ApiViestiTulosTicks(kilp, os, p);
+		int vsec = ApiTulosSec(va);
+		if (vsec <= 0)
 			continue;
 		if (!vfirst) valia += L",";
 		vfirst = false;
 		valia += L"{\"piste\":" + IntToStr(p)
-			+ L",\"aika_sec\":" + IntToStr((int)va)
+			+ L",\"aika_sec\":" + IntToStr(vsec)
 			+ L",\"sija\":" + IntToStr((int)kilp.Sija(os, p))
 			+ L"}";
 	}
@@ -179,12 +248,15 @@ static UnicodeString ApiOsuusObj(kilptietue& kilp, int os)
 	arr += L",\"badge2\":" + IntToStr(badge2);
 	arr += L",\"emit_koodi\":" + IntToStr(badge);
 	arr += L",\"lasna\":" + ApiJsonBool(onLasna);
-	arr += L",\"status\":" + ApiJsonString(StatusMerkki(tark, onLasna, ApiAikaOk(tls)));
+	arr += L",\"status\":" + ApiJsonString(StatusMerkki(tark, onLasna, ApiAikaOk(maaliKello)));
 	arr += L",\"keskhyl\":" + ApiJsonString(UnicodeString(tark));
-	if (ApiAikaOk(tls))
-		arr += L",\"aika_sec\":" + IntToStr((int)tls);
-	else
-		arr += L",\"aika_sec\":null";
+	{
+		int tsec = ApiTulosSec(tls);
+		if (tsec > 0)
+			arr += L",\"aika_sec\":" + IntToStr(tsec);
+		else
+			arr += L",\"aika_sec\":null";
+	}
 	INT16 sija = kilp.Sija(os, 0);
 	if (sija > 0)
 		arr += L",\"sija\":" + IntToStr((int)sija);
@@ -305,7 +377,7 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 					kilp.SetTark(os, L'-');
 			}
 			if (aikaSec >= 0)
-				kilp.setMaali(os, 0, aikaSec);
+				kilp.setMaali(os, 0, ApiViestiInboundMaali(kilp, os, aikaSec));
 			{
 				UnicodeString lahtoAika;
 				if (ApiJsonFindString(o, L"lahto_aika", lahtoAika) && !lahtoAika.IsEmpty())
@@ -323,7 +395,7 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 						if (!ApiJsonFindInt(vas[v], L"piste", piste) || piste < 1)
 							continue;
 						if (ApiJsonFindInt64(vas[v], L"aika_sec", va64) && va64 > 0)
-							kilp.setMaali(os, piste, (int)va64);
+							kilp.setMaali(os, piste, ApiViestiInboundMaali(kilp, os, va64));
 						if (ApiJsonFindInt(vas[v], L"sija", vasija) && vasija >= 0)
 							kilp.setSija(os, piste, vasija);
 					}
@@ -402,6 +474,9 @@ void ApiIlmoitaTapahtuma(int kilpno, int osuus, int piste, int aikaSec)
 		return;
 	if (!apiconfig.lahetaValiajat && piste != 0)
 		return;
+	int tsec = ApiViestiTapahtumaSec(kilpno, osuus, piste, (INT32)aikaSec);
+	if (tsec <= 0)
+		return;
 
 	TapJonoAlusta();
 	EnterCriticalSection(&tapJonoCS);
@@ -410,7 +485,7 @@ void ApiIlmoitaTapahtuma(int kilpno, int osuus, int piste, int aikaSec)
 		t.numero = kilpno;
 		t.osuus = osuus;
 		t.piste = piste;
-		t.aikaSec = aikaSec;
+		t.aikaSec = tsec;
 		tapJono[tapJonoN++] = t;
 	}
 	LeaveCriticalSection(&tapJonoCS);

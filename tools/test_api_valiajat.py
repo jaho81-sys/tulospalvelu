@@ -74,6 +74,59 @@ def test_cpp_json_actions():
     print("ok cpp json actions")
 
 
+SEK = 1000  # TPsource/V52/Tp/TpDef.h: SEK = 10*KSEK, KSEK = 10*CSEK, CSEK = 10
+
+
+def api_tulos_sec(tl):
+    """Mirror of ApiTulosSec: Pirilä ticks -> JAHOnline seconds."""
+    if tl <= 0:
+        return 0
+    return int(tl // SEK)
+
+
+def api_sec_to_ticks(sec):
+    """Mirror of ApiSecToTicks: JAHOnline seconds -> Pirilä ticks."""
+    if sec <= 0:
+        return 0
+    if sec >= 100000:
+        return int(sec)
+    return int(sec) * SEK
+
+
+def test_aika_sec_units():
+    ticks_45 = 45 * 60 * SEK
+    assert ticks_45 == 2700000
+    assert api_tulos_sec(ticks_45) == 2700
+    assert api_sec_to_ticks(2700) == ticks_45
+    assert api_sec_to_ticks(2700000) == 2700000  # legacy ticks inbound
+    assert api_tulos_sec(1234 * SEK) == 1234  # docs example
+    start = 10 * 3600 * SEK
+    finish_clock = (10 * 3600 + 45 * 60) * SEK
+    assert api_tulos_sec(finish_clock - start) == 2700
+    # Sending clock ticks as duration would look like 10h45min.
+    assert api_tulos_sec(finish_clock) == 38700
+    print("ok aika_sec units")
+
+
+def test_cpp_converts_ticks_to_seconds():
+    hk = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "ApiSaike.cpp"),
+              encoding="utf-8", errors="replace").read()
+    vi = open(os.path.join(ROOT, "TPsource", "V52", "ViestiWin", "ApiSaike.cpp"),
+              encoding="utf-8", errors="replace").read()
+    for src, name in ((hk, "Hk"), (vi, "Viesti")):
+        assert "static int ApiTulosSec(INT32 tl)" in src, name
+        assert "tl / SEK" in src, name
+        assert "ApiSecToTicks" in src, name
+        assert r'\"aika_sec\":" + IntToStr(tsec)' in src, name
+        assert r'\"aika_sec\":" + IntToStr((int)tls)' not in src, name
+        assert r'\"aika_sec\":" + IntToStr((int)va)' not in src, name
+    assert "ApiViestiTulosTicks" in vi
+    assert "osTulos" in vi
+    assert "ApiViestiInboundMaali" in vi
+    assert "ApiViestiTapahtumaSec" in vi
+    print("ok cpp converts ticks to seconds")
+
+
 def test_source_hooks():
     files = {
         "cbHk/ApiSaike.cpp": ["tapahtuma", "lahetaValiajat", "valiajat", "yksilo"],
@@ -103,6 +156,8 @@ def main():
     test_valiajat_apply()
     test_cpp_json_actions()
     test_source_hooks()
+    test_aika_sec_units()
+    test_cpp_converts_ticks_to_seconds()
     print("all ok")
     return 0
 

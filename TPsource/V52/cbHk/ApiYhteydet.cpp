@@ -429,7 +429,7 @@ void __fastcall TFormApiYhteydet::BtnOhjeClick(TObject *Sender)
 		L"kilpailu_id: JAHOnline-kilpailun ID\n\n"
 		L"Lähetä kilpailijat → action=synkkaa (osanottajat, ajat, läsnäolo, väliajat)\n"
 		L"Hae kilpailijat → action=kilpailijat (päivitys paikalliseen KILP.DAT)\n"
-		L"Online-rasti / ajanotto → action=tapahtuma (piste, aika_sec)\n"
+		L"Online-rasti / ajanotto → action=tapahtuma (piste, aika_sec = tuloksen sekunnit)\n"
 		L"ViestiWin: sama protokolla + kenttä osuus (1-pohjainen).\n"
 		L"Emit-luenta merkitsee lähtijän läsnäolevaksi ja synkkaa heti.\n"
 		L"Asetukset tallennetaan kilpailun kansion jahonline_api.ini -tiedostoon\n"
