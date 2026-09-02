@@ -306,6 +306,8 @@ void writexml(TextFl *vafile, int emitva, int kaikki);
 void kaikkisijat(tulostusparamtp *tulprm, int srj);
 //void kaikkisijat(int srj);
 void addtapahtuma(kilptietue *kilp, int osuus, int piste);
+void api_ilmoita_kilpailija(int kilpno);
+void api_ilmoita_tapahtuma(int kilpno, int osuus, int piste, int aikaSec);
 int wcstomaksu(wchar_t *st);
 void startaf(INT kysy);
 int kirjXmlOoOsuus(TextFl *outfl, kilptietue &kilp, int os, int piste, int level);

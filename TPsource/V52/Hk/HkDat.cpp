@@ -734,6 +734,7 @@ void kilptietue::addtall(INT *dataf, INT kielto)
 				}
 			}
 		}
+	api_ilmoita_kilpailija(id());
 //	LeaveCriticalSection(&tall_CriticalSection);
 	lukumaarat();
 	}
@@ -1306,6 +1307,17 @@ void kilptietue::tallenna(INT d, INT comtarfl, INT kielto, INT pakota_lah, kilpt
 				if (m_ajat[p+1]) {
 					laheta(d, lahno, p+2, hyv_muutos ,comtarfl && lahtarfl, kielto,  pakota_lah);
 					}
+				}
+			}
+
+		// Same change moment as tiedonsiirto: queue JAHOnline (no comfl needed).
+		// Start time is included in the kilpailija synkkaa payload.
+		api_ilmoita_kilpailija(id());
+		for (p = 0; p <= kilpparam.valuku; p++) {
+			if (m_ajat[p+1]) {
+				INT32 tm = p_aika(p);
+				if (tm > 0 && tm != TMAALI0)
+					api_ilmoita_tapahtuma(id(), p, (int)tm);
 				}
 			}
 

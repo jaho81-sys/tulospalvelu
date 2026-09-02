@@ -77,6 +77,8 @@ EDITFLD editfld[] = {
 };
 
 void addtapahtuma(kilptietue *kilp, int piste) { }
+void api_ilmoita_kilpailija(int kilpno) { }
+void api_ilmoita_tapahtuma(int kilpno, int piste, int aikaSec) { }
 
 void paivita_aikanaytto(void) { }
 

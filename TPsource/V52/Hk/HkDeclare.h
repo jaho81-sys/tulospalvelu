@@ -200,6 +200,8 @@ void kirj_err_file(wchar_t *msg, int nayta);
 wchar_t *wcstokch(wchar_t *st, wchar_t erotin);
 INT32 wstrtoaika_vap(wchar_t *str, int t0);
 void addtapahtuma(kilptietue *kilp, int piste);
+void api_ilmoita_kilpailija(int kilpno);
+void api_ilmoita_tapahtuma(int kilpno, int piste, int aikaSec);
 wchar_t XMLhaetunnus(wchar_t *Nimi, wchar_t *Koodit, wchar_t **Nimet, int N);
 wchar_t *XMLhaeteksti(wchar_t Koodi, wchar_t *Koodit, wchar_t **Nimet);
 int XMLhae_tagid(wchar_t *Tag, tagListTp *Tags, UINT nTags);
