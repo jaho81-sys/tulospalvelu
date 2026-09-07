@@ -114,18 +114,11 @@ static wchar_t StatusMerkkiin(const UnicodeString& st)
 	return L' ';
 }
 
-static bool ApiStatusEmitLasna(const UnicodeString& status)
-{
-	return status.CompareIC(L"LASNA") == 0
-		|| status.CompareIC(L"PRESENT") == 0
-		|| status.CompareIC(L"OK") == 0;
-}
-
-// Start-gate emit on the web marks ilmoittautunut (N) as läsnä (-).
-// Echo of our own synkkaa keeps keskhyl N, so that is not treated as a start read.
+// Start-gate emit on the web marks ilmoittautunut (N) as lasna (-).
+// Do not convert on status LASNA alone: outbound synkkaa publishes N as LASNA,
+// and a fetch without keskhyl would otherwise wipe N on every restart.
 static void ApiIlmoittautunutEmitLasna(kilptietue& kilp, int ipv,
-	const UnicodeString& status, bool kesAnnettu, const UnicodeString& keskhylIn,
-	bool onEmitTieto)
+	bool kesAnnettu, const UnicodeString& keskhylIn, bool onEmitTieto)
 {
 	if (kilp.tark(ipv) != L'N')
 		return;
@@ -133,11 +126,7 @@ static void ApiIlmoittautunutEmitLasna(kilptietue& kilp, int ipv,
 		kilp.set_tark(L'-', ipv);
 		return;
 	}
-	if (kesAnnettu && keskhylIn.Length() > 0 && keskhylIn[1] == L'-') {
-		kilp.set_tark(L'-', ipv);
-		return;
-	}
-	if (!kesAnnettu && ApiStatusEmitLasna(status))
+	if (kesAnnettu && keskhylIn.Length() > 0 && keskhylIn[1] == L'-')
 		kilp.set_tark(L'-', ipv);
 }
 
@@ -412,7 +401,7 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 				{
 					UnicodeString kesIn;
 					bool kesAnnettu = ApiJsonFindString(o, L"keskhyl", kesIn);
-					ApiIlmoittautunutEmitLasna(kilp, ipv, status, kesAnnettu, kesIn, onEmitTieto);
+					ApiIlmoittautunutEmitLasna(kilp, ipv, kesAnnettu, kesIn, onEmitTieto);
 				}
 			}
 

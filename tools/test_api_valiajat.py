@@ -192,14 +192,19 @@ def status_merkki(keskhyl, on_lasna, on_tulos):
 
 
 def api_ilmoittautunut_emit_lasna(tark, status, keskhyl, on_emit):
-    """N → läsnä (-) on start-gate emit, not on echo of our own synkkaa."""
+    """N → läsnä (-) on start-gate emit or explicit keskhyl '-', not on LASNA echo."""
     if tark != u"N":
         return tark
     if on_emit:
         return u"-"
     if keskhyl is not None and keskhyl[:1] == u"-":
         return u"-"
-    if keskhyl is None and status.upper() in (u"LASNA", u"PRESENT", u"OK"):
+    return tark
+
+
+def teejari_sanitize_tark(tark, allowed=u"-KOHEVPTIXMBN"):
+    """HkIx teejari on open: unknown tark letters become '-' and are written back."""
+    if not tark or tark not in allowed:
         return u"-"
     return tark
 
@@ -237,11 +242,20 @@ def test_ilmoittautunut_tark():
     assert parse_lasna_text(u"I") == u"I"
     assert parse_lasna_text(u"Läsnä") == u"-"
 
-    assert api_ilmoittautunut_emit_lasna(u"N", u"LASNA", None, False) == u"-"
+    # Restart/fetch echo: LASNA without keskhyl must keep N (same as published ilmoittautunut).
+    assert api_ilmoittautunut_emit_lasna(u"N", u"LASNA", None, False) == u"N"
+    assert api_ilmoittautunut_emit_lasna(u"N", u"PRESENT", None, False) == u"N"
+    assert api_ilmoittautunut_emit_lasna(u"N", u"OK", None, False) == u"N"
     assert api_ilmoittautunut_emit_lasna(u"N", u"LASNA", u"N", False) == u"N"
     assert api_ilmoittautunut_emit_lasna(u"N", u"LASNA", u"-", False) == u"-"
     assert api_ilmoittautunut_emit_lasna(u"N", u"OK", None, True) == u"-"
     assert api_ilmoittautunut_emit_lasna(u"-", u"LASNA", None, False) == u"-"
+
+    assert teejari_sanitize_tark(u"N") == u"N"
+    assert teejari_sanitize_tark(u"-") == u"-"
+    assert teejari_sanitize_tark(u"K") == u"K"
+    assert teejari_sanitize_tark(u"") == u"-"
+    assert teejari_sanitize_tark(u"Z") == u"-"
 
     hk_tls = open(os.path.join(ROOT, "TPsource", "V52", "Hk", "HkTls.cpp"),
                   encoding="utf-8", errors="replace").read()
@@ -260,6 +274,10 @@ def test_ilmoittautunut_tark():
     vix = open(os.path.join(ROOT, "TPsource", "V52", "Juk", "VIx.cpp"),
                encoding="utf-8", errors="replace").read()
     assert '"-KHEPITN"' in vix
+    hk_ix = open(os.path.join(ROOT, "TPsource", "V52", "Hk", "HkIx.cpp"),
+                 encoding="utf-8", errors="replace").read()
+    # teejari on open used to rewrite N → '-' because N was missing from this charset.
+    assert 'wcswcind(kilp.tark(k_pv), L"-KOHEVPTIXMBN")' in hk_ix
 
     for rel in (
             os.path.join("TPsource", "V52", "cbHk", "ApiSaike.cpp"),
@@ -269,8 +287,10 @@ def test_ilmoittautunut_tark():
         assert 'case L\'N\': return L"ILMOITTAUTUNUT"' not in text
         assert 'CompareIC(L"ILMOITTAUTUNUT")' in text
         assert "ApiIlmoittautunutEmitLasna" in text
-        assert "ApiStatusEmitLasna" in text
+        assert "ApiStatusEmitLasna" not in text
         assert "m == L'-'" in text
+        assert "status LASNA alone" in text
+        assert "ApiStatusEmitLasna(status)" not in text
 
     emit_hk = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "UnitEmit.cpp"),
                    encoding="utf-8", errors="replace").read()

@@ -1743,7 +1743,7 @@ INT teejarj(bool uusinta)
 				memcpy((char *)ip, (char *)keyn, nameindex.keyl);
 				ip += nameindex.recl;
 				}
-			if (!kilp.tark(k_pv) || wcswcind(kilp.tark(k_pv), L"-KOHEVPTIXMB") < 0) {
+			if (!kilp.tark(k_pv) || wcswcind(kilp.tark(k_pv), L"-KOHEVPTIXMBN") < 0) {
 				kilp.set_tark(L'-', k_pv);
 				muutos = 1;
 				}
