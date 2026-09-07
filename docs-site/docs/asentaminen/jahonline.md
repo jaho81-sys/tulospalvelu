@@ -39,7 +39,7 @@ Kun kilpailijan emit-kortti luetaan (leimantarkastus tai parametrin
 
 1. yhdistää kortin kilpailijan tietoihin (`KILP.DAT`)
 2. merkitsee kilpailijan **läsnäolevaksi**, jos hänet oli merkitty
-   poissaolevaksi, ei-lähteneeksi tai vakantiksi
+   poissaolevaksi, ei-lähteneeksi, vakantiksi tai ilmoittautuneeksi
 3. lähettää läsnäolotiedon heti JAHOnlineen (`lasna: true`, status `LASNA`
    kun tulosta ei vielä ole)
 

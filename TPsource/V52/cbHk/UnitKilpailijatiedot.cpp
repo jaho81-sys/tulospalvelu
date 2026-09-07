@@ -382,6 +382,9 @@ void __fastcall TFormKilpailijatiedot::naytaTiedot(void)
 								case L'P' :
 									wcscpy(line, L"Poissa");
 									break;
+								case L'N' :
+									wcscpy(line, L"Ilmoittautunut");
+									break;
 								default :
 									wcscpy(line, L"Avoin");
 									break;
@@ -953,6 +956,12 @@ int __fastcall TFormKilpailijatiedot::paivitaMuutos(int col, int row)
 					else
 						kh = L'H';
 					break;
+				case L'I' :
+					if (PvGrid->Cells[col][k].Length() > 1 && towupper(PvGrid->Cells[col][k][2]) == L'L')
+						kh = L'N';
+					else
+						kh = L'I';
+					break;
 				case L'A' :
 				case L'L' :
 					kh = L'-';
@@ -994,6 +1003,9 @@ int __fastcall TFormKilpailijatiedot::paivitaMuutos(int col, int row)
 					break;
 				case L'P' :
 					wcscpy(line, L"Poissa");
+					break;
+				case L'N' :
+					wcscpy(line, L"Ilmoittautunut");
 					break;
 				default :
 					wcscpy(line, L"Avoin");

@@ -144,7 +144,7 @@ bool __fastcall TFormJoukkueet::Mukana(int d)
 	if (FormSuodatus->CBTark->ItemIndex > 0) {
 		wchar_t kh;
 		kh = KilpA[d].wTark(os, 0);
-		if (L" -THKIEP"[FormSuodatus->CBTark->ItemIndex] != kh)
+		if (L" -THKIEVPN"[FormSuodatus->CBTark->ItemIndex] != kh)
 			return(false);
 		}
 
@@ -517,6 +517,9 @@ void __fastcall TFormJoukkueet::naytaTiedot(void)
 								case L'P' :
 									wcscpy(line, L"Poissa");
 									break;
+								case L'N' :
+									wcscpy(line, L"Ilmoittautunut");
+									break;
 								default :
 									wcscpy(line, L"Avoin");
 									break;
@@ -713,6 +716,13 @@ int __fastcall TFormJoukkueet::tallennaTiedot(void)
 										case L'E' :
 											if (towupper(OoGrid->Cells[col+ipv*n_monios][k].c_str()[1]) != L'S')
 												Kilp.SetTark(epv+ipv, L'E');
+											else
+												Kilp.SetTark(epv+ipv, L'I');
+											break;
+										case L'I' :
+											if (OoGrid->Cells[col+ipv*n_monios][k].Length() > 1 &&
+												towupper(OoGrid->Cells[col+ipv*n_monios][k].c_str()[1]) == L'L')
+												Kilp.SetTark(epv+ipv, L'N');
 											else
 												Kilp.SetTark(epv+ipv, L'I');
 											break;
@@ -926,6 +936,13 @@ int __fastcall TFormJoukkueet::paivitaMuutos(int col, int row)
 					else
 						kh = L'I';
 					break;
+				case L'I' :
+					if (OoGrid->Cells[col][k].Length() > 1 &&
+						towupper(OoGrid->Cells[col][k].c_str()[1]) == L'L')
+						kh = L'N';
+					else
+						kh = L'I';
+					break;
 				case L'L' :
 					kh = L'-';
 					break;
@@ -951,6 +968,9 @@ int __fastcall TFormJoukkueet::paivitaMuutos(int col, int row)
 					break;
 				case L'P' :
 					wcscpy(line, L"Poissa");
+					break;
+				case L'N' :
+					wcscpy(line, L"Ilmoittautunut");
 					break;
 				default :
 					wcscpy(line, L"Avoinna");

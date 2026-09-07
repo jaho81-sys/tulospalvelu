@@ -167,7 +167,7 @@ bool __fastcall TFormOsanottajat::Mukana(int d)
 	if (FormSuodatus->CBTark->ItemIndex > 0) {
 		wchar_t kh;
 		kh = KilpA[d].tark(i_pv);
-		if (L" -THKIEVPXMB"[FormSuodatus->CBTark->ItemIndex] != kh)
+		if (L" -THKIEVPXMBN"[FormSuodatus->CBTark->ItemIndex] != kh)
 			return(false);
 		}
 
@@ -609,6 +609,9 @@ void __fastcall TFormOsanottajat::naytaTiedot(void)
 								case L'P' :
 									wcscpy(line, L"Poissa");
 									break;
+								case L'N' :
+									wcscpy(line, L"Ilmoittautunut");
+									break;
 								default :
 									wcscpy(line, L"Läsnä");
 									break;
@@ -854,6 +857,13 @@ int __fastcall TFormOsanottajat::tallennaTiedot(void)
 											Kilp.set_tark(L'B', epv+ipv);
 										else
 											Kilp.set_tark(L'H', epv+ipv);
+										break;
+									case L'I' :
+										if (OoGrid->Cells[col+ipv][k].Length() > 1 &&
+											towupper(OoGrid->Cells[col+ipv][k].c_str()[1]) == L'L')
+											Kilp.set_tark(L'N', epv+ipv);
+										else
+											Kilp.set_tark(L'I', epv+ipv);
 										break;
 									case L'L' :
 										Kilp.set_tark(L'-', epv+ipv);
@@ -1137,6 +1147,13 @@ int __fastcall TFormOsanottajat::paivitaMuutos(int col, int row)
 					else
 						kh = L'V';
 					break;
+				case L'I' :
+					if (OoGrid->Cells[col][k].Length() > 1 &&
+						towupper(OoGrid->Cells[col][k].c_str()[1]) == L'L')
+						kh = L'N';
+					else
+						kh = L'I';
+					break;
 				case L'L' :
 					kh = L'-';
 					break;
@@ -1177,6 +1194,9 @@ int __fastcall TFormOsanottajat::paivitaMuutos(int col, int row)
 					break;
 				case L'P' :
 					wcscpy(line, L"Poissa");
+					break;
+				case L'N' :
+					wcscpy(line, L"Ilmoittautunut");
 					break;
 				default :
 					wcscpy(line, L"Läsnä");

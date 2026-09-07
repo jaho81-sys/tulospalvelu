@@ -171,6 +171,108 @@ def test_synkka_not_started_without_kilpailu():
     print("ok synkka lifecycle")
 
 
+def lasna_hk(tark):
+    return tark not in (u"P", u"E", u"V", u"N")
+
+
+def status_merkki(keskhyl, on_lasna, on_tulos):
+    if keskhyl == u"N":
+        return u"ILMOITTAUTUNUT"
+    if keskhyl == u"T":
+        return u"DNS"
+    if keskhyl == u"H":
+        return u"DNF"
+    if keskhyl == u"K":
+        return u"DSQ"
+    if keskhyl == u"E":
+        return u"DNS"
+    if on_lasna and not on_tulos:
+        return u"LASNA"
+    if on_lasna:
+        return u"OK"
+    return u"DNS"
+
+
+def parse_lasna_text(text):
+    """Grid first-letter parse: esItys (E+S→I) vs Ilmoittautunut (I+L→N)."""
+    if not text:
+        return u"-"
+    t = text.upper()
+    if t[0] == u"E":
+        if len(t) > 1 and t[1] == u"S":
+            return u"I"
+        return u"E"
+    if t[0] == u"I":
+        if len(t) > 1 and t[1] == u"L":
+            return u"N"
+        return u"I"
+    if t[0] == u"L":
+        return u"-"
+    return t[0]
+
+
+def test_ilmoittautunut_tark():
+    assert lasna_hk(u"-")
+    assert lasna_hk(u"T")
+    assert not lasna_hk(u"N")
+    assert not lasna_hk(u"P")
+    assert not lasna_hk(u"E")
+    assert status_merkki(u"N", False, False) == u"ILMOITTAUTUNUT"
+    assert status_merkki(u"N", True, False) == u"ILMOITTAUTUNUT"
+    assert status_merkki(u"-", True, False) == u"LASNA"
+    assert parse_lasna_text(u"esItys") == u"I"
+    assert parse_lasna_text(u"Ilmoittautunut") == u"N"
+    assert parse_lasna_text(u"Ilmoitt.") == u"N"
+    assert parse_lasna_text(u"I") == u"I"
+    assert parse_lasna_text(u"Läsnä") == u"-"
+
+    hk_tls = open(os.path.join(ROOT, "TPsource", "V52", "Hk", "HkTls.cpp"),
+                  encoding="utf-8", errors="replace").read()
+    assert 'wcswcind(kh, L"-TIHKOEVPXMBN")' in hk_tls
+    assert "tark(i_pv) != L'N'" in hk_tls
+
+    vkilp = open(os.path.join(ROOT, "TPsource", "V52", "Juk", "vkilp.cpp"),
+                 encoding="utf-8", errors="replace").read()
+    assert 'stschind(trk, "-TIKHEVPN")' in vkilp
+    assert 'return(L"Ilmoitt.")' in vkilp
+
+    for rel in (
+            os.path.join("TPsource", "V52", "cbHk", "ApiSaike.cpp"),
+            os.path.join("TPsource", "V52", "ViestiWin", "ApiSaike.cpp"),
+            ):
+        text = open(os.path.join(ROOT, rel), encoding="utf-8", errors="replace").read()
+        assert 'case L\'N\': return L"ILMOITTAUTUNUT"' in text
+        assert 'CompareIC(L"ILMOITTAUTUNUT")' in text
+        assert "t == L'N'" in text
+
+    emit_hk = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "UnitEmit.cpp"),
+                   encoding="utf-8", errors="replace").read()
+    assert 'TarkKoodit[] = L"--TIKHEVPMXBN"' in emit_hk
+    assert "t == L'N'" in emit_hk
+    dfm = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "UnitEmit.dfm"),
+               encoding="utf-8", errors="replace").read()
+    assert dfm.rstrip().endswith("") or "Ilmoittautunut" in dfm
+    # New combo item must be last so existing ItemIndex values stay valid.
+    items = re.findall(r"'([^']*)'", dfm.split("object TarkVal:", 1)[1].split("end", 1)[0])
+    assert items[-1] == "Ilmoittautunut"
+    assert items[-2] == "Havaittu"
+
+    emit_v = open(os.path.join(ROOT, "TPsource", "V52", "ViestiWin", "UnitEmit.cpp"),
+                  encoding="utf-8", errors="replace").read()
+    assert 'koodit[] = L"--TIKHEVPN"' in emit_v
+    vdfm = open(os.path.join(ROOT, "TPsource", "V52", "ViestiWin", "UnitEmit.dfm"),
+                encoding="utf-8", errors="replace").read()
+    vitems = re.findall(r"'([^']*)'", vdfm.split("object TarkVal:", 1)[1].split("end", 1)[0])
+    assert vitems[-1] == "Ilmoittautunut"
+
+    oo = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "UnitOsanottajat.cpp"),
+              encoding="utf-8", errors="replace").read()
+    assert "case L'N'" in oo
+    assert "Ilmoittautunut" in oo
+    assert "THKIEVPXMBN" in oo
+    print("ok ilmoittautunut tark")
+
+
 def main():
     test_tapahtuma_yksilo()
     test_tapahtuma_viesti()
@@ -180,6 +282,7 @@ def main():
     test_synkka_not_started_without_kilpailu()
     test_aika_sec_units()
     test_cpp_converts_ticks_to_seconds()
+    test_ilmoittautunut_tark()
     print("all ok")
     return 0
 

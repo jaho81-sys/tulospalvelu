@@ -44,7 +44,7 @@
 #pragma resource "*.dfm"
 extern TFormEmit *FormEmit;
 
-static wchar_t TarkKoodit[] = L"--TIKHEVPMXB";
+static wchar_t TarkKoodit[] = L"--TIKHEVPMXBN";
 
 //---------------------------------------------------------------------------
 __fastcall TFormEmit::TFormEmit(TComponent* Owner)
@@ -1602,7 +1602,7 @@ int __fastcall TFormEmit::tallennaKilpailija(bool kysy)
 		}
 	if (!Kilp.lasna(k_pv)) {
 		wchar_t t = Kilp.tark(k_pv);
-		if (t == L'E' || t == L'P' || t == L'V' || t == L'B')
+		if (t == L'E' || t == L'P' || t == L'V' || t == L'B' || t == L'N')
 			Kilp.set_tark(L'-', k_pv);
 		}
 /*	if (kuntosuunnmoodi && (kuntosuunnmoodi == 2 || Kilp.pv[k_pv].uusi != 'U') &&
@@ -2616,7 +2616,7 @@ void __fastcall TFormEmit::TallennaMuutokset(void)
 	kilp.GETREC(DKilp);
 	if (kilp.p_aika(0) == 0)
 		kilpVapaa |= 1;
-	if (kilp.tark(k_pv) == L'-' || kilp.tark(k_pv) == L'E' || kilp.tark(k_pv) == L'B' || kilp.tark(k_pv) == L'V')
+	if (kilp.tark(k_pv) == L'-' || kilp.tark(k_pv) == L'E' || kilp.tark(k_pv) == L'B' || kilp.tark(k_pv) == L'V' || kilp.tark(k_pv) == L'N')
 		kilpVapaa |= 2;
 	if (Vast == 3) {
 

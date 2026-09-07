@@ -86,6 +86,7 @@ void __fastcall TApiSaike::Paivita(const UnicodeString msg, bool virhe)
 static UnicodeString StatusMerkki(wchar_t keskhyl, bool onLasna, bool onTulos)
 {
 	switch (keskhyl) {
+	case L'N': return L"ILMOITTAUTUNUT";
 	case L'T': return L"DNS";
 	case L'H': return L"DNF";
 	case L'K': return L"DSQ";
@@ -101,6 +102,8 @@ static UnicodeString StatusMerkki(wchar_t keskhyl, bool onLasna, bool onTulos)
 
 static wchar_t StatusMerkkiin(const UnicodeString& st)
 {
+	if (st.CompareIC(L"ILMOITTAUTUNUT") == 0 || st.CompareIC(L"REGISTERED") == 0)
+		return L'N';
 	if (st.CompareIC(L"DNS") == 0 || st.CompareIC(L"EI_LAHTENYT") == 0)
 		return L'T';
 	if (st.CompareIC(L"DNF") == 0 || st.CompareIC(L"KESKEYTTI") == 0)
@@ -348,7 +351,7 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 				}
 				if (lasnaAnnettu && lasnaFlag && !kilp.lasna(ipv)) {
 					wchar_t t = kilp.tark(ipv);
-					if (t == L'E' || t == L'P' || t == L'V' || t == L'B' || t == L'T')
+					if (t == L'E' || t == L'P' || t == L'V' || t == L'B' || t == L'T' || t == L'N')
 						kilp.set_tark(L'-', ipv);
 				}
 				if (aikaSec >= 0)

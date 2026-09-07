@@ -374,9 +374,9 @@ void __fastcall TFormEmit::NaytaKilp(void)
 		CRata->ItemIndex = rr < 0 ? 0 : rr;
 		EdtSelitys->Text = UnicodeString(Kilp.Selitys(Osuus));
 		if (kilpparam.partio)
-			TarkVal->ItemIndex = wcswcind(Kilp.wTark(Sarjat[Kilp.sarja].osuusluku-1, false), L"-TIKHEVP");
+			TarkVal->ItemIndex = wcswcind(Kilp.wTark(Sarjat[Kilp.sarja].osuusluku-1, false), L"-TIKHEVPN");
 		else
-			TarkVal->ItemIndex = wcswcind(Kilp.wTark(Osuus, false), L"-TIKHEVP");
+			TarkVal->ItemIndex = wcswcind(Kilp.wTark(Osuus, false), L"-TIKHEVPN");
 		LblSulj->Visible = Kilp.wTark(Osuus, true) == L'S';
 		EdtSakkoja->Enabled = (Sarjat[Kilp.sarja].tsak[Osuus] != 0);
 		if (Sarjat[Kilp.sarja].tsak[Osuus])
@@ -1195,7 +1195,7 @@ void __fastcall TFormEmit::EdtBadgeExit(TObject *Sender)
 void __fastcall TFormEmit::tallennaKilpailija(bool kysy)
 {
 	int d, bdg, orgbdg;
-	wchar_t koodit[] = L"--TIKHEP";
+	wchar_t koodit[] = L"--TIKHEVPN";
 	wchar_t st[20];
 
 	if (DKilp != getpos(Kilp.kilpno)) {
@@ -2173,7 +2173,7 @@ void __fastcall TFormEmit::TallennaMuutokset(void)
 	kilp.getrec(DKilp);
 	if (kilp.Maali(Osuus, 0) == TMAALI0)
 		kilpVapaa = 1;
-	if (kilp.wTark(Osuus, false) == L'-' || kilp.wTark(Osuus, false) == L'E' || kilp.wTark(Osuus, false) == L'V')
+	if (kilp.wTark(Osuus, false) == L'-' || kilp.wTark(Osuus, false) == L'E' || kilp.wTark(Osuus, false) == L'V' || kilp.wTark(Osuus, false) == L'N' || kilp.wTark(Osuus, false) == L'P')
 		kilpVapaa |= 2;
 
 	// Tallenna alkuperäinen badge[0] kakkospaikkaan

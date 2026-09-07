@@ -311,6 +311,9 @@ void __fastcall TFormJoukkuetiedot::naytaTiedot(void)
 									case L'P' :
 										wcscpy(line, L"Poissa");
 										break;
+									case L'N' :
+										wcscpy(line, L"Ilmoittautunut");
+										break;
 									default :
 										wcscpy(line, L"Avoin");
 										break;
@@ -677,6 +680,10 @@ int __fastcall TFormJoukkuetiedot::paivitaMuutos(int col, int row)
 						kh = L'E';
 					else
 						kh = L'I';
+					break;
+				case L'I' :
+					if (OsGrid->Cells[col][k].Length() > 1 && towupper(OsGrid->Cells[col][k].c_str()[1]) == L'L')
+						kh = L'N';
 					break;
 				case L'A' :
 				case L'L' :

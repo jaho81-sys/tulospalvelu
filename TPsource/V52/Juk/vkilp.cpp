@@ -1093,6 +1093,8 @@ wchar_t *kilptietue::TarkStr(int osuus, bool naytasulj /* = false */, int lang /
 				return(L"Ei läht.");
 			case L'P' :
 				return(L"Poissa");
+			case L'N' :
+				return(L"Ilmoitt.");
 			case L'S' :
 				return(L"Sulj.");
 			default:
@@ -1113,6 +1115,8 @@ wchar_t *kilptietue::TarkStr(int osuus, bool naytasulj /* = false */, int lang /
 				return(L"DNS");
 			case L'P' :
 				return(L"Absent");
+			case L'N' :
+				return(L"Entered");
 			case L'S' :
 				return(L"Closed");
 			default:
@@ -1165,6 +1169,8 @@ wchar_t *kilptietue::tTarkStr(int osuus, int lang /* = 0 */)
 				return(L"Ei läht.");
 			case L'P' :
 				return(L"Poissa");
+			case L'N' :
+				return(L"Ilmoitt.");
 			case L'S' :
 				return(L"Sulj.");
 			default:
@@ -1185,6 +1191,8 @@ wchar_t *kilptietue::tTarkStr(int osuus, int lang /* = 0 */)
 				return(L"DNS");
 			case L'P' :
 				return(L"Absent");
+			case L'N' :
+				return(L"Entered");
 			case L'S' :
 				return(L"Closed");
 			default:
@@ -1360,7 +1368,7 @@ bool kilptietue::Sulj(int osuus)
 
 void kilptietue::SetTark(int osuus, char trk)
 {
-	if (stschind(trk, "-TIKHEP") >= 0)
+	if (stschind(trk, "-TIKHEVPN") >= 0)
 		ostiet[osuus].keskhyl = trk;
 }
 

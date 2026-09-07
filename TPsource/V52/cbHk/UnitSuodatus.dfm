@@ -145,7 +145,8 @@ object FormSuodatus: TFormSuodatus
       'Poissa'
       'Virhe'
       'Ei aikaa'
-      'Havaittu')
+      'Havaittu'
+      'Ilmoittautunut')
   end
   object CBVaihe: TComboBox
     Left = 24

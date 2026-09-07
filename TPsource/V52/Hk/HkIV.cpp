@@ -571,7 +571,7 @@ void tall_elahto(int badge, int t)
 	if ((d = getpos(bdg2kno(badge))) > 0) {
 		EnterCriticalSection(&tall_CriticalSection);
 		kilp.GETREC(d);
-		if ((kilp.tark() == L'E' || kilp.tark() == L'V') || eNollausAjat > 1) {
+		if ((kilp.tark() == L'E' || kilp.tark() == L'V' || kilp.tark() == L'N') || eNollausAjat > 1) {
 			kilp.set_tark(L'-');
 			if (eNollausAjat)
 				kilp.tall_laika(t);
@@ -708,7 +708,7 @@ void tall_etulos(INT32 badge, INT32 t, INT32 tms, INT r_no, int Jono)
 					tallfl = true;
 					}
 				}
-			if (!pvparam[k_pv].hiihtolahto && (kilp.tark() == L'E' || kilp.tark() == L'B')) {
+			if (!pvparam[k_pv].hiihtolahto && (kilp.tark() == L'E' || kilp.tark() == L'B' || kilp.tark() == L'N')) {
 				kilp.set_tark(L'-');
 				tallfl = true;
 				}
@@ -2965,7 +2965,7 @@ INT tall_regnly(san_type *vastaus, INT r_no)
 				entkilp = kilp;
 			ut.kno = kilp.id();
 			kilp.tall_tulos(-1, pyoristatls(purajak(ut.t), 1));
-			if (kilp.tark() == L'E' || kilp.tark() == L'B')
+			if (kilp.tark() == L'E' || kilp.tark() == L'B' || kilp.tark() == L'N')
 				kilp.set_tark(L'-');
 			tall_fl = 1;
 			}
@@ -2977,7 +2977,7 @@ INT tall_regnly(san_type *vastaus, INT r_no)
 				kilp.GETREC(d);
 				entkilp = kilp;
 				ut.kno = kilp.id();
-				if (kilp.tark() == L'E' || kilp.tark() == L'B') {
+				if (kilp.tark() == L'E' || kilp.tark() == L'B' || kilp.tark() == L'N') {
 					kilp.set_tark(L'-');
 					tall_fl = 1;
 					}

@@ -165,6 +165,7 @@ void __fastcall TApiSaike::Paivita(const UnicodeString msg, bool virhe)
 static UnicodeString StatusMerkki(wchar_t keskhyl, bool onLasna, bool onTulos)
 {
 	switch (keskhyl) {
+	case L'N': return L"ILMOITTAUTUNUT";
 	case L'T': return L"DNS";
 	case L'H': return L"DNF";
 	case L'K': return L"DSQ";
@@ -180,6 +181,8 @@ static UnicodeString StatusMerkki(wchar_t keskhyl, bool onLasna, bool onTulos)
 
 static wchar_t StatusMerkkiin(const UnicodeString& st)
 {
+	if (st.CompareIC(L"ILMOITTAUTUNUT") == 0 || st.CompareIC(L"REGISTERED") == 0)
+		return L'N';
 	if (st.CompareIC(L"DNS") == 0 || st.CompareIC(L"EI_LAHTENYT") == 0)
 		return L'T';
 	if (st.CompareIC(L"DNF") == 0 || st.CompareIC(L"KESKEYTTI") == 0)
@@ -212,7 +215,7 @@ static UnicodeString ApiOsuusObj(kilptietue& kilp, int os)
 	INT32 tls = ApiViestiTulosTicks(kilp, os, 0);
 	wchar_t tark = kilp.wTark(os);
 	bool onLasna = kilp.osHyv(os) || tark == L'-' || tark == L'T';
-	if (tark == L'P' || tark == L'E' || tark == L'V' || tark == L'B')
+	if (tark == L'P' || tark == L'E' || tark == L'V' || tark == L'B' || tark == L'N')
 		onLasna = false;
 
 	UnicodeString valia = L"[";
@@ -373,7 +376,7 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 			}
 			if (lasnaAnnettu && lasnaFlag) {
 				wchar_t t = kilp.wTark(os);
-				if (t == L'E' || t == L'P' || t == L'V' || t == L'B' || t == L'T')
+				if (t == L'E' || t == L'P' || t == L'V' || t == L'B' || t == L'T' || t == L'N')
 					kilp.SetTark(os, L'-');
 			}
 			if (aikaSec >= 0)

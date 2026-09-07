@@ -52,8 +52,9 @@ Bodyyn aina: `"kilpailu_id": <int>`
 `sarja_nimi`, `badge`/`emit_koodi`, `lasna`, `status`, `aika_sec`, `sija`,
 `lahto_aika` / `pirila_lahto_at` / `lahto_sec`, `valiajat[]`
 
-`lasna` on boolean (`true`, kun kilpailija on läsnä: ei poissa/ei-lähtenyt/vakantti).
-`status` on `LASNA`, kun läsnäolo on merkitty mutta tulosta ei vielä ole; muuten
+`lasna` on boolean (`true`, kun kilpailija on läsnä: ei poissa/ei-lähtenyt/vakantti/ilmoittautunut).
+`status` on `LASNA`, kun läsnäolo on merkitty mutta tulosta ei vielä ole;
+`ILMOITTAUTUNUT`, kun tark-merkintä on ilmoittautunut (`N`); muuten
 `OK` / `DNS` / `DNF` / `DSQ`.
 
 ### `synkkaa` (Pirilä → JAHOnline)

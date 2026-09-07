@@ -124,6 +124,12 @@ void __fastcall TFormKilpailijaEmit::naytaTiedot(void)
 			case L'V' :
 				Tulos->Text = UnicodeString(L"Vakant");
 				break;
+			case L'N' :
+				Tulos->Text = UnicodeString(L"Ilmoitt.");
+				break;
+			case L'P' :
+				Tulos->Text = UnicodeString(L"Poissa");
+				break;
 			case L'-' :
 			case L'T' :
 			case L'I' :

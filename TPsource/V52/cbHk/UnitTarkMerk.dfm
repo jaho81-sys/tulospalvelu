@@ -1137,7 +1137,8 @@ object FormTarkMerk: TFormTarkMerk
       'Avoin'
       'Tarkastettu'
       'Keskeytt'#228'nyt'
-      'Hyl'#228'tty')
+      'Hyl'#228'tty'
+      'Ilmoittautunut')
   end
   object CBVaihe: TComboBox
     Left = 189
