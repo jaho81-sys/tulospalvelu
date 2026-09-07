@@ -172,12 +172,10 @@ def test_synkka_not_started_without_kilpailu():
 
 
 def lasna_hk(tark):
-    return tark not in (u"P", u"E", u"V", u"N")
+    return tark not in (u"P", u"E", u"V")
 
 
 def status_merkki(keskhyl, on_lasna, on_tulos):
-    if keskhyl == u"N":
-        return u"ILMOITTAUTUNUT"
     if keskhyl == u"T":
         return u"DNS"
     if keskhyl == u"H":
@@ -191,6 +189,19 @@ def status_merkki(keskhyl, on_lasna, on_tulos):
     if on_lasna:
         return u"OK"
     return u"DNS"
+
+
+def api_ilmoittautunut_emit_lasna(tark, status, keskhyl, on_emit):
+    """N → läsnä (-) on start-gate emit, not on echo of our own synkkaa."""
+    if tark != u"N":
+        return tark
+    if on_emit:
+        return u"-"
+    if keskhyl is not None and keskhyl[:1] == u"-":
+        return u"-"
+    if keskhyl is None and status.upper() in (u"LASNA", u"PRESENT", u"OK"):
+        return u"-"
+    return tark
 
 
 def parse_lasna_text(text):
@@ -214,36 +225,52 @@ def parse_lasna_text(text):
 def test_ilmoittautunut_tark():
     assert lasna_hk(u"-")
     assert lasna_hk(u"T")
-    assert not lasna_hk(u"N")
+    assert lasna_hk(u"N")
     assert not lasna_hk(u"P")
     assert not lasna_hk(u"E")
-    assert status_merkki(u"N", False, False) == u"ILMOITTAUTUNUT"
-    assert status_merkki(u"N", True, False) == u"ILMOITTAUTUNUT"
+    assert status_merkki(u"N", True, False) == u"LASNA"
     assert status_merkki(u"-", True, False) == u"LASNA"
+    assert status_merkki(u"N", True, True) == u"OK"
     assert parse_lasna_text(u"esItys") == u"I"
     assert parse_lasna_text(u"Ilmoittautunut") == u"N"
     assert parse_lasna_text(u"Ilmoitt.") == u"N"
     assert parse_lasna_text(u"I") == u"I"
     assert parse_lasna_text(u"Läsnä") == u"-"
 
+    assert api_ilmoittautunut_emit_lasna(u"N", u"LASNA", None, False) == u"-"
+    assert api_ilmoittautunut_emit_lasna(u"N", u"LASNA", u"N", False) == u"N"
+    assert api_ilmoittautunut_emit_lasna(u"N", u"LASNA", u"-", False) == u"-"
+    assert api_ilmoittautunut_emit_lasna(u"N", u"OK", None, True) == u"-"
+    assert api_ilmoittautunut_emit_lasna(u"-", u"LASNA", None, False) == u"-"
+
     hk_tls = open(os.path.join(ROOT, "TPsource", "V52", "Hk", "HkTls.cpp"),
                   encoding="utf-8", errors="replace").read()
     assert 'wcswcind(kh, L"-TIHKOEVPXMBN")' in hk_tls
-    assert "tark(i_pv) != L'N'" in hk_tls
+    assert "tark(i_pv) == L'N'" in hk_tls
+    assert "tark(i_pv) != L'N'" not in hk_tls
 
     vkilp = open(os.path.join(ROOT, "TPsource", "V52", "Juk", "vkilp.cpp"),
                  encoding="utf-8", errors="replace").read()
     assert 'stschind(trk, "-TIKHEVPN")' in vkilp
+    assert 'stschind(ch, "TI-N")' in vkilp
     assert 'return(L"Ilmoitt.")' in vkilp
+    vdat = open(os.path.join(ROOT, "TPsource", "V52", "Juk", "vdat.cpp"),
+                encoding="utf-8", errors="replace").read()
+    assert '"-TIKHEPN"' in vdat
+    vix = open(os.path.join(ROOT, "TPsource", "V52", "Juk", "VIx.cpp"),
+               encoding="utf-8", errors="replace").read()
+    assert '"-KHEPITN"' in vix
 
     for rel in (
             os.path.join("TPsource", "V52", "cbHk", "ApiSaike.cpp"),
             os.path.join("TPsource", "V52", "ViestiWin", "ApiSaike.cpp"),
             ):
         text = open(os.path.join(ROOT, rel), encoding="utf-8", errors="replace").read()
-        assert 'case L\'N\': return L"ILMOITTAUTUNUT"' in text
+        assert 'case L\'N\': return L"ILMOITTAUTUNUT"' not in text
         assert 'CompareIC(L"ILMOITTAUTUNUT")' in text
-        assert "t == L'N'" in text
+        assert "ApiIlmoittautunutEmitLasna" in text
+        assert "ApiStatusEmitLasna" in text
+        assert "m == L'-'" in text
 
     emit_hk = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "UnitEmit.cpp"),
                    encoding="utf-8", errors="replace").read()
@@ -270,6 +297,24 @@ def test_ilmoittautunut_tark():
     assert "case L'N'" in oo
     assert "Ilmoittautunut" in oo
     assert "THKIEVPXMBN" in oo
+
+    hk_menu = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "WinHk.dfm"),
+                   encoding="utf-8", errors="replace").read()
+    assert "NaytaMaastossa1" in hk_menu
+    assert "maastossa olevat kilpailijat" in hk_menu
+    v_menu = open(os.path.join(ROOT, "TPsource", "V52", "ViestiWin", "UnitMain.dfm"),
+                  encoding="utf-8", errors="replace").read()
+    assert "NaytaMaastossa1" in v_menu
+    assert "maastossa olevat kilpailijat" in v_menu
+
+    for rel in (
+            os.path.join("TPsource", "V52", "cbHk", "UnitMaastossa.cpp"),
+            os.path.join("TPsource", "V52", "ViestiWin", "UnitMaastossa.cpp"),
+            ):
+        text = open(os.path.join(ROOT, rel), encoding="utf-8", errors="replace").read()
+        assert "haeKilpailijat" in text
+        assert "Viim.va" in text
+        assert "ilman tulosta" in text
     print("ok ilmoittautunut tark")
 
 

@@ -1327,7 +1327,7 @@ bool kilptietue::osHyv(int osuus)
 	char ch;
 
 	ch = Tark(osuus, 0);
-	return(stschind(ch, "TI-") >= 0);
+	return(stschind(ch, "TI-N") >= 0);
 }
 
 bool kilptietue::tHyv(int osuus /* =-1 */)
@@ -1337,7 +1337,7 @@ bool kilptietue::tHyv(int osuus /* =-1 */)
 	else
 		osuus = Sarjat[sarja].aosuus[osuus+1];
 	for (int os = 0; os <= osuus; os++)
-		if (stschind(ostiet[os].keskhyl, "TI-") < 0)
+		if (stschind(ostiet[os].keskhyl, "TI-N") < 0)
 			return(false);
 	return(true);
 }
@@ -1347,7 +1347,7 @@ bool kilptietue::Hyv(int osuus /* =-1 */)
 	if (osuus == -1)
 		osuus = Sarjat[sarja].osuusluku-1;
 	for (int os = 0; os <= osuus; os++)
-		if (stschind(ostiet[os].keskhyl, "TI-") < 0)
+		if (stschind(ostiet[os].keskhyl, "TI-N") < 0)
 			return(false);
 	return(true);
 }
