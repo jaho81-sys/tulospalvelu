@@ -299,7 +299,7 @@ static int kilpTarkasta(kilptietue *kilp)
 			erflag |= 4;
 			erflag |= 128*(os+1);
 			}
-		if (stschind(kilp->ostiet[os].keskhyl, "-TIKHEP") < 0) {
+		if (stschind(kilp->ostiet[os].keskhyl, "-TIKHEPN") < 0) {
 			kilp->ostiet[os].keskhyl = '-';
 			erflag |= 8;
 			erflag |= 128*(os+1);

@@ -86,7 +86,6 @@ void __fastcall TApiSaike::Paivita(const UnicodeString msg, bool virhe)
 static UnicodeString StatusMerkki(wchar_t keskhyl, bool onLasna, bool onTulos)
 {
 	switch (keskhyl) {
-	case L'N': return L"ILMOITTAUTUNUT";
 	case L'T': return L"DNS";
 	case L'H': return L"DNF";
 	case L'K': return L"DSQ";
@@ -113,6 +112,33 @@ static wchar_t StatusMerkkiin(const UnicodeString& st)
 	if (st.CompareIC(L"LASNA") == 0 || st.CompareIC(L"PRESENT") == 0)
 		return L'-';
 	return L' ';
+}
+
+static bool ApiStatusEmitLasna(const UnicodeString& status)
+{
+	return status.CompareIC(L"LASNA") == 0
+		|| status.CompareIC(L"PRESENT") == 0
+		|| status.CompareIC(L"OK") == 0;
+}
+
+// Start-gate emit on the web marks ilmoittautunut (N) as läsnä (-).
+// Echo of our own synkkaa keeps keskhyl N, so that is not treated as a start read.
+static void ApiIlmoittautunutEmitLasna(kilptietue& kilp, int ipv,
+	const UnicodeString& status, bool kesAnnettu, const UnicodeString& keskhylIn,
+	bool onEmitTieto)
+{
+	if (kilp.tark(ipv) != L'N')
+		return;
+	if (onEmitTieto) {
+		kilp.set_tark(L'-', ipv);
+		return;
+	}
+	if (kesAnnettu && keskhylIn.Length() > 0 && keskhylIn[1] == L'-') {
+		kilp.set_tark(L'-', ipv);
+		return;
+	}
+	if (!kesAnnettu && ApiStatusEmitLasna(status))
+		kilp.set_tark(L'-', ipv);
 }
 
 // JAHOnline synkka: lahto_aika / pirila_lahto_at (kellonaika) + lahto_sec (sekunnit vuorokaudesta).
@@ -346,12 +372,12 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 					kilp.pv[ipv].badge[1] = badge2;
 				if (apiconfig.vastaanottaEiLahteneet && !status.IsEmpty()) {
 					wchar_t m = StatusMerkkiin(status);
-					if (m != L' ')
+					if (m != L' ' && !(kilp.tark(ipv) == L'N' && m == L'-'))
 						kilp.set_tark(m, ipv);
 				}
 				if (lasnaAnnettu && lasnaFlag && !kilp.lasna(ipv)) {
 					wchar_t t = kilp.tark(ipv);
-					if (t == L'E' || t == L'P' || t == L'V' || t == L'B' || t == L'T' || t == L'N')
+					if (t == L'E' || t == L'P' || t == L'V' || t == L'B' || t == L'T')
 						kilp.set_tark(L'-', ipv);
 				}
 				if (aikaSec >= 0)
@@ -363,6 +389,7 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 				}
 				if (sija >= 0)
 					kilp.pv[ipv].ysija = (INT16)sija;
+				bool onEmitTieto = (aikaSec > 0);
 				if (apiconfig.vastaanottaValiajat || apiconfig.vastaanottaKilpailijat) {
 					std::vector<UnicodeString> vas;
 					if (ApiJsonExtractObjectArray(o, L"valiajat", vas) > 0) {
@@ -373,12 +400,19 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 								continue;
 							if (piste > 60)
 								continue;
-							if (ApiJsonFindInt64(vas[v], L"aika_sec", va64) && va64 > 0)
+							if (ApiJsonFindInt64(vas[v], L"aika_sec", va64) && va64 > 0) {
 								kilp.pv[ipv].va[piste].vatulos = ApiSecToTicks(va64);
+								onEmitTieto = true;
+							}
 							if (ApiJsonFindInt(vas[v], L"sija", vasija) && vasija >= 0)
 								kilp.pv[ipv].va[piste].vasija = (INT16)vasija;
 						}
 					}
+				}
+				{
+					UnicodeString kesIn;
+					bool kesAnnettu = ApiJsonFindString(o, L"keskhyl", kesIn);
+					ApiIlmoittautunutEmitLasna(kilp, ipv, status, kesAnnettu, kesIn, onEmitTieto);
 				}
 			}
 

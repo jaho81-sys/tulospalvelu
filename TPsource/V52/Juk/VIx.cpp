@@ -1226,7 +1226,7 @@ int teejarj(void)
 			continue;
 	  for (os = 0; os < Sarjat[kilp.sarja].osuusluku; os++) {
 		 if (!kilp.ostiet[os].keskhyl ||
-			stschind(kilp.ostiet[os].keskhyl, "-KHEPIT") < 0) {
+			stschind(kilp.ostiet[os].keskhyl, "-KHEPITN") < 0) {
 			kilp.ostiet[os].keskhyl = '-';
 			muuta = 1;
 			}
