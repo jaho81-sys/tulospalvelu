@@ -30,7 +30,7 @@ void __fastcall TFormMaastossa::asetaSarakkeet(void)
 {
 	static const wchar_t *ots[] = {
 		L"No", L"Os", L"Sarja", L"Nimi", L"Seura", L"Status",
-		L"L√§ht√∂", L"Viim.va", L"Va-aika", L"Va-sija"
+		L"L‰htˆ", L"Viim.va", L"Va-aika", L"Va-sija"
 	};
 	int w[] = {50, 40, 70, 180, 140, 110, 80, 60, 80, 60};
 	Grid->ColCount = 10;
@@ -50,7 +50,7 @@ void __fastcall TFormMaastossa::tarkStr(wchar_t kh, wchar_t *line)
 	case L'I': wcscpy(line, L"esItys"); break;
 	case L'K': wcscpy(line, L"Kesk"); break;
 	case L'H': wcscpy(line, L"Hyl"); break;
-	case L'E': wcscpy(line, L"Eil√§ht."); break;
+	case L'E': wcscpy(line, L"Eil‰ht."); break;
 	case L'P': wcscpy(line, L"Poissa"); break;
 	case L'V': wcscpy(line, L"Vakantti"); break;
 	default: wcscpy(line, L"Avoin"); break;
