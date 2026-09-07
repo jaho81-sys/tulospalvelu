@@ -656,25 +656,25 @@ void __fastcall TApiSaike::Kasittele(void)
 	if (apiconfig.lahetaKilpailijat || apiconfig.lahetaTulokset || apiconfig.lahetaValiajat) {
 		int n = ApiSynkkaaLahetaKaikki();
 		if (n >= 0)
-			Paivita(L"L√§hetetty osuuksia: " + IntToStr(n));
+			Paivita(L"L‰hetetty osuuksia: " + IntToStr(n));
 		else
-			Paivita(L"L√§hetys ep√§onnistui (" + IntToStr(n) + L")", true);
+			Paivita(L"L‰hetys ep‰onnistui (" + IntToStr(n) + L")", true);
 	}
 
 	if (apiconfig.lahetaValiajat) {
 		int n = ApiLahetaTapahtumatNyt();
 		if (n > 0)
-			Paivita(L"L√§hetetty online-rasteja: " + IntToStr(n));
+			Paivita(L"L‰hetetty online-rasteja: " + IntToStr(n));
 		else if (n < 0)
-			Paivita(L"Online-rastien l√§hetys ep√§onnistui (" + IntToStr(n) + L")", true);
+			Paivita(L"Online-rastien l‰hetys ep‰onnistui (" + IntToStr(n) + L")", true);
 	}
 
 	if (apiconfig.vastaanottaKilpailijat || apiconfig.vastaanottaValiajat) {
 		int n = ApiSynkkaaHaeKaikki();
 		if (n >= 0)
-			Paivita(L"Haettu/p√§ivitetty: " + IntToStr(n));
+			Paivita(L"Haettu/p‰ivitetty: " + IntToStr(n));
 		else
-			Paivita(L"Haku ep√§onnistui (" + IntToStr(n) + L")", true);
+			Paivita(L"Haku ep‰onnistui (" + IntToStr(n) + L")", true);
 	}
 }
 
