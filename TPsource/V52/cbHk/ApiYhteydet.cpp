@@ -285,9 +285,9 @@ void __fastcall TFormApiYhteydet::FormShow(TObject *Sender)
 	LueTiedot();
 	PaivitaTila(L"Asetukset: " + ApiConfigPolku());
 	if (!TApiIntegration::GetInstance()->OnKilpailuAvattu())
-		PaivitaTila(L"Kilpailua ei ole avattu ‚Äî synkkaa ei k√§ynnistet√§ ennen kuin kisa on auki.");
+		PaivitaTila(L"Kilpailua ei ole avattu - synkkaa ei k‰ynnistet‰ ennen kuin kisa on auki.");
 	else
-		PaivitaTila(L"Asetukset ladattu. Testaa (ping) k√§ynnist√§√§ synkan, Lopeta synkka pys√§ytt√§√§ sen.");
+		PaivitaTila(L"Asetukset ladattu. Testaa (ping) k‰ynnist‰‰ synkan, Lopeta synkka pys‰ytt‰‰ sen.");
 }
 
 void __fastcall TFormApiYhteydet::LueTiedot(void)
@@ -359,7 +359,7 @@ void __fastcall TFormApiYhteydet::TestaaYhteys(void)
 	ApiConfigTallenna();
 
 	if (!TApiIntegration::GetInstance()->OnKilpailuAvattu()) {
-		PaivitaTila(L"VIRHE: avaa kilpailu ensin. Synkkaa ei k√§ynnistet√§ ilman avattua kisaa.");
+		PaivitaTila(L"VIRHE: avaa kilpailu ensin. Synkkaa ei k‰ynnistet‰ ilman avattua kisaa.");
 		apiconfig.kaynnissa = 0;
 		ApiConfigTallenna();
 		NaytaYhteysTila();
@@ -377,10 +377,10 @@ void __fastcall TFormApiYhteydet::TestaaYhteys(void)
 	UnicodeString url = ApiBridgeUrl();
 	UnicodeString body = L"{\"action\":\"ping\",\"kilpailu_id\":" + IntToStr(apiconfig.kilpailuId) + L"}";
 	UnicodeString vastaus;
-	PaivitaTila(L"POST ping ‚Üí " + url);
+	PaivitaTila(L"POST ping -> " + url);
 
 	if (!ApiHttpPostJson(url, body, vastaus)) {
-		PaivitaTila(L"VIRHE: HTTP-pyynt√∂ ep√§onnistui");
+		PaivitaTila(L"VIRHE: HTTP-pyyntˆ ep‰onnistui");
 		LopetaSynkka();
 		return;
 	}
@@ -391,7 +391,7 @@ void __fastcall TFormApiYhteydet::TestaaYhteys(void)
 		ApiConfigTallenna();
 		TApiIntegration::GetInstance()->Alusta();
 		NaytaYhteysTila();
-		PaivitaTila(L"Synkka k√§ynniss√§. Lopeta synkka -nappi pys√§ytt√§√§ sen.");
+		PaivitaTila(L"Synkka k‰ynniss‰. Lopeta synkka -nappi pys‰ytt‰‰ sen.");
 	} else {
 		PaivitaTila(L"VIRHE vastaus: " + vastaus.SubString(1, 240));
 		LopetaSynkka();
@@ -427,7 +427,7 @@ void __fastcall TFormApiYhteydet::BtnLahetaNytClick(TObject *Sender)
 		return;
 	}
 	int n = ApiSynkkaaLahetaKaikki();
-	PaivitaTila(L"L√§hetys valmis, rivej√§: " + IntToStr(n));
+	PaivitaTila(L"L‰hetys valmis, rivej‰: " + IntToStr(n));
 }
 
 void __fastcall TFormApiYhteydet::BtnHaeNytClick(TObject *Sender)
@@ -439,7 +439,7 @@ void __fastcall TFormApiYhteydet::BtnHaeNytClick(TObject *Sender)
 		return;
 	}
 	int n = ApiSynkkaaHaeKaikki();
-	PaivitaTila(L"Haku valmis, p√§ivitetty: " + IntToStr(n));
+	PaivitaTila(L"Haku valmis, p‰ivitetty: " + IntToStr(n));
 }
 
 void __fastcall TFormApiYhteydet::BtnPaivitaTilaClick(TObject *Sender)
@@ -466,16 +466,16 @@ void __fastcall TFormApiYhteydet::BtnOhjeClick(TObject *Sender)
 		L"URL: https://jahonline.com/public/api/kilpailijat_bridge.php\n"
 		L"API-avain: hallinnan kilpailun api_token\n"
 		L"kilpailu_id: JAHOnline-kilpailun ID\n\n"
-		L"L√§het√§ kilpailijat ‚Üí action=synkkaa (osanottajat, ajat, l√§sn√§olo, v√§liajat)\n"
-		L"Hae kilpailijat ‚Üí action=kilpailijat (p√§ivitys paikalliseen KILP.DAT)\n"
-		L"Online-rasti / ajanotto ‚Üí action=tapahtuma (piste, aika_sec = tuloksen sekunnit)\n"
-		L"ViestiWin: sama protokolla + kentt√§ osuus (1-pohjainen).\n"
-		L"Emit-luenta merkitsee l√§htij√§n l√§sn√§olevaksi ja synkkaa heti.\n"
-		L"Testaa (ping) k√§ynnist√§√§ taustasynkan, kun kilpailu on auki.\n"
-		L"Lopeta synkka pys√§ytt√§√§ taustas√§ikeen.\n"
-		L"Synkkaa ei k√§ynnistet√§, jos kisaa ei ole avattu.\n"
+		L"L‰het‰ kilpailijat -> action=synkkaa (osanottajat, ajat, l‰sn‰olo, v‰liajat)\n"
+		L"Hae kilpailijat -> action=kilpailijat (p‰ivitys paikalliseen KILP.DAT)\n"
+		L"Online-rasti / ajanotto -> action=tapahtuma (piste, aika_sec = tuloksen sekunnit)\n"
+		L"ViestiWin: sama protokolla + kentt‰ osuus (1-pohjainen).\n"
+		L"Emit-luenta merkitsee l‰htij‰n l‰sn‰olevaksi ja synkkaa heti.\n"
+		L"Testaa (ping) k‰ynnist‰‰ taustasynkan, kun kilpailu on auki.\n"
+		L"Lopeta synkka pys‰ytt‰‰ taustas‰ikeen.\n"
+		L"Synkkaa ei k‰ynnistet‰, jos kisaa ei ole avattu.\n"
 		L"Asetukset tallennetaan kilpailun kansion jahonline_api.ini -tiedostoon\n"
-		L"ja luetaan sielt√§, kun kilpailu avataan.\n"
+		L"ja luetaan sielt‰, kun kilpailu avataan.\n"
 		L"Auth: Authorization: Bearer <api_token>\n"
 	);
 }

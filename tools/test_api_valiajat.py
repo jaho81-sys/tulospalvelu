@@ -315,6 +315,19 @@ def test_ilmoittautunut_tark():
         assert "haeKilpailijat" in text
         assert "Viim.va" in text
         assert "ilman tulosta" in text
+        raw = open(os.path.join(ROOT, rel), "rb").read()
+        # bcc32 reads source as CP1252; UTF-8 ä/ö in L"..." show as garbage.
+        assert b'L"L\xe4ht\xf6"' in raw
+        assert b"L\xc3\xa4ht" not in raw
+
+    for rel in (
+            os.path.join("TPsource", "V52", "cbHk", "ApiSaike.cpp"),
+            os.path.join("TPsource", "V52", "ViestiWin", "ApiSaike.cpp"),
+            os.path.join("TPsource", "V52", "cbHk", "ApiYhteydet.cpp"),
+            ):
+        raw = open(os.path.join(ROOT, rel), "rb").read()
+        assert b"L\xe4het" in raw
+        assert b"L\xc3\xa4het" not in raw
     print("ok ilmoittautunut tark")
 
 
