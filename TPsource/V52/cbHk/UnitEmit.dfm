@@ -658,7 +658,8 @@ object FormEmit: TFormEmit
       'Poissa'
       'Virhe'
       'Ei aikaa'
-      'Havaittu')
+      'Havaittu'
+      'Ilmoittautunut')
   end
   object SBTietue: TScrollBar
     Left = 254

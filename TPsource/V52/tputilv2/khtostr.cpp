@@ -31,6 +31,9 @@ void khtostr(char kh, char *str)
 		case 'P' :
 			strcpy(str, "Poissa");
 		break;
+		case 'N' :
+			strcpy(str, "Ilmoitt.");
+		break;
 		case 'L' :
 			strcpy(str, "Leim.hyv");
 		break;
@@ -53,6 +56,9 @@ void khtowstr(wchar_t kh, wchar_t *str)
 		break;
 		case L'P' :
 			wcscpy(str, L"Poissa");
+		break;
+		case L'N' :
+			wcscpy(str, L"Ilmoitt.");
 		break;
 		case L'L' :
 			wcscpy(str, L"Leim.hyv");

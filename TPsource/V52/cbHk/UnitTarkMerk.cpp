@@ -239,7 +239,7 @@ void __fastcall TFormTarkMerk::Edit79Change(TObject *Sender)
 
 void __fastcall TFormTarkMerk::Button1Click(TObject *Sender)
 {
-	wchar_t kh, khs[7] = L"EP-TKH";
+	wchar_t kh, khs[8] = L"EP-TKHN";
 
 	kh = khs[CBTrk->ItemIndex];
 //	if (ToimintaTila == 2 && kh == L'P') {

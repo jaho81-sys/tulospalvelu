@@ -690,6 +690,9 @@ void __fastcall TFormIlm2::naytaTiedot(int kno)
 								case L'P' :
 									wcscpy(line, L"Poissa");
 									break;
+								case L'N' :
+									wcscpy(line, L"Ilmoittautunut");
+									break;
 								default :
 									wcscpy(line, L"Läsnä");
 									break;
@@ -840,6 +843,13 @@ int __fastcall TFormIlm2::tallennaTiedot(void)
 								case L'E' :
 									if (towupper(IlmGrid->Cells[col+ipv][k].c_str()[1]) != L'S')
 										Kilp.set_tark(L'E', epv+ipv);
+									else
+										Kilp.set_tark(L'I', epv+ipv);
+									break;
+								case L'I' :
+									if (IlmGrid->Cells[col+ipv][k].Length() > 1 &&
+										towupper(IlmGrid->Cells[col+ipv][k].c_str()[1]) == L'L')
+										Kilp.set_tark(L'N', epv+ipv);
 									else
 										Kilp.set_tark(L'I', epv+ipv);
 									break;
@@ -1001,6 +1011,13 @@ int __fastcall TFormIlm2::paivitaMuutos(int col, int row)
 						else
 							kh = L'I';
 						break;
+					case L'I' :
+						if (IlmGrid->Cells[col+ipv][k].Length() > 1 &&
+							towupper(IlmGrid->Cells[col+ipv][k].c_str()[1]) == L'L')
+							kh = L'N';
+						else
+							kh = L'I';
+						break;
 					default :
 						kh = towupper(IlmGrid->Cells[col+ipv][k].c_str()[0]);
 						break;
@@ -1029,6 +1046,9 @@ int __fastcall TFormIlm2::paivitaMuutos(int col, int row)
 						break;
 					case L'P' :
 						wcscpy(line, L"Poissa");
+						break;
+					case L'N' :
+						wcscpy(line, L"Ilmoittautunut");
 						break;
 					default :
 						wcscpy(line, L"Läsnä");

@@ -1101,7 +1101,7 @@ void kilptietue::set_tark(wchar_t kh, int i_pv /* = -1 */)
 {
 	if (i_pv == -1)
 		i_pv = k_pv;
-	if (i_pv >= 0 && i_pv < kilpparam.n_pv && wcswcind(kh, L"-TIHKOEVPXMB") >= 0)
+	if (i_pv >= 0 && i_pv < kilpparam.n_pv && wcswcind(kh, L"-TIHKOEVPXMBN") >= 0)
 		pv[i_pv].keskhyl = kh;
 	else {
 		parametrivirhe(L"set_tark", i_pv, NULL, kh);
@@ -1234,7 +1234,7 @@ bool kilptietue::lasna(void)
 
 bool kilptietue::lasna(int i_pv)
 	{
-	return(tark(i_pv) != L'P' && tark(i_pv) != L'E' && tark(i_pv) != L'V' && !(kilpparam.hyvHavaittu && tark(i_pv) == L'B'));
+	return(tark(i_pv) != L'P' && tark(i_pv) != L'E' && tark(i_pv) != L'V' && tark(i_pv) != L'N' && !(kilpparam.hyvHavaittu && tark(i_pv) == L'B'));
    }
 
 INT32 kilptietue::tulos_pv(INT i_pv, bool vaadi_hyv /* = false */, int pyorista /* = 1 */)

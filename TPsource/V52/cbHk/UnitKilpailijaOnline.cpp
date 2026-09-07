@@ -280,6 +280,12 @@ void __fastcall TFormKilpailijaOnline::naytaTiedot(void)
 								case L'I' :
 									wcscpy(line, L"esItys");
 									break;
+								case L'P' :
+									wcscpy(line, L"Poissa");
+									break;
+								case L'N' :
+									wcscpy(line, L"Ilmoittautunut");
+									break;
 								default :
 									wcscpy(line, L"-");
 									break;
@@ -508,6 +514,12 @@ void __fastcall TFormKilpailijaOnline::haeTiedot(kilptietue *Kilp1)
 									Kilp1->set_tark(L'B', pv);
 								else
 									Kilp1->set_tark(L'H', pv);
+								break;
+							case L'I' :
+								if (PvGrid->Cells[k][ipv].Length() > 1 && towupper(PvGrid->Cells[k][ipv][2]) == L'L')
+									Kilp1->set_tark(L'N', pv);
+								else
+									Kilp1->set_tark(L'I', pv);
 								break;
 							case L'L' :
 							case L'A' :
@@ -946,10 +958,16 @@ void __fastcall TFormKilpailijaOnline::PvGridExit(TObject *Sender)
 								PvGrid->Cells[k][ipv+1] = UnicodeString(L"Tark.");
 								break;
 							case L'I' :
-								PvGrid->Cells[k][ipv+1] = UnicodeString(L"esItys");
+								if (PvGrid->Cells[k][ipv+1].Length() > 1 && towupper(PvGrid->Cells[k][ipv+1][2]) == L'L')
+									PvGrid->Cells[k][ipv+1] = UnicodeString(L"Ilmoittautunut");
+								else
+									PvGrid->Cells[k][ipv+1] = UnicodeString(L"esItys");
 								break;
 							case L'P' :
 								PvGrid->Cells[k][ipv+1] = UnicodeString(L"Poissa");
+								break;
+							case L'N' :
+								PvGrid->Cells[k][ipv+1] = UnicodeString(L"Ilmoittautunut");
 								break;
 							case L'V' :
 								if (PvGrid->Cells[k][ipv+1] > 1 && towupper(PvGrid->Cells[k][ipv+1][2]) == L'I')

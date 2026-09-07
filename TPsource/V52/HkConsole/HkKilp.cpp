@@ -1279,6 +1279,7 @@ INT kilptietue::inputkilp(INT addfl)
 						  case L'I' : wcscpy(tarkstr, L"esIt"); break;
 						  case L'V' : wcscpy(tarkstr, L"Vak."); break;
 						  case L'P' : wcscpy(tarkstr, L"Pois"); break;
+						  case L'N' : wcscpy(tarkstr, L"Ilmo"); break;
 						  default  : tarkstr[0] = 0;
 						  }
 					   inputwstr(tarkstr,4,x,r,termp,&tc,FALSE);
@@ -1292,7 +1293,9 @@ INT kilptietue::inputkilp(INT addfl)
 				   tarkstr[0] = towupper(tarkstr[0]);
 				   if (tarkstr[0] == L'E' && towupper(tarkstr[1]) == L'S')
 					  tarkstr[0] = L'I';
-				   if (i_pv == k_pv && (tarkstr[0] == L'E' || tarkstr[0] == L'V' || tarkstr[0] == L'P')
+				   if (tarkstr[0] == L'I' && towupper(tarkstr[1]) == L'L')
+					  tarkstr[0] = L'N';
+				   if (i_pv == k_pv && (tarkstr[0] == L'E' || tarkstr[0] == L'V' || tarkstr[0] == L'P' || tarkstr[0] == L'N')
 					  && (p_aika(0) !=0 || tark(k_pv) == L'K'
 					  || tark(k_pv) == L'H') && tc != ESC) {
 					  erbeep();

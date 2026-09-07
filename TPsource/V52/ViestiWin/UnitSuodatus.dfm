@@ -148,7 +148,8 @@ object FormSuodatus: TFormSuodatus
       'Hylk'#228'ysesitys'
       'Ei-l'#228'htenyt'
       'Vakantti'
-      'Poissa')
+      'Poissa'
+      'Ilmoittautunut')
   end
   object CBOsuus: TComboBox
     Left = 224

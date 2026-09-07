@@ -42,7 +42,7 @@ object FormMerkKoodeja: TFormMerkKoodeja
     Left = 461
     Top = 25
     Width = 127
-    Height = 170
+    Height = 188
     Caption = ' Meritt'#228'v'#228' koodi'
     Items.Strings = (
       'Ei l'#228'htenyt'
@@ -52,6 +52,7 @@ object FormMerkKoodeja: TFormMerkKoodeja
       'Tarkastettu'
       'Poissa'
       'Hylk'#228'ysesitys'
+      'Ilmoittautunut'
       'Merkitse GPS'
       'Poista GPS')
     TabOrder = 1

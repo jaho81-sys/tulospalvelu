@@ -40,7 +40,7 @@ void __fastcall TFormMerkKoodeja::FormCreate(TObject *Sender)
 	SG1->ColCount = 5;
 	SG1->Cells[0][0] = L"No";
 	SG1->Cells[1][0] = L"Osuus";
-	if (RGTark->ItemIndex >= 7)
+	if (RGTark->ItemIndex >= 8)
 		SG1->Cells[2][0] = L"GPS";
 	else
 		SG1->Cells[2][0] = L"Tila";
@@ -94,7 +94,7 @@ void __fastcall TFormMerkKoodeja::SG1KeyDown(TObject *Sender, WORD &Key, TShiftS
 			kilp.getrec(d);
 			SG1->Cells[4][SG1->Row] = kilp.Joukkue(st, 35);
 			if (os < Sarjat[kilp.sarja].osuusluku) {
-				if (RGTark->ItemIndex >= 7) {
+				if (RGTark->ItemIndex >= 8) {
 					SG1->Cells[2][SG1->Row] = kilp.Seuranta(os);
 					}
 				else
@@ -141,7 +141,7 @@ void __fastcall TFormMerkKoodeja::Button1Click(TObject *Sender)
 
 	if (RGTark->ItemIndex < 0)
 		return;
-	kh = L"E-KHTPI"[RGTark->ItemIndex];
+	kh = (RGTark->ItemIndex < 8) ? L"E-KHTPIN"[RGTark->ItemIndex] : 0;
 	EnterCriticalSection(&tall_CriticalSection);
 	for	(int r = 1; r < SG1->RowCount; r++) {
 		if ((kno = _wtoi(SG1->Cells[0][r].c_str())) >= minkilpno &&
@@ -149,7 +149,7 @@ void __fastcall TFormMerkKoodeja::Button1Click(TObject *Sender)
 			(d = getpos(kno)) > 0) {
 			kilp.getrec(d);
 			if (os < Sarjat[kilp.sarja].osuusluku) {
-				if (RGTark->ItemIndex < 7) {
+				if (RGTark->ItemIndex < 8) {
 					kilp.SetTark(os, kh);
 					if (CBJoukkEil->Checked && kh == L'E' && os == 0)
 						for (int os1 = 1; os1 < Sarjat[kilp.sarja].osuusluku; os1++)
@@ -159,10 +159,10 @@ void __fastcall TFormMerkKoodeja::Button1Click(TObject *Sender)
 							kilp.SetTark(os1, L'E');
 					}
 				else {
-					kilp.setSeuranta(os, RGTark->ItemIndex == 7 ? L'G' : 0);
+					kilp.setSeuranta(os, RGTark->ItemIndex == 8 ? L'G' : 0);
 					}
 				tallenna(&kilp, d, 0, 0, 0, 0);
-				if (RGTark->ItemIndex < 7)
+				if (RGTark->ItemIndex < 8)
 					SG1->Cells[2][r] = kilp.TarkStr(os);
 				else
 					SG1->Cells[2][r] = kilp.Seuranta(os);
