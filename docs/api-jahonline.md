@@ -52,10 +52,16 @@ Bodyyn aina: `"kilpailu_id": <int>`
 `sarja_nimi`, `badge`/`emit_koodi`, `lasna`, `status`, `aika_sec`, `sija`,
 `lahto_aika` / `pirila_lahto_at` / `lahto_sec`, `valiajat[]`
 
-`lasna` on boolean (`true`, kun kilpailija on läsnä: ei poissa/ei-lähtenyt/vakantti/ilmoittautunut).
-`status` on `LASNA`, kun läsnäolo on merkitty mutta tulosta ei vielä ole;
-`ILMOITTAUTUNUT`, kun tark-merkintä on ilmoittautunut (`N`); muuten
-`OK` / `DNS` / `DNF` / `DSQ`.
+`lasna` on boolean (`true`, kun kilpailija on läsnä: ei poissa / ei-lähtenyt /
+vakantti). Ilmoittautunut (`N`) käsitellään kuten avoin: `lasna: true` ja
+`status` on `LASNA` jos tulosta ei vielä ole, muuten `OK` / `DNS` / `DNF` /
+`DSQ`. Kirjain `N` kulkee silti kentässä `keskhyl`.
+
+Kun netin API kertoo lähtöpaikan emit-luennan merkinneen ilmoittautuneen
+läsnäolevaksi (`status` `LASNA`/`PRESENT`/`OK` ilman `keskhyl N` -kaiutusta,
+`keskhyl: "-"`, tai väliaika/`aika_sec`), Pirilä vaihtaa `N` → `-`.
+Oman synkan kaiutus (`keskhyl: "N"`) ei tee tätä muutosta. Maaliin tuleva
+ilmoittautunut saa tark./esitys-statuksen leimaustiedoista kuten avoin.
 
 ### `synkkaa` (Pirilä → JAHOnline)
 ```json

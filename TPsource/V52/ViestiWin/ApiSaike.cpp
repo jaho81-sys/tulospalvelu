@@ -165,7 +165,6 @@ void __fastcall TApiSaike::Paivita(const UnicodeString msg, bool virhe)
 static UnicodeString StatusMerkki(wchar_t keskhyl, bool onLasna, bool onTulos)
 {
 	switch (keskhyl) {
-	case L'N': return L"ILMOITTAUTUNUT";
 	case L'T': return L"DNS";
 	case L'H': return L"DNF";
 	case L'K': return L"DSQ";
@@ -194,6 +193,31 @@ static wchar_t StatusMerkkiin(const UnicodeString& st)
 	return L' ';
 }
 
+static bool ApiStatusEmitLasna(const UnicodeString& status)
+{
+	return status.CompareIC(L"LASNA") == 0
+		|| status.CompareIC(L"PRESENT") == 0
+		|| status.CompareIC(L"OK") == 0;
+}
+
+static void ApiIlmoittautunutEmitLasna(kilptietue& kilp, int os,
+	const UnicodeString& status, bool kesAnnettu, const UnicodeString& keskhylIn,
+	bool onEmitTieto)
+{
+	if (kilp.wTark(os) != L'N')
+		return;
+	if (onEmitTieto) {
+		kilp.SetTark(os, L'-');
+		return;
+	}
+	if (kesAnnettu && keskhylIn.Length() > 0 && keskhylIn[1] == L'-') {
+		kilp.SetTark(os, L'-');
+		return;
+	}
+	if (!kesAnnettu && ApiStatusEmitLasna(status))
+		kilp.SetTark(os, L'-');
+}
+
 static UnicodeString ApiOsuusObj(kilptietue& kilp, int os)
 {
 	int numero = kilp.KilpNo();
@@ -215,7 +239,7 @@ static UnicodeString ApiOsuusObj(kilptietue& kilp, int os)
 	INT32 tls = ApiViestiTulosTicks(kilp, os, 0);
 	wchar_t tark = kilp.wTark(os);
 	bool onLasna = kilp.osHyv(os) || tark == L'-' || tark == L'T';
-	if (tark == L'P' || tark == L'E' || tark == L'V' || tark == L'B' || tark == L'N')
+	if (tark == L'P' || tark == L'E' || tark == L'V' || tark == L'B')
 		onLasna = false;
 
 	UnicodeString valia = L"[";
@@ -371,12 +395,12 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 				kilp.ostiet[os].badge[1] = badge2;
 			if (apiconfig.vastaanottaEiLahteneet && !status.IsEmpty()) {
 				wchar_t m = StatusMerkkiin(status);
-				if (m != L' ')
+				if (m != L' ' && !(kilp.wTark(os) == L'N' && m == L'-'))
 					kilp.SetTark(os, m);
 			}
 			if (lasnaAnnettu && lasnaFlag) {
 				wchar_t t = kilp.wTark(os);
-				if (t == L'E' || t == L'P' || t == L'V' || t == L'B' || t == L'T' || t == L'N')
+				if (t == L'E' || t == L'P' || t == L'V' || t == L'B' || t == L'T')
 					kilp.SetTark(os, L'-');
 			}
 			if (aikaSec >= 0)
@@ -389,6 +413,7 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 			if (sija >= 0)
 				kilp.setSija(os, 0, sija);
 
+			bool onEmitTieto = (aikaSec > 0);
 			if (apiconfig.vastaanottaValiajat || apiconfig.vastaanottaKilpailijat) {
 				std::vector<UnicodeString> vas;
 				if (ApiJsonExtractObjectArray(o, L"valiajat", vas) > 0) {
@@ -397,12 +422,19 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 						__int64 va64 = 0;
 						if (!ApiJsonFindInt(vas[v], L"piste", piste) || piste < 1)
 							continue;
-						if (ApiJsonFindInt64(vas[v], L"aika_sec", va64) && va64 > 0)
+						if (ApiJsonFindInt64(vas[v], L"aika_sec", va64) && va64 > 0) {
 							kilp.setMaali(os, piste, ApiViestiInboundMaali(kilp, os, va64));
+							onEmitTieto = true;
+						}
 						if (ApiJsonFindInt(vas[v], L"sija", vasija) && vasija >= 0)
 							kilp.setSija(os, piste, vasija);
 					}
 				}
+			}
+			{
+				UnicodeString kesIn;
+				bool kesAnnettu = ApiJsonFindString(o, L"keskhyl", kesIn);
+				ApiIlmoittautunutEmitLasna(kilp, os, status, kesAnnettu, kesIn, onEmitTieto);
 			}
 
 			tallenna(&kilp, d, 0, 0, 0, 0);

@@ -1207,7 +1207,7 @@ INT kilptietue::hyv(void)
 
 INT kilptietue::hyv_pv(INT i_pv)
 	{
-	return(tark(i_pv) == L'-' || tark(i_pv) == L'I' || tark(i_pv) == L'T' || (kilpparam.hyvHavaittu && tark(i_pv) == L'B'));
+	return(tark(i_pv) == L'-' || tark(i_pv) == L'N' || tark(i_pv) == L'I' || tark(i_pv) == L'T' || (kilpparam.hyvHavaittu && tark(i_pv) == L'B'));
    }
 
 INT kilptietue::y_hyv(INT i_pv)
@@ -1234,7 +1234,7 @@ bool kilptietue::lasna(void)
 
 bool kilptietue::lasna(int i_pv)
 	{
-	return(tark(i_pv) != L'P' && tark(i_pv) != L'E' && tark(i_pv) != L'V' && tark(i_pv) != L'N' && !(kilpparam.hyvHavaittu && tark(i_pv) == L'B'));
+	return(tark(i_pv) != L'P' && tark(i_pv) != L'E' && tark(i_pv) != L'V' && !(kilpparam.hyvHavaittu && tark(i_pv) == L'B'));
    }
 
 INT32 kilptietue::tulos_pv(INT i_pv, bool vaadi_hyv /* = false */, int pyorista /* = 1 */)

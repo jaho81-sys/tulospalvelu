@@ -85,7 +85,7 @@ siirto-ohjelmaa.
 | Maali | `ajat` |
 | Online-väliaika | `valiajat` (adminin `valia_lkm`) |
 | Emit-rastit | rastiväliajat-näkymä, vain maalissa olevilta |
-| Läsnä / ilmoittautunut / DNS / DNF / DSQ | `lasna` + `status` (`LASNA` / `ILMOITTAUTUNUT` / `OK` / `DNS` / `DNF` / `DSQ`) |
+| Läsnä / ilmoittautunut / DNS / DNF / DSQ | `lasna` + `status` (`LASNA` / `OK` / `DNS` / `DNF` / `DSQ`; ilmoittautunut `N` kuten avoin `LASNA`, kirjain kentässä `keskhyl`) |
 | Lähtöaika | `lahto_aika` / `pirila_lahto_at` / `lahto_sec` → `kilpailijat` + sarjan `lahdot` |
 | Maaliaika | `aika_sec` = tuloksen sekunnit (45:00 → 2700), ei Pirilän ms-tikkejä |
 
