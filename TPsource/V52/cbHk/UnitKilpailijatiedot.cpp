@@ -1261,6 +1261,9 @@ void __fastcall TFormKilpailijatiedot::FormDestroy(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
+// Switch the competitor form between view and edit.
+// Close() only hides this form, so edit mode must be turned off on close
+// or the next Show() still has writable fields.
 void __fastcall TFormKilpailijatiedot::asetaMuokkaustila(bool paalle)
 {
 	sallimuokkaus = paalle;
@@ -1370,6 +1373,9 @@ void __fastcall TFormKilpailijatiedot::EdtNimihakuChange(TObject *Sender)
 
 void __fastcall TFormKilpailijatiedot::FormClose(TObject *Sender, TCloseAction &Action)
 {
+	// Form is reused: Close hides it and keeps sallimuokkaus / ReadOnly.
+	// Always prompt Yes/No when leaving while edit mode is on, then
+	// return to view mode so the next open is not still editable.
 	if (!sallimuokkaus)
 		return;
 
@@ -1719,7 +1725,7 @@ void __fastcall TFormKilpailijatiedot::Liskilpailija1Click(TObject *Sender)
 	dKilp = 0;
 	Kilp.nollaa();
 	Lisays = true;
-	asetaMuokkaustila(true);
+	asetaMuokkaustila(true); // new competitor starts in edit mode
 	naytaTiedot();
 }
 //---------------------------------------------------------------------------
