@@ -23,7 +23,9 @@ Lähdekoodi: [jaho81-sys/tulospalvelu](https://github.com/jaho81-sys/tulospalvel
    läsnäolo, online-väliajat) Pirilästä JAHOnlineen.
 6. **Lopeta synkka** pysäyttää taustasynkan.
 7. **Hae kilpailijat nyt** vain jos netistä pitää tuoda päivityksiä takaisin
-   `KILP.DAT`:iin.
+   `KILP.DAT`:iin. Taustahaku ei ylikirjoita paikallista maaliaikaa, väliaikaa
+   eikä lähtöaikaa; se täyttää vain tyhjät kentät. `aika_sec: 0` ei tyhjennä
+   tulosta. Viesti luo puuttuvan joukkueen, jos `sarja_nimi` tunnetaan.
 
 Asetukset tallentuvat tiedostoon `jahonline_api.ini` **kilpailun kansioon**.
 Tiedosto luetaan, kun kilpailu avataan.

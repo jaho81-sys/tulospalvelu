@@ -113,10 +113,31 @@ arvoa, tai sarjan ensimmäistä lähtöä jos henkilökohtaista ei ole. ViestiWi
 käyttää `Lahto(osuus)` (osuuden `ylahto` tai sarjan lähtö). JAHOnline kirjoittaa
 nämä `kilpailijat.pirila_lahto_at`-kenttään ja synkkaa sarjan `lahdot`-rivin.
 
+Haku lukee lähtöajan samassa järjestyksessä: `lahto_aika`, sitten `pirila_lahto_at`,
+sitten `lahto_sec`.
+
 `aika_sec` on **tuloksen kokonaissekunnit** (maali − lähtö), ei Pirilän
 sisäisiä millisekunteja (`SEK = 1000`) eikä kellonaikaa. Esim. 45:00 → `2700`.
 Lähtökello on erikseen `lahto_sec` (sekunnit vuorokaudesta). ViestiWinissä
 `aika_sec` on osuuden juoksuaika (`osTulos`), ei `Maali()`-kellonaika.
+
+### Haku ei saa pyyhkiä kisan tilaa
+
+Taustasynkka tekee järjestyksessä: live-jono (`synkkaa` / `tapahtuma`) → koko lista
+ulos → haku. Haku **täyttää vain tyhjät** paikalliset ajat, väliajat ja lähtöajat.
+`aika_sec: 0` / `null` ei tyhjennä maalia. Nimi, emit ja sarja päivitetään
+taustahaulla vain jos paikallinen kenttä on tyhjä.
+
+**Hae kilpailijat nyt** (`korvaaKentat`) saa korvata nimet, emit-koodin ja ajat
+kun verkko lähettää arvon `> 0`. Nollaa/nullia ei silti kirjoiteta paikallisen
+tuloksen päälle.
+
+Viestissä `lasna: true` ei muuta DNS-merkintää (`T`) läsnä-merkiksi. Poissa / vakantti
+(`E`/`P`/`V`/`B`) voi muuttua läsnäolevaksi. Viesti luo puuttuvan joukkueen haulla
+jos `sarja_nimi` täsmää paikalliseen sarjaan.
+
+Jos live-jono (256) täyttyy, ylimääräiset merkitään lokiin (`Jono taynna`), niitä
+ei pudoteta ääneti.
 
 `synkkaa` sisältää myös `valiajat[]` (online-rastit / väliaikapisteet) ja
 `"tyyppi":"yksilo"` tai `"tyyppi":"viesti"`. Ajanotto / rastileima lähettää

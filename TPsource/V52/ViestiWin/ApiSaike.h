@@ -27,9 +27,9 @@ public:
 };
 
 int ApiSynkkaaLahetaKaikki(void);
-int ApiSynkkaaHaeKaikki(void);
+int ApiSynkkaaHaeKaikki(bool korvaaKentat = false);
 UnicodeString ApiRakennaKilpailijatJson(void);
-int ApiSovellaKilpailijatJson(const UnicodeString& json);
+int ApiSovellaKilpailijatJson(const UnicodeString& json, bool korvaaKentat = false);
 
 void ApiIlmoitaLasna(int kilpno);
 void ApiIlmoitaTapahtuma(int kilpno, int osuus, int piste, int aikaSec);

@@ -85,6 +85,28 @@ static INT32 ApiSecToTicks(__int64 sec)
 	return (INT32)(sec * (__int64)SEK);
 }
 
+static bool ApiLueLahtoAika(const UnicodeString& o, INT32& tl)
+{
+	UnicodeString s;
+	if (ApiJsonFindString(o, L"lahto_aika", s) && !s.IsEmpty()) {
+		tl = wstrtoaika_vap(s.c_str(), t0);
+		return ApiAikaOk(tl);
+	}
+	if (ApiJsonFindString(o, L"pirila_lahto_at", s) && !s.IsEmpty()) {
+		tl = wstrtoaika_vap(s.c_str(), t0);
+		return ApiAikaOk(tl);
+	}
+	__int64 sec = -1;
+	if (ApiJsonFindInt64(o, L"lahto_sec", sec) && sec >= 0 && sec < 86400) {
+		tl = (INT32)((sec - (INT32)t0 * 3600L) * (__int64)SEK);
+		return true;
+	}
+	return false;
+}
+
+static int lasnaJonoPudotettu = 0;
+static int tapJonoPudotettu = 0;
+
 static INT32 ApiViestiTulosTicks(kilptietue& kilp, int os, int va)
 {
 	INT32 ot = kilp.osTulos(os, va);
@@ -318,13 +340,17 @@ UnicodeString ApiRakennaKilpailijatJson(void)
 	return arr;
 }
 
-int ApiSovellaKilpailijatJson(const UnicodeString& json)
+int ApiSovellaKilpailijatJson(const UnicodeString& json, bool korvaaKentat)
 {
 	std::vector<UnicodeString> objs;
 	int n = ApiJsonExtractObjectArray(json, L"kilpailijat", objs);
 	if (n <= 0)
 		return 0;
-	if (datf2.numrec < 2)
+
+	bool haeKilp = apiconfig.vastaanottaKilpailijat != 0;
+	bool haeVa = apiconfig.vastaanottaValiajat != 0;
+	bool haeDns = apiconfig.vastaanottaEiLahteneet != 0;
+	if (!haeKilp && !haeVa && !haeDns)
 		return 0;
 
 	int updated = 0;
@@ -362,50 +388,121 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 			ApiJsonFindInt(o, L"sija", sija);
 
 			int d = getpos(numero);
-			if (d <= 0)
-				continue;
 			kilptietue kilp;
-			kilp.getrec(d);
+			bool uusi = false;
+			if (d > 0) {
+				kilp.getrec(d);
+			} else if (!haeKilp) {
+				continue;
+			} else {
+				int srj = -1;
+				if (!sarjaNimi.IsEmpty()) {
+					for (int s = 0; s < sarjaluku; s++) {
+						if (sarjaNimi.CompareIC(UnicodeString(Sarjat[s].sarjanimi)) == 0) {
+							srj = s;
+							break;
+						}
+					}
+				}
+				if (srj < 0)
+					continue;
+				kilp.nollaa();
+				kilp.setKilpNo(numero);
+				kilp.sarja = srj;
+				uusi = true;
+			}
 			if (kilp.sarja < 0 || kilp.sarja >= sarjaluku)
 				continue;
 			if (os < 0 || os >= Sarjat[kilp.sarja].osuusluku)
 				continue;
 
-			if (!sukunimi.IsEmpty())
-				kilp.setSukuNimi(sukunimi.c_str(), os);
-			if (!etunimi.IsEmpty())
-				kilp.setEtuNimi(etunimi.c_str(), os);
-			if (!seura.IsEmpty())
-				kilp.setSeura(seura.c_str());
-			if (!maa.IsEmpty())
-				kilp.setMaa(maa.c_str());
+			bool muuttui = uusi;
+			wchar_t suku0[80], etu0[80];
+			kilp.SukuNimi(suku0, 79, os);
+			kilp.EtuNimi(etu0, 79, os);
 
-			if (badge > 0)
-				kilp.ostiet[os].badge[0] = badge;
-			if (badge2 > 0)
-				kilp.ostiet[os].badge[1] = badge2;
-			if (apiconfig.vastaanottaEiLahteneet && !status.IsEmpty()) {
+			if (haeKilp) {
+				if (!sukunimi.IsEmpty() && (korvaaKentat || suku0[0] == 0)) {
+					kilp.setSukuNimi(sukunimi.c_str(), os);
+					muuttui = true;
+				}
+				if (!etunimi.IsEmpty() && (korvaaKentat || etu0[0] == 0)) {
+					kilp.setEtuNimi(etunimi.c_str(), os);
+					muuttui = true;
+				}
+				if (!seura.IsEmpty() && (korvaaKentat || kilp.seura[0] == 0)) {
+					kilp.setSeura(seura.c_str());
+					muuttui = true;
+				}
+				if (!maa.IsEmpty() && (korvaaKentat || kilp.maa[0] == 0)) {
+					kilp.setMaa(maa.c_str());
+					muuttui = true;
+				}
+				if (!sarjaNimi.IsEmpty()) {
+					for (int s = 0; s < sarjaluku; s++) {
+						if (sarjaNimi.CompareIC(UnicodeString(Sarjat[s].sarjanimi)) == 0) {
+							if (kilp.sarja != s) {
+								kilp.sarja = s;
+								muuttui = true;
+							}
+							break;
+						}
+					}
+				}
+				if (badge > 0 && (korvaaKentat || kilp.ostiet[os].badge[0] == 0)) {
+					if (kilp.ostiet[os].badge[0] != badge) {
+						kilp.ostiet[os].badge[0] = badge;
+						muuttui = true;
+					}
+				}
+				if (badge2 > 0 && (korvaaKentat || kilp.ostiet[os].badge[1] == 0)) {
+					if (kilp.ostiet[os].badge[1] != badge2) {
+						kilp.ostiet[os].badge[1] = badge2;
+						muuttui = true;
+					}
+				}
+			}
+			if (haeDns && !status.IsEmpty()) {
 				wchar_t m = StatusMerkkiin(status);
-				if (m != L' ' && !(kilp.wTark(os) == L'N' && m == L'-'))
-					kilp.SetTark(os, m);
-			}
-			if (lasnaAnnettu && lasnaFlag) {
 				wchar_t t = kilp.wTark(os);
-				if (t == L'E' || t == L'P' || t == L'V' || t == L'B' || t == L'T')
+				bool onTulos = ApiAikaOk(kilp.Maali(os, 0));
+				if (m != L' ' && !(t == L'N' && m == L'-') && t != m) {
+					if (!(m == L'T' && onTulos)) {
+						kilp.SetTark(os, m);
+						muuttui = true;
+					}
+				}
+			}
+			if (haeKilp && lasnaAnnettu && lasnaFlag) {
+				wchar_t t = kilp.wTark(os);
+				if (t == L'E' || t == L'P' || t == L'V' || t == L'B') {
 					kilp.SetTark(os, L'-');
+					muuttui = true;
+				}
 			}
-			if (aikaSec >= 0)
-				kilp.setMaali(os, 0, ApiViestiInboundMaali(kilp, os, aikaSec));
-			{
-				UnicodeString lahtoAika;
-				if (ApiJsonFindString(o, L"lahto_aika", lahtoAika) && !lahtoAika.IsEmpty())
-					kilp.ostiet[os].ylahto = wstrtoaika_vap(lahtoAika.c_str(), t0);
+			if (aikaSec > 0 && (haeKilp || haeVa)) {
+				if (korvaaKentat || !ApiAikaOk(kilp.Maali(os, 0))) {
+					kilp.setMaali(os, 0, ApiViestiInboundMaali(kilp, os, aikaSec));
+					muuttui = true;
+				}
 			}
-			if (sija >= 0)
-				kilp.setSija(os, 0, sija);
-
+			if (haeKilp) {
+				INT32 lahtoTl = 0;
+				if (ApiLueLahtoAika(o, lahtoTl)) {
+					if (korvaaKentat || !ApiAikaOk(kilp.ostiet[os].ylahto)) {
+						kilp.ostiet[os].ylahto = lahtoTl;
+						muuttui = true;
+					}
+				}
+			}
+			if (sija > 0 && haeKilp && (korvaaKentat || kilp.Sija(os, 0) <= 0)) {
+				if (kilp.Sija(os, 0) != sija) {
+					kilp.setSija(os, 0, sija);
+					muuttui = true;
+				}
+			}
 			bool onEmitTieto = (aikaSec > 0);
-			if (apiconfig.vastaanottaValiajat || apiconfig.vastaanottaKilpailijat) {
+			if (haeVa || haeKilp) {
 				std::vector<UnicodeString> vas;
 				if (ApiJsonExtractObjectArray(o, L"valiajat", vas) > 0) {
 					for (size_t v = 0; v < vas.size(); v++) {
@@ -414,21 +511,38 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json)
 						if (!ApiJsonFindInt(vas[v], L"piste", piste) || piste < 1)
 							continue;
 						if (ApiJsonFindInt64(vas[v], L"aika_sec", va64) && va64 > 0) {
-							kilp.setMaali(os, piste, ApiViestiInboundMaali(kilp, os, va64));
 							onEmitTieto = true;
+							if (korvaaKentat || !ApiAikaOk(kilp.Maali(os, piste))) {
+								kilp.setMaali(os, piste, ApiViestiInboundMaali(kilp, os, va64));
+								muuttui = true;
+							}
 						}
-						if (ApiJsonFindInt(vas[v], L"sija", vasija) && vasija >= 0)
-							kilp.setSija(os, piste, vasija);
+						if (ApiJsonFindInt(vas[v], L"sija", vasija) && vasija > 0) {
+							if (korvaaKentat || kilp.Sija(os, piste) <= 0) {
+								kilp.setSija(os, piste, vasija);
+								muuttui = true;
+							}
+						}
 					}
 				}
 			}
 			{
 				UnicodeString kesIn;
 				bool kesAnnettu = ApiJsonFindString(o, L"keskhyl", kesIn);
+				wchar_t ennen = kilp.wTark(os);
 				ApiIlmoittautunutEmitLasna(kilp, os, kesAnnettu, kesIn, onEmitTieto);
+				if (kilp.wTark(os) != ennen)
+					muuttui = true;
 			}
 
-			tallenna(&kilp, d, 0, 0, 0, 0);
+			if (!muuttui)
+				continue;
+			if (uusi) {
+				int nd = 0;
+				addtall(&kilp, &nd, 0);
+			} else {
+				tallenna(&kilp, d, 0, 0, 0, 0);
+			}
 			updated++;
 		}
 	} __finally {
@@ -461,7 +575,7 @@ int ApiSynkkaaLahetaKaikki(void)
 	return ApiJsonExtractObjectArray(L"{\"kilpailijat\":" + kilpailijat + L"}", L"kilpailijat", objs);
 }
 
-int ApiSynkkaaHaeKaikki(void)
+int ApiSynkkaaHaeKaikki(bool korvaaKentat)
 {
 	if (apiconfig.kilpailuId <= 0 || apiconfig.apiKey[0] == 0)
 		return -1;
@@ -474,7 +588,7 @@ int ApiSynkkaaHaeKaikki(void)
 		return -2;
 	if (!ApiJsonStatusOk(vastaus))
 		return -3;
-	return ApiSovellaKilpailijatJson(vastaus);
+	return ApiSovellaKilpailijatJson(vastaus, korvaaKentat);
 }
 
 void ApiIlmoitaLasna(int kilpno)
@@ -485,9 +599,20 @@ void ApiIlmoitaLasna(int kilpno)
 		return;
 	LasnaJonoAlusta();
 	EnterCriticalSection(&lasnaJonoCS);
-	if (lasnaJonoN < (int)(sizeof(lasnaJono) / sizeof(lasnaJono[0]))) {
-		if (lasnaJonoN == 0 || lasnaJono[lasnaJonoN - 1] != kilpno)
-			lasnaJono[lasnaJonoN++] = kilpno;
+	{
+		bool jo = false;
+		for (int i = 0; i < lasnaJonoN; i++) {
+			if (lasnaJono[i] == kilpno) {
+				jo = true;
+				break;
+			}
+		}
+		if (!jo) {
+			if (lasnaJonoN < (int)(sizeof(lasnaJono) / sizeof(lasnaJono[0])))
+				lasnaJono[lasnaJonoN++] = kilpno;
+			else
+				lasnaJonoPudotettu++;
+		}
 	}
 	LeaveCriticalSection(&lasnaJonoCS);
 }
@@ -513,7 +638,8 @@ void ApiIlmoitaTapahtuma(int kilpno, int osuus, int piste, int aikaSec)
 		t.piste = piste;
 		t.aikaSec = tsec;
 		tapJono[tapJonoN++] = t;
-	}
+	} else
+		tapJonoPudotettu++;
 	LeaveCriticalSection(&tapJonoCS);
 }
 
@@ -644,6 +770,18 @@ void __fastcall TApiSaike::Kasittele(void)
 	if (datf2.numrec < 2)
 		return;
 
+	if (lasnaJonoPudotettu || tapJonoPudotettu) {
+		int lp = lasnaJonoPudotettu;
+		int tp = tapJonoPudotettu;
+		lasnaJonoPudotettu = 0;
+		tapJonoPudotettu = 0;
+		Paivita(L"Jono taynna, pudotettu kilpailijoita " + IntToStr(lp)
+			+ L", tapahtumia " + IntToStr(tp), true);
+	}
+
+	ApiSynkkaaJonosta();
+	ApiLahetaTapahtumatNyt();
+
 	if (apiconfig.lahetaKilpailijat || apiconfig.lahetaTulokset || apiconfig.lahetaValiajat) {
 		int n = ApiSynkkaaLahetaKaikki();
 		if (n >= 0)
@@ -661,7 +799,7 @@ void __fastcall TApiSaike::Kasittele(void)
 	}
 
 	if (apiconfig.vastaanottaKilpailijat || apiconfig.vastaanottaValiajat) {
-		int n = ApiSynkkaaHaeKaikki();
+		int n = ApiSynkkaaHaeKaikki(false);
 		if (n >= 0)
 			Paivita(L"Haettu/päivitetty: " + IntToStr(n));
 		else

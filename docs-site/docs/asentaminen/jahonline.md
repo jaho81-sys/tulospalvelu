@@ -25,7 +25,8 @@ lähettää tiedon heti nettiin.
 6. **Lähetä kilpailijat nyt** vie Pirilän osanottajat (nimet, emit-koodit, ajat,
    lähtöajat, läsnäolo, online-väliajat) JAHOnlineen.
 7. **Hae kilpailijat nyt** vain jos netistä pitää tuoda päivityksiä takaisin
-   paikalliseen `KILP.DAT`-kantaan.
+   paikalliseen `KILP.DAT`-kantaan. Taustahaku täyttää vain tyhjät ajat; se ei
+   pyyhi Pirilässä jo olevaa maalia.
 
 Asetukset tallentuvat tiedostoon `jahonline_api.ini` **kilpailun kansioon**
 (sama hakemisto kuin `laskenta.cfg` / `KILP.DAT`). Tiedosto luetaan, kun

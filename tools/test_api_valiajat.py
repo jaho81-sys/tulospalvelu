@@ -39,7 +39,7 @@ def test_tapahtuma_viesti():
     print("ok tapahtuma viesti")
 
 
-def apply_valiajat(local, inbound, vastaanotta=True):
+def apply_valiajat(local, inbound, vastaanotta=True, korvaa=True):
     if not vastaanotta:
         return local
     out = dict(local)
@@ -47,18 +47,91 @@ def apply_valiajat(local, inbound, vastaanotta=True):
         p = va.get("piste")
         if p is None or p < 1:
             continue
-        out[p] = va.get("aika_sec")
+        sec = va.get("aika_sec")
+        if sec is None or sec <= 0:
+            continue
+        if not korvaa and out.get(p):
+            continue
+        out[p] = sec
     return out
+
+
+def merge_aika_sec(local, inbound, korvaa):
+    """Periodic fetch fills empty local times; never apply 0/null. Manual Hae may replace."""
+    if inbound is None or inbound <= 0:
+        return local
+    if local and local > 0 and not korvaa:
+        return local
+    return inbound
+
+
+def merge_lasna_tark(tark, lasna_flag, status=None):
+    """lasna:true does not clear DNS (T). Only E/P/V/B become present."""
+    if not lasna_flag:
+        return tark
+    if tark in (u"E", u"P", u"V", u"B"):
+        return u"-"
+    return tark
+
+
+def lahto_sec_to_ticks(sec, t0=0, SEK=1000):
+    if sec < 0 or sec >= 86400:
+        return None
+    return int((sec - t0 * 3600) * SEK)
 
 
 def test_valiajat_apply():
     local = {1: 100, 2: 0}
     inbound = [{"piste": 1, "aika_sec": 111}, {"piste": 2, "aika_sec": 222}]
-    got = apply_valiajat(local, inbound, True)
+    got = apply_valiajat(local, inbound, True, korvaa=True)
     assert got == {1: 111, 2: 222}
     got2 = apply_valiajat(local, inbound, False)
     assert got2 == local
+    periodic = apply_valiajat(local, inbound, True, korvaa=False)
+    assert periodic[1] == 100
+    assert periodic[2] == 222
     print("ok valiajat apply")
+
+
+def test_synkka_merge():
+    assert merge_aika_sec(2700, 0, False) == 2700
+    assert merge_aika_sec(2700, None, False) == 2700
+    assert merge_aika_sec(2700, 2800, False) == 2700
+    assert merge_aika_sec(0, 2800, False) == 2800
+    assert merge_aika_sec(2700, 2800, True) == 2800
+    assert merge_lasna_tark(u"T", True) == u"T"
+    assert merge_lasna_tark(u"N", True) == u"N"
+    assert merge_lasna_tark(u"E", True) == u"-"
+    assert merge_lasna_tark(u"P", True) == u"-"
+    assert lahto_sec_to_ticks(36300, 0) == 36300 * 1000
+
+    yht = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "ApiYhteydet.cpp"),
+               encoding="utf-8", errors="replace").read()
+    assert "ApiSynkkaaHaeKaikki(true)" in yht
+
+    for rel in (
+            os.path.join("TPsource", "V52", "cbHk", "ApiSaike.cpp"),
+            os.path.join("TPsource", "V52", "ViestiWin", "ApiSaike.cpp"),
+            ):
+        text = open(os.path.join(ROOT, rel), encoding="utf-8", errors="replace").read()
+        assert "ApiLueLahtoAika" in text
+        assert 'L"pirila_lahto_at"' in text
+        assert 'L"lahto_sec"' in text
+        assert "bool korvaaKentat" in text
+        assert "ApiSynkkaaHaeKaikki(false)" in text
+        assert "if (!muuttui)" in text
+        assert "aikaSec > 0" in text
+        assert "if (aikaSec >= 0)" not in text
+        assert "Jono taynna" in text
+        assert "lasnaJonoPudotettu" in text
+        assert "t == L'E' || t == L'P' || t == L'V' || t == L'B'" in text
+        assert "t == L'E' || t == L'P' || t == L'V' || t == L'B' || t == L'T'" not in text
+        assert "m == L'T' && onTulos" in text
+    vi = open(os.path.join(ROOT, "TPsource", "V52", "ViestiWin", "ApiSaike.cpp"),
+              encoding="utf-8", errors="replace").read()
+    assert "addtall(&kilp, &nd, 0)" in vi
+    assert "sarja_nimi" in vi
+    print("ok synkka merge")
 
 
 def test_cpp_json_actions():
@@ -355,6 +428,7 @@ def main():
     test_tapahtuma_yksilo()
     test_tapahtuma_viesti()
     test_valiajat_apply()
+    test_synkka_merge()
     test_cpp_json_actions()
     test_source_hooks()
     test_synkka_not_started_without_kilpailu()

@@ -438,7 +438,7 @@ void __fastcall TFormApiYhteydet::BtnHaeNytClick(TObject *Sender)
 		PaivitaTila(L"VIRHE: avaa kilpailu ensin.");
 		return;
 	}
-	int n = ApiSynkkaaHaeKaikki();
+	int n = ApiSynkkaaHaeKaikki(true);
 	PaivitaTila(L"Haku valmis, päivitetty: " + IntToStr(n));
 }
 

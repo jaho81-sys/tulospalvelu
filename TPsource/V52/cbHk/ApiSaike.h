@@ -28,9 +28,9 @@ public:
 
 // Manual / thread entry points
 int ApiSynkkaaLahetaKaikki(void);
-int ApiSynkkaaHaeKaikki(void);
+int ApiSynkkaaHaeKaikki(bool korvaaKentat = false);
 UnicodeString ApiRakennaKilpailijatJson(void);
-int ApiSovellaKilpailijatJson(const UnicodeString& json);
+int ApiSovellaKilpailijatJson(const UnicodeString& json, bool korvaaKentat = false);
 
 // Emit-luenta: jonoita kilpailija JAHOnline-läsnäolosynkkaan
 void ApiIlmoitaLasna(int kilpno);
