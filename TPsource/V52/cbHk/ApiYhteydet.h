@@ -18,8 +18,9 @@
 typedef struct {
 	wchar_t apiUrl[512];           // Full bridge URL (preferred) or host base
 	int apiPort;                   // 0 = use URL scheme default; else override
-	wchar_t apiKey[128];           // Bearer = kilpailut.api_token
-	int kilpailuId;                // JAHOnline kilpailu_id
+	wchar_t apiKey[256];           // Bearer = user api_token (not per-competition)
+	int kilpailuId;                // selected JAHOnline kilpailu_id
+	wchar_t kilpailuNimi[160];     // display name of selected competition
 	int lahetaKilpailijat;         // Push full roster + times (action=synkkaa)
 	int vastaanottaKilpailijat;    // Pull roster from server (action=kilpailijat)
 	int lahetaValiajat;            // Push live punches / splits (action=tapahtuma)
@@ -44,6 +45,9 @@ __published:
 	TEdit *EditPortti;
 	TLabel *LabelApiKey;
 	TEdit *EditApiKey;
+	TLabel *LabelKilpailuLista;
+	TComboBox *ComboKilpailu;
+	TButton *BtnHaeKilpailut;
 	TLabel *LabelKilpailuId;
 	TEdit *EditKilpailuId;
 	TButton *BtnYhteysTesti;
@@ -84,6 +88,8 @@ __published:
 	void __fastcall BtnVieInternetClick(TObject *Sender);
 	void __fastcall BtnOhjeClick(TObject *Sender);
 	void __fastcall EditUrlChange(TObject *Sender);
+	void __fastcall BtnHaeKilpailutClick(TObject *Sender);
+	void __fastcall ComboKilpailuChange(TObject *Sender);
 
 private:
 	void __fastcall LueTiedot(void);
@@ -92,6 +98,9 @@ private:
 	void __fastcall NaytaYhteysTila(void);
 	void __fastcall TestaaYhteys(void);
 	void __fastcall LopetaSynkka(void);
+	void __fastcall HaeKilpailuLista(void);
+	void __fastcall NaytaValittuKilpailu(void);
+	int __fastcall ComboKilpailuId(void);
 
 public:
 	__fastcall TFormApiYhteydet(TComponent* Owner);
@@ -109,5 +118,6 @@ UnicodeString ApiConfigExePolku(void);
 UnicodeString ApiBridgeUrl(void);
 bool ApiHttpPostJson(const UnicodeString& url, const UnicodeString& jsonBody, UnicodeString& vastaus);
 bool ApiHttpGetAuth(const UnicodeString& url, UnicodeString& vastaus);
+UnicodeString ApiKilpailutPyynto(void);
 
 #endif

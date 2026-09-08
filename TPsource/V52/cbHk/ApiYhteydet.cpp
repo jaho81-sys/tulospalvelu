@@ -2,6 +2,7 @@
 #pragma hdrstop
 #include <wininet.h>
 #include <stdio.h>
+#include <vector>
 
 #include "ApiYhteydet.h"
 #include "ApiJson.h"
@@ -50,6 +51,9 @@ static void ApiConfigLueTiedostosta(const UnicodeString& polku)
 	apiconfig.apiKey[sizeof(apiconfig.apiKey)/2 - 1] = 0;
 	apiconfig.apiPort = GetPrivateProfileIntW(L"jahonline", L"port", 0, polku.c_str());
 	apiconfig.kilpailuId = GetPrivateProfileIntW(L"jahonline", L"kilpailu_id", 0, polku.c_str());
+	GetPrivateProfileStringW(L"jahonline", L"kilpailu_nimi", L"", tmp, 160, polku.c_str());
+	wcsncpy(apiconfig.kilpailuNimi, tmp, sizeof(apiconfig.kilpailuNimi)/2 - 1);
+	apiconfig.kilpailuNimi[sizeof(apiconfig.kilpailuNimi)/2 - 1] = 0;
 	apiconfig.lahetysvali = GetPrivateProfileIntW(L"jahonline", L"vali", 10, polku.c_str());
 	apiconfig.lahetaKilpailijat = GetPrivateProfileIntW(L"jahonline", L"laheta_kilpailijat", 1, polku.c_str());
 	apiconfig.vastaanottaKilpailijat = GetPrivateProfileIntW(L"jahonline", L"vastaanotta_kilpailijat", 1, polku.c_str());
@@ -99,6 +103,7 @@ void ApiConfigTallenna(void)
 	WritePrivateProfileStringW(L"jahonline", L"api_key", apiconfig.apiKey, polku.c_str());
 	WritePrivateProfileStringW(L"jahonline", L"port", IntToStr(apiconfig.apiPort).c_str(), polku.c_str());
 	WritePrivateProfileStringW(L"jahonline", L"kilpailu_id", IntToStr(apiconfig.kilpailuId).c_str(), polku.c_str());
+	WritePrivateProfileStringW(L"jahonline", L"kilpailu_nimi", apiconfig.kilpailuNimi, polku.c_str());
 	WritePrivateProfileStringW(L"jahonline", L"vali", IntToStr(apiconfig.lahetysvali).c_str(), polku.c_str());
 	WritePrivateProfileStringW(L"jahonline", L"laheta_kilpailijat", IntToStr(apiconfig.lahetaKilpailijat).c_str(), polku.c_str());
 	WritePrivateProfileStringW(L"jahonline", L"vastaanotta_kilpailijat", IntToStr(apiconfig.vastaanottaKilpailijat).c_str(), polku.c_str());
@@ -271,6 +276,66 @@ bool ApiHttpGetAuth(const UnicodeString& url, UnicodeString& vastaus)
 	return HttpRequest(L"GET", url, L"", vastaus);
 }
 
+
+static UnicodeString ApiLahdeNimi(void)
+{
+#ifdef JUKOLA
+	return L"ViestiWin";
+#else
+	return L"HkKisaWin";
+#endif
+}
+
+static UnicodeString ApiOletusTyyppi(void)
+{
+#ifdef JUKOLA
+	return L"viesti";
+#else
+	return L"yksilo";
+#endif
+}
+
+// POST body for listing the user's Pirila competitions (no kilpailu_id).
+UnicodeString ApiKilpailutPyynto(void)
+{
+	return UnicodeString(L"{\"action\":\"kilpailut\",\"lahde\":\"")
+		+ ApiLahdeNimi()
+		+ L"\",\"tyyppi\":\""
+		+ ApiOletusTyyppi()
+		+ L"\",\"pirila\":true}";
+}
+
+static bool KilpailuOnPirila(const UnicodeString& obj)
+{
+	bool v;
+	if (ApiJsonFindBool(obj, L"pirila", v))
+		return v;
+	if (ApiJsonFindBool(obj, L"pirila_kilpailu", v))
+		return v;
+	return true;
+}
+
+static bool KilpailuTyyppiSopii(const UnicodeString& tyyppi)
+{
+	if (tyyppi.IsEmpty())
+		return true;
+#ifdef JUKOLA
+	return tyyppi.CompareIC(L"viesti") == 0;
+#else
+	return tyyppi.CompareIC(L"viesti") != 0;
+#endif
+}
+
+static UnicodeString KilpailuListateksti(int id, const UnicodeString& nimi, const UnicodeString& pvm)
+{
+	UnicodeString t = IntToStr(id);
+	if (!nimi.IsEmpty())
+		t += L" - " + nimi;
+	if (!pvm.IsEmpty())
+		t += L" (" + pvm + L")";
+	return t;
+}
+
 __fastcall TFormApiYhteydet::TFormApiYhteydet(TComponent* Owner)
 	: TForm(Owner)
 {
@@ -284,6 +349,7 @@ void __fastcall TFormApiYhteydet::FormShow(TObject *Sender)
 	ApiConfigLataa();
 	LueTiedot();
 	PaivitaTila(L"Asetukset: " + ApiConfigPolku());
+	PaivitaTila(L"Hae kilpailut listaa netin Piril\xe4-kilpailut k\xe4ytt\xe4j\xe4avaimella.");
 	if (!TApiIntegration::GetInstance()->OnKilpailuAvattu())
 		PaivitaTila(L"Kilpailua ei ole avattu - synkkaa ei käynnistetä ennen kuin kisa on auki.");
 	else
@@ -296,6 +362,7 @@ void __fastcall TFormApiYhteydet::LueTiedot(void)
 	EditPortti->Text = IntToStr(apiconfig.apiPort);
 	EditApiKey->Text = apiconfig.apiKey;
 	EditKilpailuId->Text = IntToStr(apiconfig.kilpailuId);
+	NaytaValittuKilpailu();
 	CBLahetaKilpailijat->Checked = apiconfig.lahetaKilpailijat != 0;
 	CBVastaanottaKilpailijat->Checked = apiconfig.vastaanottaKilpailijat != 0;
 	CBLahetaValiajat->Checked = apiconfig.lahetaValiajat != 0;
@@ -315,7 +382,23 @@ void __fastcall TFormApiYhteydet::KirjoitaTiedot(void)
 	apiconfig.apiPort = _wtoi(EditPortti->Text.c_str());
 	wcsncpy(apiconfig.apiKey, EditApiKey->Text.c_str(), sizeof(apiconfig.apiKey)/2 - 1);
 	apiconfig.apiKey[sizeof(apiconfig.apiKey)/2 - 1] = 0;
-	apiconfig.kilpailuId = _wtoi(EditKilpailuId->Text.c_str());
+	{
+		int cid = ComboKilpailuId();
+		if (cid > 0)
+			apiconfig.kilpailuId = cid;
+		else
+			apiconfig.kilpailuId = _wtoi(EditKilpailuId->Text.c_str());
+		if (ComboKilpailu && ComboKilpailu->ItemIndex >= 0) {
+			UnicodeString s = ComboKilpailu->Items->Strings[ComboKilpailu->ItemIndex];
+			int dash = s.Pos(L" - ");
+			UnicodeString nimi = dash > 0 ? s.SubString(dash + 3, s.Length()) : UnicodeString();
+			int par = nimi.Pos(L" (");
+			if (par > 0)
+				nimi = nimi.SubString(1, par - 1);
+			wcsncpy(apiconfig.kilpailuNimi, nimi.c_str(), sizeof(apiconfig.kilpailuNimi)/2 - 1);
+			apiconfig.kilpailuNimi[sizeof(apiconfig.kilpailuNimi)/2 - 1] = 0;
+		}
+	}
 	apiconfig.lahetaKilpailijat = CBLahetaKilpailijat->Checked ? 1 : 0;
 	apiconfig.vastaanottaKilpailijat = CBVastaanottaKilpailijat->Checked ? 1 : 0;
 	apiconfig.lahetaValiajat = CBLahetaValiajat->Checked ? 1 : 0;
@@ -365,12 +448,12 @@ void __fastcall TFormApiYhteydet::TestaaYhteys(void)
 		NaytaYhteysTila();
 		return;
 	}
-	if (apiconfig.kilpailuId <= 0) {
-		PaivitaTila(L"VIRHE: aseta kilpailu_id (JAHOnline)");
+	if (apiconfig.apiKey[0] == 0) {
+		PaivitaTila(L"VIRHE: aseta käyttäjäkohtainen API-avain");
 		return;
 	}
-	if (apiconfig.apiKey[0] == 0) {
-		PaivitaTila(L"VIRHE: aseta API-avain (= kilpailun api_token)");
+	if (apiconfig.kilpailuId <= 0) {
+		PaivitaTila(L"VIRHE: hae kilpailut ja valitse yhdistettävä kilpailu listasta");
 		return;
 	}
 
@@ -405,6 +488,123 @@ void __fastcall TFormApiYhteydet::LopetaSynkka(void)
 	TApiIntegration::GetInstance()->Lopeta();
 	NaytaYhteysTila();
 	PaivitaTila(L"Synkka lopetettu.");
+}
+
+
+int __fastcall TFormApiYhteydet::ComboKilpailuId(void)
+{
+	if (!ComboKilpailu || ComboKilpailu->ItemIndex < 0)
+		return 0;
+	return _wtoi(ComboKilpailu->Items->Strings[ComboKilpailu->ItemIndex].c_str());
+}
+
+void __fastcall TFormApiYhteydet::NaytaValittuKilpailu(void)
+{
+	if (!ComboKilpailu)
+		return;
+	ComboKilpailu->Items->BeginUpdate();
+	ComboKilpailu->Items->Clear();
+	if (apiconfig.kilpailuId > 0) {
+		UnicodeString t = IntToStr(apiconfig.kilpailuId);
+		if (apiconfig.kilpailuNimi[0] != 0)
+			t = t + L" - " + UnicodeString(apiconfig.kilpailuNimi);
+		ComboKilpailu->Items->Add(t);
+		ComboKilpailu->ItemIndex = 0;
+	}
+	ComboKilpailu->Items->EndUpdate();
+}
+
+void __fastcall TFormApiYhteydet::ComboKilpailuChange(TObject *Sender)
+{
+	int id = ComboKilpailuId();
+	if (id > 0 && EditKilpailuId)
+		EditKilpailuId->Text = IntToStr(id);
+}
+
+void __fastcall TFormApiYhteydet::BtnHaeKilpailutClick(TObject *Sender)
+{
+	HaeKilpailuLista();
+}
+
+// Fetch online Pirila competitions with the user API key and fill the combo.
+void __fastcall TFormApiYhteydet::HaeKilpailuLista(void)
+{
+	KirjoitaTiedot();
+	if (apiconfig.apiKey[0] == 0) {
+		PaivitaTila(L"VIRHE: aseta k\xe4ytt\xe4j\xe4kohtainen API-avain (JAHOnline-k\xe4ytt\xe4j\xe4)");
+		return;
+	}
+
+	UnicodeString url = ApiBridgeUrl();
+	UnicodeString body = ApiKilpailutPyynto();
+	UnicodeString vastaus;
+	PaivitaTila(L"POST kilpailut -> " + url);
+
+	if (!ApiHttpPostJson(url, body, vastaus)) {
+		PaivitaTila(L"VIRHE: kilpailulistan haku ep\xe4onnistui");
+		return;
+	}
+	if (!ApiJsonStatusOk(vastaus)) {
+		PaivitaTila(L"VIRHE vastaus: " + vastaus.SubString(1, 240));
+		return;
+	}
+
+	std::vector<UnicodeString> objects;
+	int n = ApiJsonExtractObjectArray(vastaus, L"kilpailut", objects);
+	if (n == 0)
+		n = ApiJsonExtractObjectArray(vastaus, L"competitions", objects);
+
+	if (!ComboKilpailu)
+		return;
+	int vanha = apiconfig.kilpailuId;
+	if (vanha <= 0)
+		vanha = _wtoi(EditKilpailuId->Text.c_str());
+
+	ComboKilpailu->Items->BeginUpdate();
+	ComboKilpailu->Items->Clear();
+	int valitse = -1;
+	int lisatty = 0;
+	for (int i = 0; i < (int)objects.size(); i++) {
+		UnicodeString obj = objects[i];
+		if (!KilpailuOnPirila(obj))
+			continue;
+		UnicodeString tyyppi;
+		ApiJsonFindString(obj, L"tyyppi", tyyppi);
+		if (!KilpailuTyyppiSopii(tyyppi))
+			continue;
+		int id = 0;
+		if (!ApiJsonFindInt(obj, L"id", id))
+			ApiJsonFindInt(obj, L"kilpailu_id", id);
+		if (id <= 0)
+			continue;
+		UnicodeString nimi, pvm;
+		if (!ApiJsonFindString(obj, L"nimi", nimi)) {
+			if (!ApiJsonFindString(obj, L"name", nimi))
+				ApiJsonFindString(obj, L"otsikko", nimi);
+		}
+		if (!ApiJsonFindString(obj, L"pvm", pvm)) {
+			if (!ApiJsonFindString(obj, L"pvm_str", pvm))
+				ApiJsonFindString(obj, L"date", pvm);
+		}
+		ComboKilpailu->Items->Add(KilpailuListateksti(id, nimi, pvm));
+		if (id == vanha)
+			valitse = lisatty;
+		lisatty++;
+	}
+	ComboKilpailu->Items->EndUpdate();
+
+	if (lisatty == 0) {
+		NaytaValittuKilpailu();
+		PaivitaTila(L"Ei Piril\xe4-kilpailuja t\xe4lle k\xe4ytt\xe4j\xe4avaimelle");
+		return;
+	}
+	if (valitse < 0 && lisatty == 1)
+		valitse = 0;
+	if (valitse >= 0) {
+		ComboKilpailu->ItemIndex = valitse;
+		ComboKilpailuChange(NULL);
+	}
+	PaivitaTila(L"Kilpailuja listassa: " + IntToStr(lisatty) + L". Valitse yhdistett\xe4v\xe4 kilpailu.");
 }
 
 void __fastcall TFormApiYhteydet::BtnYhteysTestiClick(TObject *Sender)
@@ -464,8 +664,9 @@ void __fastcall TFormApiYhteydet::BtnOhjeClick(TObject *Sender)
 	ShowMessage(
 		L"JAHOnline API (kaksisuuntainen)\n\n"
 		L"URL: https://jahonline.com/public/api/kilpailijat_bridge.php\n"
-		L"API-avain: hallinnan kilpailun api_token\n"
-		L"kilpailu_id: JAHOnline-kilpailun ID\n\n"
+		L"API-avain: k\xe4ytt\xe4j\xe4kohtainen token (JAHOnline-k\xe4ytt\xe4j\xe4)\n"
+		L"Hae kilpailut: listaa netin Piril\xe4-kilpailut\n"
+		L"Valitse listasta yhdistett\xe4v\xe4 kilpailu\n\n"
 		L"Lähetä kilpailijat -> action=synkkaa (osanottajat, ajat, läsnäolo, väliajat)\n"
 		L"Hae kilpailijat -> action=kilpailijat (päivitys paikalliseen KILP.DAT)\n"
 		L"Online-rasti / ajanotto -> action=tapahtuma (piste, aika_sec = tuloksen sekunnit)\n"
@@ -476,7 +677,7 @@ void __fastcall TFormApiYhteydet::BtnOhjeClick(TObject *Sender)
 		L"Synkkaa ei käynnistetä, jos kisaa ei ole avattu.\n"
 		L"Asetukset tallennetaan kilpailun kansion jahonline_api.ini -tiedostoon\n"
 		L"ja luetaan sieltä, kun kilpailu avataan.\n"
-		L"Auth: Authorization: Bearer <api_token>\n"
+		L"Auth: Authorization: Bearer <kayttajan api_token>\n"
 	);
 }
 

@@ -16,13 +16,13 @@ Lähdekoodi: [jaho81-sys/tulospalvelu](https://github.com/jaho81-sys/tulospalvel
 3. Täytä:
    - **Bridge-URL:** `https://jahonline.com/public/api/kilpailijat_bridge.php`
      (oletus)
-   - **API-avain:** tämän kilpailun `api_token` (Hallinta → Kilpailu)
-   - **kilpailu_id:** tämän kilpailun tunnus
-4. Paina **Testaa (ping)** (kilpailun pitää olla auki).
-5. **Lähetä kilpailijat nyt** vie osanottajat (nimet, emit, ajat, lähtöajat,
+   - **API-avain:** JAHOnline-käyttäjän `api_token` (Hallinta → käyttäjä)
+4. Paina **Hae kilpailut** ja valitse listasta netissä luotu Pirilä-kilpailu.
+5. Paina **Testaa (ping)** (paikallisen kilpailun pitää olla auki).
+6. **Lähetä kilpailijat nyt** vie osanottajat (nimet, emit, ajat, lähtöajat,
    läsnäolo, online-väliajat) Pirilästä JAHOnlineen.
-6. **Lopeta synkka** pysäyttää taustasynkan.
-7. **Hae kilpailijat nyt** vain jos netistä pitää tuoda päivityksiä takaisin
+7. **Lopeta synkka** pysäyttää taustasynkan.
+8. **Hae kilpailijat nyt** vain jos netistä pitää tuoda päivityksiä takaisin
    `KILP.DAT`:iin. Taustahaku ei ylikirjoita paikallista maaliaikaa, väliaikaa
    eikä lähtöaikaa; se täyttää vain tyhjät kentät. `aika_sec: 0` ei tyhjennä
    tulosta. Viesti luo puuttuvan joukkueen, jos `sarja_nimi` tunnetaan.
@@ -57,12 +57,13 @@ säikeen. Synkkaa ei käynnistetä, jos kilpailua ei ole avattu.
 | | |
 |--|--|
 | Endpoint | `POST /public/api/kilpailijat_bridge.php` |
-| Auth | `Authorization: Bearer <api_token>` tai `X-API-Key` |
-| Body | aina `"kilpailu_id": <int>` |
+| Auth | `Authorization: Bearer <käyttäjän api_token>` tai `X-API-Key` |
+| Body | `kilpailut` ilman id:tä; muuten `"kilpailu_id": <int>` |
 
 | Action | Suunta | Käyttö |
 |--------|--------|--------|
-| `ping` | — | Yhteystesti |
+| `kilpailut` | JAHOnline → Pirilä | Käyttäjän Pirilä-kilpailut valintalistaan |
+| `ping` | — | Yhteystesti valitulle kisalle |
 | `synkkaa` | Pirilä → JAHOnline | Osanottajat, ajat, lähtöajat, läsnäolo, `valiajat[]` |
 | `kilpailijat` | JAHOnline → Pirilä | Haku `KILP.DAT`:iin (myös väliajat) |
 | `tapahtuma` | live molempiin | Online-rasti heti (`piste`, `aika_sec`, viestissä `osuus`) |

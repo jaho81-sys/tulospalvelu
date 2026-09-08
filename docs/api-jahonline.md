@@ -8,8 +8,10 @@ Kilpailijatiedot elävät Pirilässä `kilptietue` / `KILP.DAT`-rakenteessa. Val
 CSV/XML/KILP.DAT-vientityökalut sopivat kertatuontiin, mutta kisapäivän
 kaksisuuntaiseen synkkaan tarvitaan HTTP + Bearer-avain.
 
-JAHOnline käyttää kilpailukohtaista `api_token`-arvoa (hallinta → kilpailu).
+JAHOnline käyttää **käyttäjäkohtaista** `api_token`-arvoa (hallinta → käyttäjä).
 Pirilä lähettää saman avaimen: `Authorization: Bearer <api_token>`.
+Avaimella haetaan lista netissä luoduista **Pirilä-kilpailuista**, joista
+valitaan yhdistettävä kisa (`kilpailu_id`).
 
 Erillistä siirto-ohjelmaa, CSV-bridgeä tai MySQL-välikantaa ei tarvita:
 kaksisuuntainen synkka on HkKisaWinissä ja ViestiWinissä (valikko
@@ -31,12 +33,37 @@ Oletus-URL:
 
 | Header | Arvo |
 |--------|------|
-| `Authorization` | `Bearer <kilpailut.api_token>` |
+| `Authorization` | `Bearer <käyttäjän api_token>` |
 | `X-API-Key` | sama (vaihtoehto) |
 
-Bodyyn aina: `"kilpailu_id": <int>`
+`action=kilpailut` ei vaadi `kilpailu_id`:tä (lista käyttäjän Pirilä-kisoista).
+Muissa toiminnoissa bodyyn: `"kilpailu_id": <int>` (valittu kisa).
 
 ## Actions
+
+### `kilpailut` (käyttäjäavain → kisalista)
+```json
+{"action":"kilpailut","lahde":"HkKisaWin","tyyppi":"yksilo","pirila":true}
+```
+ViestiWin: `"lahde":"ViestiWin","tyyppi":"viesti"`.
+
+→
+```json
+{
+  "status":"ok",
+  "kilpailut":[
+    {"id":11,"nimi":"Kevätkisa","tyyppi":"yksilo","pvm":"2026-04-12","pirila":true},
+    {"id":12,"nimi":"Viestikisa","tyyppi":"viesti","pvm":"2026-04-19","pirila":true}
+  ]
+}
+```
+
+Palvelin palauttaa vain ne kilpailut, joihin avaimen käyttäjällä on oikeus ja
+jotka on merkitty Pirilä-kilpailuiksi. Pirilä suodattaa lisäksi `pirila:false`
+pois ja HkKisaWin jättää `tyyppi: viesti` -rivit, ViestiWin muut kuin viestin.
+
+Kentät: `id` (tai `kilpailu_id`), `nimi` (tai `name` / `otsikko`), valinnainen
+`pvm` / `date`, `tyyppi` (`yksilo` / `viesti`), `pirila` (boolean).
 
 ### `ping`
 ```json
@@ -180,15 +207,16 @@ Viesti (osuus 1-pohjainen JSON:ssa, 0-pohjainen Pirilässä):
 ## Käyttö (HkKisaWin ja ViestiWin)
 
 1. Valikko → **JAHOnline API (synkka)**
-2. Aseta URL, API-avain, `kilpailu_id`
-3. **Testaa (ping)** (vain kun kilpailu on auki — käynnistää taustasynkan)
-4. **Lähetä kilpailijat nyt** / **Hae kilpailijat nyt**
-5. **Lopeta synkka** pysäyttää taustasäikeen
-6. Automaatio: välilehti *Automaatio* + **Testaa (ping)** + OK
+2. Aseta Bridge-URL ja **käyttäjäkohtainen API-avain**
+3. **Hae kilpailut** → valitse listasta netissä luotu Pirilä-kilpailu
+4. **Testaa (ping)** (vain kun paikallinen kilpailu on auki — käynnistää taustasynkan)
+5. **Lähetä kilpailijat nyt** / **Hae kilpailijat nyt**
+6. **Lopeta synkka** pysäyttää taustasäikeen
+7. Automaatio: välilehti *Automaatio* + **Testaa (ping)** + OK
    (`lahetysvali` = koko listan lähetysväli, oletus 10 s)
-7. Osanottajakaavakkeen tallennus / lähtöajan muutos → `synkkaa` noin 200 ms:ssa
+8. Osanottajakaavakkeen tallennus / lähtöajan muutos → `synkkaa` noin 200 ms:ssa
    kun synkka on käynnissä
-8. Live-väliajat: rastileima ajanotossa → `tapahtuma` heti
+9. Live-väliajat: rastileima ajanotossa → `tapahtuma` heti
 
 Asetukset tallentuvat kilpailun kansioon: `jahonline_api.ini`.
 Tiedosto luetaan automaattisesti, kun kilpailu avataan (`Initialisoi`).

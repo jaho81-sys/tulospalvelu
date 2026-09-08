@@ -2,7 +2,7 @@ object FormApiYhteydet: TFormApiYhteydet
   Left = 0
   Top = 0
   Caption = 'JAHOnline API - synkka'
-  ClientHeight = 560
+  ClientHeight = 630
   ClientWidth = 620
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,7 +18,7 @@ object FormApiYhteydet: TFormApiYhteydet
     Left = 0
     Top = 0
     Width = 620
-    Height = 490
+    Height = 560
     ActivePage = TabYhteys
     Align = alClient
     TabOrder = 0
@@ -43,18 +43,25 @@ object FormApiYhteydet: TFormApiYhteydet
         Top = 128
         Width = 220
         Height = 13
-        Caption = 'API-avain (kilpailun api_token):'
+        Caption = 'API-avain (k'#228'ytt'#228'j'#228'kohtainen):'
+      end
+      object LabelKilpailuLista: TLabel
+        Left = 16
+        Top = 184
+        Width = 400
+        Height = 13
+        Caption = 'Kilpailu netiss'#228' (Piril'#228'-kilpailut):'
       end
       object LabelKilpailuId: TLabel
         Left = 16
-        Top = 184
-        Width = 160
+        Top = 236
+        Width = 200
         Height = 13
-        Caption = 'kilpailu_id (JAHOnline):'
+        Caption = 'Valittu kilpailu_id:'
       end
       object LabelYhteysTila: TLabel
         Left = 16
-        Top = 280
+        Top = 336
         Width = 120
         Height = 20
         Caption = 'EI AKTIIVINEN'
@@ -67,7 +74,7 @@ object FormApiYhteydet: TFormApiYhteydet
       end
       object LabelIniPolku: TLabel
         Left = 16
-        Top = 236
+        Top = 286
         Width = 560
         Height = 36
         AutoSize = False
@@ -94,55 +101,73 @@ object FormApiYhteydet: TFormApiYhteydet
       object EditApiKey: TEdit
         Left = 16
         Top = 148
-        Width = 400
+        Width = 560
         Height = 21
         PasswordChar = '*'
         TabOrder = 2
       end
-      object EditKilpailuId: TEdit
+      object ComboKilpailu: TComboBox
         Left = 16
         Top = 204
+        Width = 430
+        Height = 21
+        Style = csDropDownList
+        TabOrder = 3
+        OnChange = ComboKilpailuChange
+      end
+      object BtnHaeKilpailut: TButton
+        Left = 456
+        Top = 202
+        Width = 120
+        Height = 25
+        Caption = 'Hae kilpailut'
+        TabOrder = 4
+        OnClick = BtnHaeKilpailutClick
+      end
+      object EditKilpailuId: TEdit
+        Left = 16
+        Top = 254
         Width = 100
         Height = 21
-        TabOrder = 3
+        TabOrder = 5
         Text = '0'
       end
       object BtnYhteysTesti: TButton
         Left = 16
-        Top = 320
+        Top = 376
         Width = 140
         Height = 32
         Caption = 'Testaa (ping)'
         Font.Style = [fsBold]
         ParentFont = False
-        TabOrder = 4
+        TabOrder = 6
         OnClick = BtnYhteysTestiClick
       end
       object BtnLopetaSynkka: TButton
         Left = 16
-        Top = 360
+        Top = 416
         Width = 140
         Height = 32
         Caption = 'Lopeta synkka'
-        TabOrder = 7
+        TabOrder = 9
         OnClick = BtnLopetaSynkkaClick
       end
       object BtnLahetaNyt: TButton
         Left = 170
-        Top = 320
+        Top = 376
         Width = 160
         Height = 32
         Caption = 'L'#228'het'#228' kilpailijat nyt'
-        TabOrder = 5
+        TabOrder = 7
         OnClick = BtnLahetaNytClick
       end
       object BtnHaeNyt: TButton
         Left = 348
-        Top = 320
+        Top = 376
         Width = 160
         Height = 32
         Caption = 'Hae kilpailijat nyt'
-        TabOrder = 6
+        TabOrder = 8
         OnClick = BtnHaeNytClick
       end
     end
@@ -279,7 +304,7 @@ object FormApiYhteydet: TFormApiYhteydet
   end
   object BtnOK: TButton
     Left = 320
-    Top = 510
+    Top = 580
     Width = 90
     Height = 30
     Caption = 'OK'
@@ -288,7 +313,7 @@ object FormApiYhteydet: TFormApiYhteydet
   end
   object BtnPeruuta: TButton
     Left = 420
-    Top = 510
+    Top = 580
     Width = 90
     Height = 30
     Caption = 'Peruuta'
@@ -297,7 +322,7 @@ object FormApiYhteydet: TFormApiYhteydet
   end
   object BtnOhje: TButton
     Left = 16
-    Top = 510
+    Top = 580
     Width = 90
     Height = 30
     Caption = 'Ohje'
