@@ -18,13 +18,12 @@ lähettää tiedon heti nettiin.
 4. Täytä:
    - **Bridge-URL:** `https://jahonline.com/public/api/kilpailijat_bridge.php`
      (oletus; yleensä ei tarvitse muuttaa)
-   - **API-avain:** JAHOnline-hallinnan kilpailukohtainen `api_token`
-     (Hallinta → Kilpailu)
-   - **kilpailu_id:** saman kilpailun tunnus JAHOnlinessa
-5. Paina **Testaa (ping)**. Onnistunut ping aktivoi yhteyden.
-6. **Lähetä kilpailijat nyt** vie Pirilän osanottajat (nimet, emit-koodit, ajat,
+   - **API-avain:** JAHOnline-käyttäjän `api_token` (Hallinta → käyttäjä)
+5. Paina **Hae kilpailut** ja valitse listasta netissä luotu Pirilä-kilpailu.
+6. Paina **Testaa (ping)**. Onnistunut ping aktivoi yhteyden.
+7. **Lähetä kilpailijat nyt** vie Pirilän osanottajat (nimet, emit-koodit, ajat,
    lähtöajat, läsnäolo, online-väliajat) JAHOnlineen.
-7. **Hae kilpailijat nyt** vain jos netistä pitää tuoda päivityksiä takaisin
+8. **Hae kilpailijat nyt** vain jos netistä pitää tuoda päivityksiä takaisin
    paikalliseen `KILP.DAT`-kantaan. Taustahaku täyttää vain tyhjät ajat; se ei
    pyyhi Pirilässä jo olevaa maalia.
 
