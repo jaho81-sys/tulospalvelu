@@ -180,6 +180,41 @@ def test_cpp_json_actions():
     print("ok cpp json actions")
 
 
+def test_emit_rastivaliajat_payload():
+    """Emit course legs are rastivaliajat[], not valiajat[] (timing splits)."""
+    body = {
+        "action": "synkkaa",
+        "kilpailu_id": 11,
+        "lahde": "HkKisaWin",
+        "kilpailijat": [{
+            "numero": 101,
+            "valiajat": [{"piste": 1, "aika_sec": 600, "sija": 2}],
+            "rata": "2",
+            "rastivaliajat": [
+                {"rasti": 1, "koodi": 31, "aika_sec": 145, "vali_sec": 145},
+                {"rasti": 2, "koodi": 45, "aika_sec": 310, "vali_sec": 165},
+            ],
+        }],
+    }
+    assert body["kilpailijat"][0]["valiajat"][0]["piste"] == 1
+    assert body["kilpailijat"][0]["rastivaliajat"][0]["koodi"] == 31
+    assert body["kilpailijat"][0]["rastivaliajat"][1]["vali_sec"] == 165
+    for rel in (
+            os.path.join("TPsource", "V52", "cbHk", "ApiSaike.cpp"),
+            os.path.join("TPsource", "V52", "ViestiWin", "ApiSaike.cpp"),
+            ):
+        src = open(os.path.join(ROOT, rel), encoding="utf-8", errors="replace").read()
+        assert "ApiEmitRastivaliajat" in src
+        assert '\\"rastivaliajat\\":' in src
+        assert "tee_emva" in src
+        assert "vali_sec" in src
+    docs = open(os.path.join(ROOT, "docs", "api-jahonline.md"),
+                encoding="utf-8", errors="replace").read()
+    assert "rastivaliajat" in docs
+    assert "kilpailijat_bridge.php" in docs
+    print("ok emit rastivaliajat payload")
+
+
 SEK = 1000  # TPsource/V52/Tp/TpDef.h: SEK = 10*KSEK, KSEK = 10*CSEK, CSEK = 10
 
 
@@ -235,12 +270,12 @@ def test_cpp_converts_ticks_to_seconds():
 
 def test_source_hooks():
     files = {
-        "cbHk/ApiSaike.cpp": ["tapahtuma", "lahetaValiajat", "valiajat", "yksilo"],
+        "cbHk/ApiSaike.cpp": ["tapahtuma", "lahetaValiajat", "valiajat", "yksilo", "rastivaliajat", "tee_emva"],
         "cbHk/UnitAjanotto.cpp": ["IlmoitaTapahtuma"],
         "cbHk/UnitEmit.cpp": ["IlmoitaTapahtuma", "IlmoitaLasna", "nva < kilpparam.valuku"],
         "cbHk/UnitKilpailijaOnline.cpp": ["IlmoitaTapahtuma", "nva < kilpparam.valuku"],
         "cbHk/WinHk.dfm": ["JAHOnline API (synkka)"],
-        "ViestiWin/ApiSaike.cpp": ["viesti", "osuus", "tapahtuma"],
+        "ViestiWin/ApiSaike.cpp": ["viesti", "osuus", "tapahtuma", "rastivaliajat", "tee_emva"],
         "ViestiWin/UnitAjanotto.cpp": ["IlmoitaTapahtuma"],
         "ViestiWin/UnitEmit.cpp": ["IlmoitaTapahtuma", "IlmoitaLasna"],
         "ViestiWin/UnitJoukkuetiedot.cpp": ["IlmoitaTapahtuma"],
@@ -465,6 +500,7 @@ def main():
     test_valiajat_wire_index()
     test_synkka_merge()
     test_cpp_json_actions()
+    test_emit_rastivaliajat_payload()
     test_source_hooks()
     test_synkka_not_started_without_kilpailu()
     test_aika_sec_units()

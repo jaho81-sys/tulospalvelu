@@ -63,11 +63,13 @@ henkilökohtaisessa kisassa että viestissä.
 
 - Ajanotto / rastileima → heti `action=tapahtuma` (`piste` 0 = maali, ≥ 1 = online)
 - Täysi lista menee `synkkaa`-sanoman `valiajat[]`-kentässä
+- Emit-rastiväliajat menee `synkkaa`-kentässä `rastivaliajat[]` (leimantarkastus)
 - Haku JAHOnlinesta kirjoittaa väliajat takaisin `KILP.DAT`:iin
 - Viestissä jokaisella rivillä on `osuus` (1, 2, 3…)
 
-JAHOnlinen tulossivu näyttää online-sarakkeet (`sarjat.valia_lkm`) ja
-rastiväliajat vasta leimantarkastuksen jälkeen.
+JAHOnlinen tulossivu näyttää online-sarakkeet (`sarjat.valia_lkm`).
+Rastiväliajat (`/public/valiajat.php`) vaativat, että silta tallentaa
+`rastivaliajat[]` — pelkkä käyttäjäavain/kisalista ei riitä.
 
 ## Mitä ei enää tarvita
 

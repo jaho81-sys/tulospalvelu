@@ -231,6 +231,66 @@ static void ApiIlmoittautunutEmitLasna(kilptietue& kilp, int os,
 		kilp.SetTark(os, L'-');
 }
 
+// Emit course legs (rastiväliajat). Same mapping as EVa / tee_emva.
+static UnicodeString ApiEmitRastivaliajat(kilptietue& kilp, int os)
+{
+	UnicodeString arr = L"[";
+	if (!emitfl)
+		return arr + L"]";
+	emittp em;
+	getem(&em, kilp.KilpNo(), os);
+	if (em.kilpno <= 0)
+		return arr + L"]";
+	ratatp *rt = haerata(&kilp, os);
+	if (!rt || rt->rastiluku <= 0)
+		return arr + L"]";
+	emitvatp emva;
+	if (tee_emva(&emva, &em) != 0)
+		return arr + L"]";
+	int n = emva.rastiluku;
+	if (n < 0)
+		n = 0;
+	if (n > MAXEMVALAH)
+		n = MAXEMVALAH;
+	bool first = true;
+	int prev = 0;
+	for (int i = 0; i < n; i++) {
+		int koodi = (int)emva.rastit[i][0];
+		int sec = (int)emva.rastit[i][1];
+		if (koodi <= 0 && rt && i < MAXNRASTI)
+			koodi = rt->rastikoodi[i];
+		if (koodi <= 0 && sec <= 0)
+			continue;
+		int vali = 0;
+		if (sec > 0) {
+			vali = sec - prev;
+			if (vali < 0)
+				vali = 0;
+			prev = sec;
+		}
+		if (!first)
+			arr += L",";
+		first = false;
+		arr += L"{\"rasti\":" + IntToStr(i + 1)
+			+ L",\"koodi\":" + IntToStr(koodi)
+			+ L",\"aika_sec\":" + IntToStr(sec)
+			+ L",\"vali_sec\":" + IntToStr(vali)
+			+ L"}";
+	}
+	arr += L"]";
+	return arr;
+}
+
+static UnicodeString ApiEmitRata(kilptietue& kilp, int os)
+{
+	if (os >= 0 && kilp.ostiet[os].hajonta[0])
+		return ApiJsonString(UnicodeString(kilp.ostiet[os].hajonta));
+	ratatp *rt = haerata(&kilp, os);
+	if (rt && rt->tunnus[0])
+		return ApiJsonString(rt->tunnus);
+	return UnicodeString(L"null");
+}
+
 static UnicodeString ApiOsuusObj(kilptietue& kilp, int os)
 {
 	int numero = kilp.KilpNo();
@@ -304,6 +364,8 @@ static UnicodeString ApiOsuusObj(kilptietue& kilp, int os)
 		arr += L",\"sija\":null";
 	arr += ApiLahtoKentat(kilp.Lahto(os));
 	arr += L",\"valiajat\":" + valia;
+	arr += L",\"rata\":" + ApiEmitRata(kilp, os);
+	arr += L",\"rastivaliajat\":" + ApiEmitRastivaliajat(kilp, os);
 	arr += L",\"tyyppi\":\"viesti\"";
 	arr += L"}";
 	return arr;

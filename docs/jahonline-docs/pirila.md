@@ -79,15 +79,18 @@ siirto-ohjelmaa.
 
 1. **Online-väliaikapisteet** (radio / maasto) — sarakkeet `1. va`, `2. va`…
    tuloksissa. Määrä = `sarjat.valia_lkm` (admin).
-2. **Rastiväliajat** (koko Emit-rata) — vasta **leimantarkastuksen jälkeen**
-   (kilpailija maalissa). Seuranta → Rastiväliajat tai
+2. **Rastiväliajat** (koko Emit-rata) — `synkkaa`-kenttä `rastivaliajat[]`
+   leimantarkastuksen jälkeen. Seuranta → Rastiväliajat tai
    `/public/valiajat.php?kilpailu_id=…&numero=…`.
+   **Sivu tarvitsee päivityksen:** bridgen on kirjoitettava `rastivaliajat`
+   tietokantaan. Vanha käyttäjä/kisakohtainen avain ei tätä kenttää tuonut;
+   EVa-tiedonsiirto / HTML / MySQL olivat erillisiä polkuja.
 
 | Käsite | JAHOnline |
 |--------|-----------|
 | Maali | `ajat` |
 | Online-väliaika | `valiajat` (adminin `valia_lkm`) |
-| Emit-rastit | rastiväliajat-näkymä, vain maalissa olevilta |
+| Emit-rastit | `rastivaliajat[]` (`rasti`, `koodi`, `aika_sec`, `vali_sec`) + `rata` |
 | Läsnä / ilmoittautunut / DNS / DNF / DSQ | `lasna` + `status` (`LASNA` / `OK` / `DNS` / `DNF` / `DSQ`; ilmoittautunut `N` kuten avoin `LASNA`, kirjain kentässä `keskhyl`) |
 | Lähtöaika | `lahto_aika` / `pirila_lahto_at` / `lahto_sec` → `kilpailijat` + sarjan `lahdot` |
 | Maaliaika | `aika_sec` = tuloksen sekunnit (45:00 → 2700), ei Pirilän ms-tikkejä |

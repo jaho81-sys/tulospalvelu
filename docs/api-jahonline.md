@@ -112,13 +112,28 @@ ilmoittautunut saa tark./esitys-statuksen leimaustiedoista kuten avoin.
       "lahto_aika":"10:05:00",
       "pirila_lahto_at":"10:05:00",
       "lahto_sec":36300,
-      "valiajat":[]
+      "valiajat":[],
+      "rata":"2",
+      "rastivaliajat":[
+        {"rasti":1,"koodi":31,"aika_sec":145,"vali_sec":145},
+        {"rasti":2,"koodi":45,"aika_sec":310,"vali_sec":165}
+      ]
     }
   ]
 }
 ```
 
 `luo_puuttuvat:true` luo puuttuvat numerot JAHOnlineen (sarja nimellä).
+
+`valiajat[]` on **online-väliaikapiste** (`p_aika` / radio). Emit-kortin
+**rastiväliajat** ovat eri kenttä: `rastivaliajat[]` (leimantarkastuksen
+`tee_emva`: rasti, koodi, kumulatiivinen `aika_sec`, rastiväli `vali_sec`).
+Tyhjä, kun korttia ei ole luettu tai rataa ei ole. Käyttäjäkohtainen API-avain
+ei poistanut tätä — HTTP-synkka ei aiemmin lähettänyt leimoja lainkaan.
+
+JAHOnline-bridgen (`kilpailijat_bridge.php`) **pitää tallentaa** `rastivaliajat`
+(ja `rata`) tauluun, josta `/public/valiajat.php` lukee. Ilman sivupäivitystä
+leimat eivät näy netissä, vaikka Pirilä ne lähettää.
 
 Emit-luenta (leimantarkastus / `ESILUENTA`) merkitsee kilpailijan läsnäolevaksi
 ja lähettää yhden kilpailijan `synkkaa`-sanoman heti (`lasna: true`).

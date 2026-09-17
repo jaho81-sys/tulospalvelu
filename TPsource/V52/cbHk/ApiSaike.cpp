@@ -200,6 +200,65 @@ static int ApiVaNva(int srj, int ipv)
 	return nva;
 }
 
+// Emit course legs (rastiväliajat), not timing-split valiajat[].
+// Same mapping as EVa / xmlemitvasanoma: rastit[i][0]=koodi, [1]=sec from start.
+static UnicodeString ApiEmitRastivaliajat(kilptietue& kilp)
+{
+	UnicodeString arr = L"[";
+	if (!emitfl)
+		return arr + L"]";
+	emittp em;
+	getem(&em, kilp.id(), 0);
+	if (em.kilpno <= 0)
+		return arr + L"]";
+	emitvatp emva;
+	if (tee_emva(&emva, &em) != 0)
+		return arr + L"]";
+	ratatp *rt = haerata(&kilp);
+	int n = emva.rastiluku;
+	if (n < 0)
+		n = 0;
+	if (n > MAXNRASTI)
+		n = MAXNRASTI;
+	bool first = true;
+	int prev = 0;
+	for (int i = 0; i < n; i++) {
+		int koodi = (int)emva.rastit[i][0];
+		int sec = (int)emva.rastit[i][1];
+		if (koodi <= 0 && rt && i < MAXNRASTI)
+			koodi = rt->rastikoodi[i];
+		if (koodi <= 0 && sec <= 0)
+			continue;
+		int vali = 0;
+		if (sec > 0) {
+			vali = sec - prev;
+			if (vali < 0)
+				vali = 0;
+			prev = sec;
+		}
+		if (!first)
+			arr += L",";
+		first = false;
+		arr += L"{\"rasti\":" + IntToStr(i + 1)
+			+ L",\"koodi\":" + IntToStr(koodi)
+			+ L",\"aika_sec\":" + IntToStr(sec)
+			+ L",\"vali_sec\":" + IntToStr(vali)
+			+ L"}";
+	}
+	arr += L"]";
+	return arr;
+}
+
+static UnicodeString ApiEmitRata(kilptietue& kilp)
+{
+	ratatp *rt = haerata(&kilp);
+	if (rt && rt->tunnus[0])
+		return ApiJsonString(rt->tunnus);
+	if (kilp.pv && kilp.pv[k_pv].rata[0])
+		return ApiJsonString(kilp.pv[k_pv].rata);
+	return UnicodeString(L"null");
+}
+
 static void ApiKopioiW(wchar_t *dst, int dstChars, const UnicodeString& src)
 {
 	if (!dst || dstChars < 2 || src.IsEmpty())
@@ -315,6 +374,8 @@ static UnicodeString ApiKilpailijaObj(kilptietue& kilp, int ipv)
 		arr += L",\"sija\":null";
 	arr += ApiLahtoKentat(ApiKilpailijanLahto(kilp, ipv));
 	arr += L",\"valiajat\":" + valia;
+	arr += L",\"rata\":" + ApiEmitRata(kilp);
+	arr += L",\"rastivaliajat\":" + ApiEmitRastivaliajat(kilp);
 	arr += L",\"tyyppi\":\"yksilo\"";
 	arr += L"}";
 	return arr;
