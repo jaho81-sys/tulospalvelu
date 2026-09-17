@@ -170,6 +170,14 @@ static bool ApiAikaTyhja(INT32 a)
 	return a <= 0 || a == TMAALI0;
 }
 
+// Wire piste 0 = maali = va[1] = p_aika(0).
+// Wire piste n (>=1) = nth split = va[n+1] = p_aika(n).
+// va[0] is start; sending va[p] as piste p put the finish time in split 1.
+static int ApiVaIx(int piste)
+{
+	return piste + 1;
+}
+
 static void ApiKopioiW(wchar_t *dst, int dstChars, const UnicodeString& src)
 {
 	if (!dst || dstChars < 2 || src.IsEmpty())
@@ -235,7 +243,8 @@ static UnicodeString ApiKilpailijaObj(kilptietue& kilp, int ipv)
 		if (nva < 0) nva = 0;
 		if (nva > 60) nva = 60;
 		for (int p = 1; p <= nva; p++) {
-			INT32 va = kilp.pv[ipv].va[p].vatulos;
+			int ix = ApiVaIx(p);
+			INT32 va = kilp.pv[ipv].va[ix].vatulos;
 			if (va <= 0)
 				continue;
 			int vsec = ApiTulosSec(va);
@@ -245,7 +254,7 @@ static UnicodeString ApiKilpailijaObj(kilptietue& kilp, int ipv)
 			vfirst = false;
 			valia += L"{\"piste\":" + IntToStr(p)
 				+ L",\"aika_sec\":" + IntToStr(vsec)
-				+ L",\"sija\":" + IntToStr((int)kilp.pv[ipv].va[p].vasija)
+				+ L",\"sija\":" + IntToStr((int)kilp.pv[ipv].va[ix].vasija)
 				+ L"}";
 		}
 	}
@@ -478,19 +487,20 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json, bool korvaaKentat)
 							__int64 va64 = 0;
 							if (!ApiJsonFindInt(vas[v], L"piste", piste) || piste < 1)
 								continue;
-							if (piste > 60)
+							if (piste > 60 || !kilp.pv[ipv].va)
 								continue;
+							int ix = ApiVaIx(piste);
 							if (ApiJsonFindInt64(vas[v], L"aika_sec", va64) && va64 > 0) {
 								onEmitTieto = true;
-								INT32 localVa = kilp.pv[ipv].va[piste].vatulos;
+								INT32 localVa = kilp.pv[ipv].va[ix].vatulos;
 								if (korvaaKentat || localVa <= 0) {
-									kilp.pv[ipv].va[piste].vatulos = ApiSecToTicks(va64);
+									kilp.pv[ipv].va[ix].vatulos = ApiSecToTicks(va64);
 									muuttui = true;
 								}
 							}
 							if (ApiJsonFindInt(vas[v], L"sija", vasija) && vasija > 0) {
-								if (korvaaKentat || kilp.pv[ipv].va[piste].vasija <= 0) {
-									kilp.pv[ipv].va[piste].vasija = (INT16)vasija;
+								if (korvaaKentat || kilp.pv[ipv].va[ix].vasija <= 0) {
+									kilp.pv[ipv].va[ix].vasija = (INT16)vasija;
 									muuttui = true;
 								}
 							}

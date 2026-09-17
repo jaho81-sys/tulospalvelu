@@ -112,6 +112,7 @@ tietokantakäyttöön, mutta JAHOnline-synkka ei kulje sen kautta.
 
 Ajanotto ja rastileima lähettävät heti `action=tapahtuma`
 (`piste` 0 = maali, ≥ 1 = online). Viestissä mukana `osuus` (1, 2, 3…).
+HkKisaWin: JSON-piste n = `va[n+1]` (`p_aika`), ei `va[n]`.
 Täysi lista kulkee myös `synkkaa`-sanoman `valiajat[]`-kentässä.
 
 JAHOnline-bridgen pitää hyväksyä `action=tapahtuma` ja kirjoittaa
