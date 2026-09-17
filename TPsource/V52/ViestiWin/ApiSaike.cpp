@@ -1,6 +1,7 @@
 #include <vcl.h>
 #pragma hdrstop
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <vector>
 
@@ -231,6 +232,78 @@ static void ApiIlmoittautunutEmitLasna(kilptietue& kilp, int os,
 		kilp.SetTark(os, L'-');
 }
 
+// JAHOnline emit course legs: same valiajat[] as online splits, plus rasti_koodi.
+// Rows without rasti_koodi update sarjat.valia_lkm; rows with rasti_koodi
+// feed /public/valiajat.php. Viesti tee_emva AVs if rata is NULL, so check first.
+static void ApiValiajatLisaaEmitRivi(UnicodeString& valia, bool& vfirst,
+	int piste, int sec, int koodi, int vali)
+{
+	if (koodi <= 0 && sec <= 0)
+		return;
+	if (!vfirst)
+		valia += L",";
+	vfirst = false;
+	valia += L"{\"piste\":" + IntToStr(piste)
+		+ L",\"aika_sec\":" + IntToStr(sec)
+		+ L",\"rasti_koodi\":" + IntToStr(koodi);
+	if (vali > 0)
+		valia += L",\"vali_sec\":" + IntToStr(vali);
+	valia += L"}";
+}
+
+static void ApiLisaaEmitValiajat(kilptietue& kilp, int os, UnicodeString& valia, bool& vfirst)
+{
+	if (!emitfl || os < 0)
+		return;
+	emittp em;
+	if (getem(&em, kilp.KilpNo(), os) < 0 || em.kilpno <= 0)
+		return;
+	em.osuus = (INT16)os;
+
+	if (emitanal_fl) {
+		emitvaanaltp *eva = 0;
+		int nva = 0;
+		if (laskeemitvaliajat(&em, &kilp, &eva, 0, &nva) == 0 && eva && nva > 0) {
+			if (nva > MAXNRASTI)
+				nva = MAXNRASTI;
+			for (int i = 0; i < nva; i++)
+				ApiValiajatLisaaEmitRivi(valia, vfirst, i + 1,
+					eva[i].aika, eva[i].rkoodi, eva[i].rvaika);
+			free(eva);
+			return;
+		}
+		if (eva)
+			free(eva);
+	}
+
+	ratatp *rt = haerata(&kilp, os);
+	if (!rt)
+		return;
+	emitvatp emva;
+	if (tee_emva(&emva, &em) != 0)
+		return;
+	int n = emva.rastiluku;
+	if (n < 0)
+		n = 0;
+	if (n > MAXEMVALAH)
+		n = MAXEMVALAH;
+	int prev = 0;
+	for (int i = 0; i < n; i++) {
+		int koodi = (int)emva.rastit[i][0];
+		int sec = (int)emva.rastit[i][1];
+		if (koodi <= 0 && i < MAXNRASTI)
+			koodi = rt->rastikoodi[i];
+		int vali = 0;
+		if (sec > 0) {
+			vali = sec - prev;
+			if (vali < 0)
+				vali = 0;
+			prev = sec;
+		}
+		ApiValiajatLisaaEmitRivi(valia, vfirst, i + 1, sec, koodi, vali);
+	}
+}
+
 static UnicodeString ApiOsuusObj(kilptietue& kilp, int os)
 {
 	int numero = kilp.KilpNo();
@@ -269,6 +342,7 @@ static UnicodeString ApiOsuusObj(kilptietue& kilp, int os)
 			+ L",\"sija\":" + IntToStr((int)kilp.Sija(os, p))
 			+ L"}";
 	}
+	ApiLisaaEmitValiajat(kilp, os, valia, vfirst);
 	valia += L"]";
 
 	int badge = (int)kilp.ostiet[os].badge[0];
@@ -510,6 +584,11 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json, bool korvaaKentat)
 						__int64 va64 = 0;
 						if (!ApiJsonFindInt(vas[v], L"piste", piste) || piste < 1)
 							continue;
+						{
+							int rkoodi = 0;
+							if (ApiJsonFindInt(vas[v], L"rasti_koodi", rkoodi) && rkoodi > 0)
+								continue;
+						}
 						if (ApiJsonFindInt64(vas[v], L"aika_sec", va64) && va64 > 0) {
 							onEmitTieto = true;
 							if (korvaaKentat || !ApiAikaOk(kilp.Maali(os, piste))) {

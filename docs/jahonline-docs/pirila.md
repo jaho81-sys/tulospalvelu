@@ -20,7 +20,7 @@ Lähdekoodi: [jaho81-sys/tulospalvelu](https://github.com/jaho81-sys/tulospalvel
 4. Paina **Hae kilpailut** ja valitse listasta netissä luotu Pirilä-kilpailu.
 5. Paina **Testaa (ping)** (paikallisen kilpailun pitää olla auki).
 6. **Lähetä kilpailijat nyt** vie osanottajat (nimet, emit, ajat, lähtöajat,
-   läsnäolo, online-väliajat) Pirilästä JAHOnlineen.
+   läsnäolo, online-väliajat ja Emit-rastiväliajat) Pirilästä JAHOnlineen.
 7. **Lopeta synkka** pysäyttää taustasynkan.
 8. **Hae kilpailijat nyt** vain jos netistä pitää tuoda päivityksiä takaisin
    `KILP.DAT`:iin. Taustahaku ei ylikirjoita paikallista maaliaikaa, väliaikaa
@@ -64,7 +64,7 @@ säikeen. Synkkaa ei käynnistetä, jos kilpailua ei ole avattu.
 |--------|--------|--------|
 | `kilpailut` | JAHOnline → Pirilä | Käyttäjän Pirilä-kilpailut valintalistaan |
 | `ping` | — | Yhteystesti valitulle kisalle |
-| `synkkaa` | Pirilä → JAHOnline | Osanottajat, ajat, lähtöajat, läsnäolo, `valiajat[]` |
+| `synkkaa` | Pirilä → JAHOnline | Osanottajat, ajat, lähtöajat, läsnäolo, `valiajat[]` (online + Emit-rastit `rasti_koodi`) |
 | `kilpailijat` | JAHOnline → Pirilä | Haku `KILP.DAT`:iin (myös väliajat) |
 | `tapahtuma` | live molempiin | Online-rasti heti (`piste`, `aika_sec`, viestissä `osuus`) |
 
@@ -78,16 +78,21 @@ Nämä koskevat sitä, miten JAHOnline **näyttää** synkatut tiedot — ei eri
 siirto-ohjelmaa.
 
 1. **Online-väliaikapisteet** (radio / maasto) — sarakkeet `1. va`, `2. va`…
-   tuloksissa. Määrä = `sarjat.valia_lkm` (admin).
-2. **Rastiväliajat** (koko Emit-rata) — vasta **leimantarkastuksen jälkeen**
-   (kilpailija maalissa). Seuranta → Rastiväliajat tai
-   `/public/valiajat.php?kilpailu_id=…&numero=…`.
+   **vain viestin osuuslistassa**. Määrä = `sarjat.valia_lkm` (admin / `tapahtuma`).
+   Henkilökohtaisissa **tuloksissa** näytetään vain tulos (aika + ero), ei VA-sarakkeita.
+   Wire: JSON-`piste` n = Hk `p_aika(n)` / `va[n+1]` (maali on `p_aika(0)` / piste 0).
+2. **Rastiväliajat** (koko Emit-rata) — synkan `valiajat[]` Emit-leimoista
+   (`laskeemitvaliajat` / `tee_emva` + `rasti_koodi`) tai online-`va[]`-pisteistä.
+   Seuranta → **Rastiväliajat** (viestissä osuusvalinnalla) tai
+   `/public/valiajat.php?kilpailu_id=…&numero=…&osuus=…`.
+   Erillistä `rastivaliajat[]`-taulukkoa ei ole: emit-rivit ovat samoja
+   `valiajat[]`-objekteja kentällä `rasti_koodi`.
 
 | Käsite | JAHOnline |
 |--------|-----------|
-| Maali | `ajat` |
-| Online-väliaika | `valiajat` (adminin `valia_lkm`) |
-| Emit-rastit | rastiväliajat-näkymä, vain maalissa olevilta |
+| Maali / vaihto | `ajat` (viestissä per osuus-kilpailija) |
+| Online-väliaika | `valiajat` pisteet `1..valia_lkm` (ilman `rasti_koodi`) |
+| Emit-rastit | samat `valiajat`-rivit + `rasti_koodi`; rastiväliajat-näkymä näyttää ne |
 | Läsnä / ilmoittautunut / DNS / DNF / DSQ | `lasna` + `status` (`LASNA` / `OK` / `DNS` / `DNF` / `DSQ`; ilmoittautunut `N` kuten avoin `LASNA`, kirjain kentässä `keskhyl`) |
 | Lähtöaika | `lahto_aika` / `pirila_lahto_at` / `lahto_sec` → `kilpailijat` + sarjan `lahdot` |
 | Maaliaika | `aika_sec` = tuloksen sekunnit (45:00 → 2700), ei Pirilän ms-tikkejä |
@@ -96,7 +101,7 @@ siirto-ohjelmaa.
 
 - Lista: **maalissa → maastossa → status** (DNF / DNS / DSQ)
 - Tulokset: **online-va + maaliaika + ero kärkeen**
-- Rastiväliajat: Emit-sarakkeet vain maalissa olevilta
+- Rastiväliajat: Emit-/API-väliajat (synkan `valiajat[]` + `rasti_koodi`)
 - Maastossa: kulunut aika suluissa; ei Emit-rastilistaa
 
 ## Mitä ei käytetä kisapäivän kilpailijasiirtoon
@@ -114,7 +119,8 @@ Ajanotto ja rastileima lähettävät heti `action=tapahtuma`
 (`piste` 0 = maali, ≥ 1 = online). Viestissä mukana `osuus` (1, 2, 3…).
 HkKisaWin: JSON-piste n = `va[n+1]` (`p_aika`), ei `va[n]`.
 Synkka käyttää kilpailun nykyistä vaihetta (`k_pv`, 0-pohjainen) — ei `k_pv-1`.
-Täysi lista kulkee myös `synkkaa`-sanoman `valiajat[]`-kentässä.
+Täysi lista kulkee myös `synkkaa`-sanoman `valiajat[]`-kentässä
+(online-pisteet ilman `rasti_koodi`, Emit-rastit `rasti_koodi`-kentällä).
 
 JAHOnline-bridgen pitää hyväksyä `action=tapahtuma` ja kirjoittaa
 `valiajat` / maaliaika (viestissä myös `osuus`).

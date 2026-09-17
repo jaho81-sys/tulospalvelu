@@ -44,6 +44,8 @@ def apply_valiajat(local, inbound, vastaanotta=True, korvaa=True):
         return local
     out = dict(local)
     for va in inbound:
+        if va.get("rasti_koodi", 0) > 0:
+            continue
         p = va.get("piste")
         if p is None or p < 1:
             continue
@@ -90,6 +92,17 @@ def test_valiajat_apply():
     periodic = apply_valiajat(local, inbound, True, korvaa=False)
     assert periodic[1] == 100
     assert periodic[2] == 222
+    mixed = apply_valiajat(
+        local,
+        [
+            {"piste": 1, "aika_sec": 111},
+            {"piste": 1, "aika_sec": 184, "rasti_koodi": 31, "vali_sec": 184},
+            {"piste": 2, "aika_sec": 401, "rasti_koodi": 42},
+        ],
+        True,
+        korvaa=True,
+    )
+    assert mixed == {1: 111, 2: 0}
     print("ok valiajat apply")
 
 
@@ -180,6 +193,48 @@ def test_cpp_json_actions():
     print("ok cpp json actions")
 
 
+def test_emit_rasti_koodi_valiajat():
+    """JAHOnline stores emit legs in valiajat[] with rasti_koodi, not rastivaliajat[]."""
+    for rel in (
+            os.path.join("TPsource", "V52", "cbHk", "ApiSaike.cpp"),
+            os.path.join("TPsource", "V52", "ViestiWin", "ApiSaike.cpp"),
+            ):
+        text = open(os.path.join(ROOT, rel), encoding="utf-8", errors="replace").read()
+        assert "ApiLisaaEmitValiajat" in text, rel
+        assert r'\"rasti_koodi\":' in text, rel
+        assert r'\"vali_sec\":' in text, rel
+        assert "laskeemitvaliajat" in text, rel
+        assert "tee_emva" in text, rel
+        assert "rastivaliajat" not in text, rel
+        assert 'L"rasti_koodi", rkoodi' in text, rel
+        assert "rkoodi > 0" in text, rel
+        assert "ApiLisaaEmitValiajat(kilp" in text, rel
+        assert "valiajat" in text
+    hk = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "ApiSaike.cpp"),
+              encoding="utf-8", errors="replace").read()
+    vi = open(os.path.join(ROOT, "TPsource", "V52", "ViestiWin", "ApiSaike.cpp"),
+              encoding="utf-8", errors="replace").read()
+    assert "haerata(&kilp)" in hk
+    assert "haerata(&kilp, os)" in vi
+    assert "if (!rt)" in vi
+    body = {
+        "action": "synkkaa",
+        "kilpailijat": [
+            {
+                "numero": 101,
+                "valiajat": [
+                    {"piste": 1, "aika_sec": 612, "sija": 3},
+                    {"piste": 1, "aika_sec": 184, "rasti_koodi": 31, "vali_sec": 184},
+                ],
+            }
+        ],
+    }
+    raw = json.dumps(body, ensure_ascii=False)
+    assert "rasti_koodi" in raw
+    assert "rastivaliajat" not in raw
+    print("ok emit rasti_koodi valiajat")
+
+
 SEK = 1000  # TPsource/V52/Tp/TpDef.h: SEK = 10*KSEK, KSEK = 10*CSEK, CSEK = 10
 
 
@@ -235,12 +290,12 @@ def test_cpp_converts_ticks_to_seconds():
 
 def test_source_hooks():
     files = {
-        "cbHk/ApiSaike.cpp": ["tapahtuma", "lahetaValiajat", "valiajat", "yksilo"],
+        "cbHk/ApiSaike.cpp": ["tapahtuma", "lahetaValiajat", "valiajat", "yksilo", "rasti_koodi"],
         "cbHk/UnitAjanotto.cpp": ["IlmoitaTapahtuma"],
         "cbHk/UnitEmit.cpp": ["IlmoitaTapahtuma", "IlmoitaLasna", "nva < kilpparam.valuku"],
         "cbHk/UnitKilpailijaOnline.cpp": ["IlmoitaTapahtuma", "nva < kilpparam.valuku"],
         "cbHk/WinHk.dfm": ["JAHOnline API (synkka)"],
-        "ViestiWin/ApiSaike.cpp": ["viesti", "osuus", "tapahtuma"],
+        "ViestiWin/ApiSaike.cpp": ["viesti", "osuus", "tapahtuma", "rasti_koodi"],
         "ViestiWin/UnitAjanotto.cpp": ["IlmoitaTapahtuma"],
         "ViestiWin/UnitEmit.cpp": ["IlmoitaTapahtuma", "IlmoitaLasna"],
         "ViestiWin/UnitJoukkuetiedot.cpp": ["IlmoitaTapahtuma"],
@@ -465,6 +520,7 @@ def main():
     test_valiajat_wire_index()
     test_synkka_merge()
     test_cpp_json_actions()
+    test_emit_rasti_koodi_valiajat()
     test_source_hooks()
     test_synkka_not_started_without_kilpailu()
     test_aika_sec_units()

@@ -15,8 +15,8 @@ valitaan yhdistettävä kisa (`kilpailu_id`).
 
 Erillistä siirto-ohjelmaa, CSV-bridgeä tai MySQL-välikantaa ei tarvita:
 kaksisuuntainen synkka on HkKisaWinissä ja ViestiWinissä (valikko
-**JAHOnline API (synkka)**). Osanottajat, läsnäolo, maaliajat ja
-online-rastit kulkevat samaa siltaa.
+**JAHOnline API (synkka)**). Osanottajat, läsnäolo, maaliajat, online-rastit ja Emit-rastiväliajat
+kulkevat samaa siltaa.
 
 - Asennusohje: [docs-site/docs/asentaminen/jahonline.md](../docs-site/docs/asentaminen/jahonline.md)
 - JAHOnline-sivun `docs/pirila.md` -korvaus: [docs/jahonline-docs/pirila.md](jahonline-docs/pirila.md)
@@ -166,9 +166,28 @@ jos `sarja_nimi` täsmää paikalliseen sarjaan.
 Jos live-jono (256) täyttyy, ylimääräiset merkitään lokiin (`Jono taynna`), niitä
 ei pudoteta ääneti.
 
-`synkkaa` sisältää myös `valiajat[]` (online-rastit / väliaikapisteet) ja
-`"tyyppi":"yksilo"` tai `"tyyppi":"viesti"`. Ajanotto / rastileima lähettää
-lisäksi heti:
+`synkkaa` sisältää myös `valiajat[]` ja `"tyyppi":"yksilo"` tai `"tyyppi":"viesti"`.
+Sama taulukko kuljettaa kaksi asiaa:
+
+1. **Online-väliaikapisteet** (`va[]` / `p_aika`) — rivi **ilman** `rasti_koodi`.
+   JAHOnline päivittää näistä `sarjat.valia_lkm`.
+2. **Emit-rastiväliajat** (`laskeemitvaliajat`, varalla `tee_emva`) — rivi
+   **kentällä** `rasti_koodi`. Nämä syöttävät rastiväliajat-näkymän
+   (`/public/valiajat.php`). `vali_sec` on valinnainen rastiväli sekunteina.
+
+```json
+"valiajat":[
+  {"piste":1,"aika_sec":612,"sija":3},
+  {"piste":1,"aika_sec":184,"rasti_koodi":31,"vali_sec":184},
+  {"piste":2,"aika_sec":401,"rasti_koodi":42,"vali_sec":217}
+]
+```
+
+Sama `piste`-numero online- ja emit-rivillä on sallittu: palvelin erottaa ne
+`rasti_koodi`-kentällä. Haku takaisin Pirilään **ohittaa** rivit, joissa
+`rasti_koodi > 0`, jotta emit-leimat eivät kirjoitu `va[]`-onlinepisteisiin.
+
+Ajanotto / rastileima lähettää lisäksi heti:
 
 ### `tapahtuma` (live online-rasti)
 

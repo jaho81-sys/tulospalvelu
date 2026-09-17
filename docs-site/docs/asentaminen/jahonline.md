@@ -22,7 +22,7 @@ lähettää tiedon heti nettiin.
 5. Paina **Hae kilpailut** ja valitse listasta netissä luotu Pirilä-kilpailu.
 6. Paina **Testaa (ping)**. Onnistunut ping aktivoi yhteyden.
 7. **Lähetä kilpailijat nyt** vie Pirilän osanottajat (nimet, emit-koodit, ajat,
-   lähtöajat, läsnäolo, online-väliajat) JAHOnlineen.
+   lähtöajat, läsnäolo, online-väliajat ja Emit-rastiväliajat) JAHOnlineen.
 8. **Hae kilpailijat nyt** vain jos netistä pitää tuoda päivityksiä takaisin
    paikalliseen `KILP.DAT`-kantaan. Taustahaku täyttää vain tyhjät ajat; se ei
    pyyhi Pirilässä jo olevaa maalia.
@@ -63,11 +63,14 @@ henkilökohtaisessa kisassa että viestissä.
 
 - Ajanotto / rastileima → heti `action=tapahtuma` (`piste` 0 = maali, ≥ 1 = online)
 - Täysi lista menee `synkkaa`-sanoman `valiajat[]`-kentässä
-- Haku JAHOnlinesta kirjoittaa väliajat takaisin `KILP.DAT`:iin
+- Emit-rastiväliajat ovat samoja `valiajat[]`-rivejä kentällä `rasti_koodi`
+  (`laskeemitvaliajat`; erillistä `rastivaliajat[]`-taulukkoa ei käytetä)
+- Haku JAHOnlinesta kirjoittaa online-väliajat takaisin `KILP.DAT`:iin;
+  rivit joissa `rasti_koodi > 0` ohitetaan, jotta emit-leimat eivät mene `va[]`:iin
 - Viestissä jokaisella rivillä on `osuus` (1, 2, 3…)
 
-JAHOnlinen tulossivu näyttää online-sarakkeet (`sarjat.valia_lkm`) ja
-rastiväliajat vasta leimantarkastuksen jälkeen.
+JAHOnlinen tulossivu näyttää online-sarakkeet (`sarjat.valia_lkm`, rivit ilman
+`rasti_koodi`) ja rastiväliajat (`/public/valiajat.php`, rivit joissa `rasti_koodi`).
 
 ## Mitä ei enää tarvita
 
