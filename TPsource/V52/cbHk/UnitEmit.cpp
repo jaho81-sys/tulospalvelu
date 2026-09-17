@@ -1629,6 +1629,8 @@ int __fastcall TFormEmit::tallennaKilpailija(bool kysy)
 		int srj = Kilp.Sarja();
 		if (srj >= 0 && srj < sarjaluku)
 			nva = Sarjat[srj].valuku[k_pv];
+		if (nva < kilpparam.valuku)
+			nva = kilpparam.valuku;
 		for (int iva = 1; iva <= nva; iva++) {
 			INT32 va = Kilp.p_aika(iva);
 			if (va > 0)
