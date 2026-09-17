@@ -93,6 +93,24 @@ def test_valiajat_apply():
     print("ok valiajat apply")
 
 
+def p_aika_va_index(piste):
+    """kilptietue::p_aika uses va[piste+1]; va[1] is maali, va[2] is 1st split."""
+    return piste + 1
+
+
+def test_valiajat_wire_index():
+    assert p_aika_va_index(0) == 1
+    assert p_aika_va_index(1) == 2
+    assert p_aika_va_index(3) == 4
+    src = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "ApiSaike.cpp"),
+               encoding="utf-8", errors="replace").read()
+    assert "ApiVaIx" in src
+    assert "va[ix].vatulos" in src
+    assert "va[p].vatulos" not in src
+    assert "va[piste].vatulos" not in src
+    print("ok valiajat wire index")
+
+
 def test_synkka_merge():
     assert merge_aika_sec(2700, 0, False) == 2700
     assert merge_aika_sec(2700, None, False) == 2700
@@ -428,6 +446,7 @@ def main():
     test_tapahtuma_yksilo()
     test_tapahtuma_viesti()
     test_valiajat_apply()
+    test_valiajat_wire_index()
     test_synkka_merge()
     test_cpp_json_actions()
     test_source_hooks()
