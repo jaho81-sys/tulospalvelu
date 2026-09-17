@@ -200,6 +200,8 @@ Viesti (osuus 1-pohjainen JSON:ssa, 0-pohjainen Pirilässä):
 - `piste` **0** = maali, **≥ 1** = online-rasti / väliaikapiste
 - HkKisaWin-sisällä maali on `va[1]` (`p_aika(0)`), 1. väliaika `va[2]` (`p_aika(1)`).
   JSON-`piste` n on `va[n+1]`, ei `va[n]` — muuten maaliaika menisi 1. väliaikaan.
+  Lähetys lukee vaiheen `k_pv` (vaihe 1 ⇒ 0). `k_pv-1` jätti nykyisen vaiheen
+  `valiajat[]`-taulukon tyhjäksi.
 - `aika_sec` samoin kokonaissekunteina (esim. `1234` ≈ 20:34), ei millisekunteina
 - Haku: `kilpailijat`-vastauksen `valiajat[]` kirjoitetaan paikalliseen kantaan
   kun *Vastaanota väliajat* on päällä

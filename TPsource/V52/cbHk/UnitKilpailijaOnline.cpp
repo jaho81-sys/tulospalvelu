@@ -597,6 +597,8 @@ int __fastcall TFormKilpailijaOnline::tallennaTiedot(void)
 	   int srj = Kilp1.Sarja();
 	   if (srj >= 0 && srj < sarjaluku)
 		   nva = Sarjat[srj].valuku[k_pv];
+	   if (nva < kilpparam.valuku)
+		   nva = kilpparam.valuku;
 	   for (int iva = 1; iva <= nva; iva++) {
 		   INT32 va = Kilp1.p_aika(iva);
 		   if (va > 0)

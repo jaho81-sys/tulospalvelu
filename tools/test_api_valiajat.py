@@ -105,9 +105,20 @@ def test_valiajat_wire_index():
     src = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "ApiSaike.cpp"),
                encoding="utf-8", errors="replace").read()
     assert "ApiVaIx" in src
+    assert "ApiVaNva" in src
     assert "va[ix].vatulos" in src
     assert "va[p].vatulos" not in src
     assert "va[piste].vatulos" not in src
+    # k_pv is 0-based; subtracting 1 sent the previous day's empty splits.
+    assert "int ipv = k_pv;" in src
+    assert "ipv = k_pv - 1" not in src
+    assert "kilp.p_aika(p)" in src
+    assert "nva < kilpparam.valuku" in src
+    # Drain+log once. A second ApiLahetaTapahtumatNyt in Kasittele
+    # always saw an empty queue and hid a successful live send.
+    kas = src.split("void __fastcall TApiSaike::Kasittele(void)", 1)[1]
+    kas = kas.split("void __fastcall TApiSaike::Execute(void)", 1)[0]
+    assert kas.count("ApiLahetaTapahtumatNyt()") == 1
     print("ok valiajat wire index")
 
 
@@ -162,6 +173,10 @@ def test_cpp_json_actions():
     assert r'\"tyyppi\":\"yksilo\"' in hk
     assert r'\"tyyppi\":\"viesti\"' in vi
     assert r'\"osuus\":' in vi
+    tap = hk.split("ApiLahetaTapahtumat(", 1)[1]
+    tap = tap.split("ApiLahetaTapahtumatNyt", 1)[0]
+    assert r'action\":\"tapahtuma\"' in tap
+    assert r'\"tyyppi\":\"yksilo\"' in tap
     print("ok cpp json actions")
 
 
@@ -222,7 +237,8 @@ def test_source_hooks():
     files = {
         "cbHk/ApiSaike.cpp": ["tapahtuma", "lahetaValiajat", "valiajat", "yksilo"],
         "cbHk/UnitAjanotto.cpp": ["IlmoitaTapahtuma"],
-        "cbHk/UnitEmit.cpp": ["IlmoitaTapahtuma", "IlmoitaLasna"],
+        "cbHk/UnitEmit.cpp": ["IlmoitaTapahtuma", "IlmoitaLasna", "nva < kilpparam.valuku"],
+        "cbHk/UnitKilpailijaOnline.cpp": ["IlmoitaTapahtuma", "nva < kilpparam.valuku"],
         "cbHk/WinHk.dfm": ["JAHOnline API (synkka)"],
         "ViestiWin/ApiSaike.cpp": ["viesti", "osuus", "tapahtuma"],
         "ViestiWin/UnitAjanotto.cpp": ["IlmoitaTapahtuma"],

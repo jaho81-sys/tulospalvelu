@@ -45,13 +45,17 @@ static void LasnaJonoAlusta(void)
 	}
 }
 
+// k_pv is 0-based (vaihe 1 => k_pv == 0). Do not subtract 1: that reads
+// the previous day, so current-stage splits go out as an empty valiajat[].
 static int ApiIpv(void)
 {
-	int ipv = 0;
-	if (k_pv > 0)
-		ipv = k_pv - 1;
+	int ipv = k_pv;
 	if (ipv < 0)
 		ipv = 0;
+	if (kilpparam.n_pv_akt > 0 && ipv >= kilpparam.n_pv_akt)
+		ipv = kilpparam.n_pv_akt - 1;
+	else if (kilpparam.n_pv > 0 && ipv >= kilpparam.n_pv)
+		ipv = kilpparam.n_pv - 1;
 	return ipv;
 }
 
@@ -178,6 +182,24 @@ static int ApiVaIx(int piste)
 	return piste + 1;
 }
 
+// va[] is new vatp[kilpparam.valuku+2]: [1]=maali, [2..valuku+1]=splits.
+// Series valuku[ipv] is often 0 even when kilpparam.valuku (and va[]) is filled.
+static int ApiVaNva(int srj, int ipv)
+{
+	int nva = 0;
+	if (srj >= 0 && srj < sarjaluku && ipv >= 0)
+		nva = Sarjat[srj].valuku[ipv];
+	if (nva < kilpparam.valuku)
+		nva = kilpparam.valuku;
+	if (nva < 0)
+		nva = 0;
+	if (kilpparam.valuku >= 0 && nva > kilpparam.valuku)
+		nva = kilpparam.valuku;
+	if (nva > 60)
+		nva = 60;
+	return nva;
+}
+
 static void ApiKopioiW(wchar_t *dst, int dstChars, const UnicodeString& src)
 {
 	if (!dst || dstChars < 2 || src.IsEmpty())
@@ -236,27 +258,29 @@ static UnicodeString ApiKilpailijaObj(kilptietue& kilp, int ipv)
 
 	UnicodeString valia = L"[";
 	bool vfirst = true;
-	if (kilp.pv && kilp.pv[ipv].va) {
-		int nva = 0;
-		if (srj >= 0 && srj < sarjaluku)
-			nva = Sarjat[srj].valuku[ipv];
-		if (nva < 0) nva = 0;
-		if (nva > 60) nva = 60;
-		for (int p = 1; p <= nva; p++) {
+	int nva = ApiVaNva(srj, ipv);
+	for (int p = 1; p <= nva; p++) {
+		INT32 va = 0;
+		INT16 sj = 0;
+		if (ipv == k_pv && kilp.pv) {
+			va = kilp.p_aika(p);
+			sj = (INT16)kilp.p_sija(p);
+		} else if (kilp.pv && kilp.pv[ipv].va) {
 			int ix = ApiVaIx(p);
-			INT32 va = kilp.pv[ipv].va[ix].vatulos;
-			if (va <= 0)
-				continue;
-			int vsec = ApiTulosSec(va);
-			if (vsec <= 0)
-				continue;
-			if (!vfirst) valia += L",";
-			vfirst = false;
-			valia += L"{\"piste\":" + IntToStr(p)
-				+ L",\"aika_sec\":" + IntToStr(vsec)
-				+ L",\"sija\":" + IntToStr((int)kilp.pv[ipv].va[ix].vasija)
-				+ L"}";
+			va = kilp.pv[ipv].va[ix].vatulos;
+			sj = kilp.pv[ipv].va[ix].vasija;
 		}
+		if (ApiAikaTyhja(va))
+			continue;
+		int vsec = ApiTulosSec(va);
+		if (vsec <= 0)
+			continue;
+		if (!vfirst) valia += L",";
+		vfirst = false;
+		valia += L"{\"piste\":" + IntToStr(p)
+			+ L",\"aika_sec\":" + IntToStr(vsec)
+			+ L",\"sija\":" + IntToStr((int)sj)
+			+ L"}";
 	}
 	valia += L"]";
 
@@ -664,6 +688,7 @@ static int ApiLahetaTapahtumat(const ApiTapahtuma* ev, int n)
 	UnicodeString body =
 		L"{\"action\":\"tapahtuma\",\"kilpailu_id\":" + IntToStr(apiconfig.kilpailuId)
 		+ L",\"lahde\":\"HkKisaWin\""
+		+ L",\"tyyppi\":\"yksilo\""
 		+ L",\"tapahtumat\":" + ApiTapahtumatJson(ev, n)
 		+ L"}";
 	UnicodeString vastaus;
@@ -762,7 +787,13 @@ void __fastcall TApiSaike::Kasittele(void)
 	}
 
 	ApiSynkkaaJonosta();
-	ApiLahetaTapahtumatNyt();
+	int nt = ApiLahetaTapahtumatNyt();
+	if (apiconfig.lahetaValiajat) {
+		if (nt > 0)
+			Paivita(L"Lähetetty online-rasteja: " + IntToStr(nt));
+		else if (nt < 0)
+			Paivita(L"Online-rastien lähetys epäonnistui (" + IntToStr(nt) + L")", true);
+	}
 
 	if (apiconfig.lahetaKilpailijat || apiconfig.lahetaTulokset || apiconfig.lahetaValiajat) {
 		int n = ApiSynkkaaLahetaKaikki();
@@ -770,14 +801,6 @@ void __fastcall TApiSaike::Kasittele(void)
 			Paivita(L"Lähetetty kilpailijoita: " + IntToStr(n));
 		else
 			Paivita(L"Lähetys epäonnistui (" + IntToStr(n) + L")", true);
-	}
-
-	if (apiconfig.lahetaValiajat) {
-		int n = ApiLahetaTapahtumatNyt();
-		if (n > 0)
-			Paivita(L"Lähetetty online-rasteja: " + IntToStr(n));
-		else if (n < 0)
-			Paivita(L"Online-rastien lähetys epäonnistui (" + IntToStr(n) + L")", true);
 	}
 
 	if (apiconfig.vastaanottaKilpailijat || apiconfig.vastaanottaValiajat) {
