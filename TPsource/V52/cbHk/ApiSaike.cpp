@@ -1,6 +1,7 @@
 #include <vcl.h>
 #pragma hdrstop
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <vector>
 
@@ -200,6 +201,74 @@ static int ApiVaNva(int srj, int ipv)
 	return nva;
 }
 
+// JAHOnline rastiväliajat: same valiajat[] as online splits, plus rasti_koodi
+// from laskeemitvaliajat (Emit course legs). Rows without rasti_koodi update
+// sarjat.valia_lkm; rows with rasti_koodi feed /public/valiajat.php.
+static void ApiValiajatLisaaEmitRivi(UnicodeString& valia, bool& vfirst,
+	int piste, int sec, int koodi, int vali)
+{
+	if (koodi <= 0 && sec <= 0)
+		return;
+	if (!vfirst)
+		valia += L",";
+	vfirst = false;
+	valia += L"{\"piste\":" + IntToStr(piste)
+		+ L",\"aika_sec\":" + IntToStr(sec)
+		+ L",\"rasti_koodi\":" + IntToStr(koodi);
+	if (vali > 0)
+		valia += L",\"vali_sec\":" + IntToStr(vali);
+	valia += L"}";
+}
+
+static void ApiLisaaEmitValiajat(kilptietue& kilp, UnicodeString& valia, bool& vfirst)
+{
+	if (!emitfl)
+		return;
+	emittp em;
+	if (getem(&em, kilp.id(), 0) < 0 || em.kilpno <= 0)
+		return;
+
+	emitvaanaltp *eva = 0;
+	int nva = 0;
+	laskeemitvaliajat(&em, &kilp, &eva, 0, &nva);
+	if (eva && nva > 0) {
+		if (nva > MAXNRASTI)
+			nva = MAXNRASTI;
+		for (int i = 0; i < nva; i++)
+			ApiValiajatLisaaEmitRivi(valia, vfirst, i + 1,
+				eva[i].aika, eva[i].rkoodi, eva[i].rvaika);
+		free(eva);
+		return;
+	}
+	if (eva)
+		free(eva);
+
+	emitvatp emva;
+	if (tee_emva(&emva, &em) != 0)
+		return;
+	ratatp *rt = haerata(&kilp);
+	int n = emva.rastiluku;
+	if (n < 0)
+		n = 0;
+	if (n > MAXNRASTI)
+		n = MAXNRASTI;
+	int prev = 0;
+	for (int i = 0; i < n; i++) {
+		int koodi = (int)emva.rastit[i][0];
+		int sec = (int)emva.rastit[i][1];
+		if (koodi <= 0 && rt && i < MAXNRASTI)
+			koodi = rt->rastikoodi[i];
+		int vali = 0;
+		if (sec > 0) {
+			vali = sec - prev;
+			if (vali < 0)
+				vali = 0;
+			prev = sec;
+		}
+		ApiValiajatLisaaEmitRivi(valia, vfirst, i + 1, sec, koodi, vali);
+	}
+}
+
 static void ApiKopioiW(wchar_t *dst, int dstChars, const UnicodeString& src)
 {
 	if (!dst || dstChars < 2 || src.IsEmpty())
@@ -282,6 +351,7 @@ static UnicodeString ApiKilpailijaObj(kilptietue& kilp, int ipv)
 			+ L",\"sija\":" + IntToStr((int)sj)
 			+ L"}";
 	}
+	ApiLisaaEmitValiajat(kilp, valia, vfirst);
 	valia += L"]";
 
 	UnicodeString arr = L"{";
@@ -511,6 +581,11 @@ int ApiSovellaKilpailijatJson(const UnicodeString& json, bool korvaaKentat)
 							__int64 va64 = 0;
 							if (!ApiJsonFindInt(vas[v], L"piste", piste) || piste < 1)
 								continue;
+							{
+								int rkoodi = 0;
+								if (ApiJsonFindInt(vas[v], L"rasti_koodi", rkoodi) && rkoodi > 0)
+									continue;
+							}
 							if (piste > 60 || !kilp.pv[ipv].va)
 								continue;
 							int ix = ApiVaIx(piste);
