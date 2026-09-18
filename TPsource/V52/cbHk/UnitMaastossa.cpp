@@ -13,6 +13,7 @@
 
 #include "UnitMaastossa.h"
 #include "HkDeclare.h"
+#include <stdio.h>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -26,19 +27,103 @@ __fastcall TFormMaastossa::TFormMaastossa(TComponent* Owner)
 		ScaleBy(Screen->PixelsPerInch, 96);
 }
 //---------------------------------------------------------------------------
+static int MaastossaNva(int srj)
+{
+	int nva = 0;
+	if (srj >= 0 && srj < sarjaluku && k_pv >= 0)
+		nva = Sarjat[srj].valuku[k_pv];
+	if (nva < kilpparam.valuku)
+		nva = kilpparam.valuku;
+	if (nva < 0)
+		nva = 0;
+	if (kilpparam.valuku >= 0 && nva > kilpparam.valuku)
+		nva = kilpparam.valuku;
+	if (nva > 60)
+		nva = 60;
+	return nva;
+}
+
+static int MaastossaMaxNva(int srjVal)
+{
+	if (srjVal >= 0)
+		return MaastossaNva(srjVal);
+	int mx = 0;
+	for (int s = 0; s < sarjaluku; s++) {
+		int n = MaastossaNva(s);
+		if (n > mx)
+			mx = n;
+	}
+	if (mx < 1)
+		mx = MaastossaNva(-1);
+	return mx;
+}
+
+static void MaastossaVaOts(int srjVal, int p, wchar_t *ots, int otsLen)
+{
+	if (!ots || otsLen < 4)
+		return;
+	ots[0] = 0;
+	if (p < 1)
+		return;
+	if (srjVal >= 0 && srjVal < sarjaluku && k_pv >= 0) {
+		wchar_t *m = Sarjat[srjVal].va_matka[k_pv][p - 1];
+		if (m && m[0] && wcscmp(m, L"0") != 0) {
+			wcsncpy(ots, m, otsLen - 1);
+			ots[otsLen - 1] = 0;
+			return;
+		}
+	}
+	swprintf(ots, L"%d.va", p);
+}
+
+static UnicodeString MaastossaLahtoPaikka(kilptietue& kilp, int srj)
+{
+	UnicodeString lp = L"";
+	if (srj >= 0 && srj < sarjaluku && k_pv >= 0 && Sarjat[srj].lno[k_pv] > 0)
+		lp = IntToStr(Sarjat[srj].lno[k_pv]);
+	ratatp *rt = haerata(&kilp);
+	if (rt && rt->lahto[0]) {
+		if (!lp.IsEmpty())
+			lp += L" ";
+		lp += UnicodeString(rt->lahto);
+	}
+	return lp;
+}
+
+static INT32 MaastossaLahtoAika(kilptietue& kilp, int srj)
+{
+	INT32 tl = kilp.TLahto(k_pv);
+	if (tl == TMAALI0 && srj >= 0 && srj < sarjaluku)
+		tl = Sarjat[srj].enslahto[k_pv];
+	return tl;
+}
+
 void __fastcall TFormMaastossa::asetaSarakkeet(void)
 {
-	static const wchar_t *ots[] = {
+	int srjVal = CBSarja->ItemIndex - 1;
+	int nva = MaastossaMaxNva(srjVal);
+	static const wchar_t *kiint[] = {
 		L"No", L"Sarja", L"Nimi", L"Seura", L"Status",
-		L"Lähtö", L"Viim.va", L"Va-aika", L"Va-sija"
+		L"Lpaikka", L"Lähtö"
 	};
-	int w[] = {50, 70, 180, 140, 110, 80, 60, 80, 60};
-	Grid->ColCount = 9;
+	int wkiint[] = {50, 70, 180, 140, 110, 70, 80};
+	const int nkiint = 7;
+	if (nva < 0)
+		nva = 0;
+	if (nva > 60)
+		nva = 60;
+	Grid->ColCount = nkiint + nva;
 	Grid->FixedRows = 1;
 	Grid->RowCount = 2;
-	for (int c = 0; c < 9; c++) {
-		Grid->Cells[c][0] = ots[c];
-		Grid->ColWidths[c] = w[c] * Screen->PixelsPerInch / 96;
+	for (int c = 0; c < nkiint; c++) {
+		Grid->Cells[c][0] = kiint[c];
+		Grid->ColWidths[c] = wkiint[c] * Screen->PixelsPerInch / 96;
+	}
+	for (int p = 1; p <= nva; p++) {
+		wchar_t ots[32];
+		MaastossaVaOts(srjVal, p, ots, 32);
+		Grid->Cells[nkiint + p - 1][0] = UnicodeString(ots);
+		Grid->ColWidths[nkiint + p - 1] = 70 * Screen->PixelsPerInch / 96;
 	}
 }
 //---------------------------------------------------------------------------
@@ -62,6 +147,8 @@ void __fastcall TFormMaastossa::haeKilpailijat(void)
 	int srjVal = CBSarja->ItemIndex - 1;
 	int rivi = 1;
 	wchar_t line[80], nimi[80];
+	const int nkiint = 7;
+	int nvaCols = MaastossaMaxNva(srjVal);
 
 	asetaSarakkeet();
 	if (nrec < 2) {
@@ -97,42 +184,26 @@ void __fastcall TFormMaastossa::haeKilpailijat(void)
 		Grid->Cells[3][rivi] = UnicodeString(kilp.seura);
 		tarkStr(kh, line);
 		Grid->Cells[4][rivi] = UnicodeString(line);
-		INT32 tl = kilp.TLahto(k_pv);
-		if (tl != TMAALI0)
-			Grid->Cells[5][rivi] = UnicodeString(AIKATOWSTRS(line, tl, t0)).SubString(1, 8);
-		else
-			Grid->Cells[5][rivi] = L"";
+		Grid->Cells[5][rivi] = MaastossaLahtoPaikka(kilp, srj);
 
-		int lastP = 0;
-		INT32 lastT = 0;
-		int lastSj = 0;
-		int nva = 0;
-		if (srj >= 0 && srj < sarjaluku)
-			nva = Sarjat[srj].valuku[k_pv];
-		if (nva < 0) nva = 0;
-		if (nva > 60) nva = 60;
-		if (kilp.pv && kilp.pv[k_pv].va) {
-			for (int p = 1; p <= nva; p++) {
-				INT32 va = kilp.pv[k_pv].va[p].vatulos;
-				if (va > 0) {
-					lastP = p;
-					lastT = va;
-					lastSj = kilp.pv[k_pv].va[p].vasija;
-				}
-			}
-		}
-		if (lastP > 0) {
-			Grid->Cells[6][rivi] = UnicodeString(lastP);
-			Grid->Cells[7][rivi] = UnicodeString(AIKATOWSTRS(line, lastT, 0)).SubString(1, 8);
-			if (lastSj > 0)
-				Grid->Cells[8][rivi] = UnicodeString(lastSj);
-			else
-				Grid->Cells[8][rivi] = L"";
-		}
-		else {
+		INT32 tl = MaastossaLahtoAika(kilp, srj);
+		if (tl != TMAALI0)
+			Grid->Cells[6][rivi] = UnicodeString(AIKATOWSTRS(line, tl, t0)).SubString(1, 8);
+		else
 			Grid->Cells[6][rivi] = L"";
-			Grid->Cells[7][rivi] = L"";
-			Grid->Cells[8][rivi] = L"";
+
+		int nva = MaastossaNva(srj);
+		if (nva > nvaCols)
+			nva = nvaCols;
+		for (int p = 1; p <= nvaCols; p++) {
+			INT32 va = 0;
+			if (p <= nva && kilp.pv)
+				va = kilp.p_aika(p);
+			if (va > 0)
+				Grid->Cells[nkiint + p - 1][rivi] =
+					UnicodeString(AIKATOWSTRS(line, va, 0)).SubString(1, 8);
+			else
+				Grid->Cells[nkiint + p - 1][rivi] = L"";
 		}
 		rivi++;
 	}

@@ -3,7 +3,7 @@ object FormMaastossa: TFormMaastossa
   Top = 0
   Caption = 'Maastossa olevat kilpailijat'
   ClientHeight = 480
-  ClientWidth = 900
+  ClientWidth = 1100
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -60,7 +60,7 @@ object FormMaastossa: TFormMaastossa
   object Grid: TStringGrid
     Left = 8
     Top = 42
-    Width = 884
+    Width = 1084
     Height = 430
     Anchors = [akLeft, akTop, akRight, akBottom]
     ColCount = 9

@@ -495,8 +495,10 @@ def test_ilmoittautunut_tark():
             ):
         text = open(os.path.join(ROOT, rel), encoding="utf-8", errors="replace").read()
         assert "haeKilpailijat" in text
-        assert "Viim.va" in text
+        assert "Lpaikka" in text
+        assert "MaastossaMaxNva" in text
         assert "ilman tulosta" in text
+        assert "Viim.va" not in text
         raw = open(os.path.join(ROOT, rel), "rb").read()
         # bcc32 reads source as CP1252; UTF-8 ä/ö in L"..." show as garbage.
         assert b'L"L\xe4ht\xf6"' in raw
