@@ -13,6 +13,7 @@
 
 #include "UnitMaastossa.h"
 #include "VDeclare.h"
+#include <stdio.h>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -26,19 +27,111 @@ __fastcall TFormMaastossa::TFormMaastossa(TComponent* Owner)
 		ScaleBy(Screen->PixelsPerInch, 96);
 }
 //---------------------------------------------------------------------------
+static int MaastossaNva(int srj, int os)
+{
+	int nva = 0;
+	if (srj >= 0 && srj < sarjaluku && os >= 0 && os < Sarjat[srj].osuusluku)
+		nva = Sarjat[srj].valuku[os];
+	if (nva < kilpparam.valuku)
+		nva = kilpparam.valuku;
+	if (nva < 0)
+		nva = 0;
+	if (nva > VAIKALUKU)
+		nva = VAIKALUKU;
+	return nva;
+}
+
+static int MaastossaMaxNva(int srjVal)
+{
+	int mx = 0;
+	int s0 = 0, s1 = sarjaluku - 1;
+	if (srjVal >= 0) {
+		s0 = srjVal;
+		s1 = srjVal;
+	}
+	for (int s = s0; s <= s1; s++) {
+		if (s < 0 || s >= sarjaluku)
+			continue;
+		int nos = Sarjat[s].osuusluku;
+		if (nos < 1)
+			nos = 1;
+		if (nos > MAXOSUUSLUKU)
+			nos = MAXOSUUSLUKU;
+		for (int os = 0; os < nos; os++) {
+			int n = MaastossaNva(s, os);
+			if (n > mx)
+				mx = n;
+		}
+	}
+	if (mx < 1)
+		mx = MaastossaNva(-1, 0);
+	return mx;
+}
+
+static void MaastossaVaOts(int srjVal, int p, wchar_t *ots, int otsLen)
+{
+	if (!ots || otsLen < 4)
+		return;
+	ots[0] = 0;
+	if (p < 1)
+		return;
+	if (srjVal >= 0 && srjVal < sarjaluku) {
+		int nos = Sarjat[srjVal].osuusluku;
+		if (nos < 1)
+			nos = 1;
+		if (nos > MAXOSUUSLUKU)
+			nos = MAXOSUUSLUKU;
+		for (int os = 0; os < nos; os++) {
+			char *m = Sarjat[srjVal].va_matka[os][p - 1];
+			if (m && m[0] && !(m[0] == '0' && m[1] == 0)) {
+				ansitowcs(ots, m, otsLen);
+				return;
+			}
+		}
+	}
+	swprintf(ots, L"%d.va", p);
+}
+
+static UnicodeString MaastossaLahtoPaikka(kilptietue& kilp, int srj, int os)
+{
+	UnicodeString lp = L"";
+	if (srj >= 0 && srj < sarjaluku && Sarjat[srj].lno > 0)
+		lp = IntToStr(Sarjat[srj].lno);
+	ratatp *rt = haerata(&kilp, os);
+	if (rt && rt->lahto[0]) {
+		if (!lp.IsEmpty())
+			lp += L" ";
+		lp += UnicodeString(rt->lahto);
+	}
+	return lp;
+}
+
 void __fastcall TFormMaastossa::asetaSarakkeet(void)
 {
-	static const wchar_t *ots[] = {
+	int srjVal = CBSarja->ItemIndex - 1;
+	int nva = MaastossaMaxNva(srjVal);
+	static const wchar_t *kiint[] = {
 		L"No", L"Os", L"Sarja", L"Nimi", L"Seura", L"Status",
-		L"Lähtö", L"Viim.va", L"Va-aika", L"Va-sija"
+		L"Lpaikka", L"Lähtö"
 	};
-	int w[] = {50, 40, 70, 180, 140, 110, 80, 60, 80, 60};
-	Grid->ColCount = 10;
+	int wkiint[] = {50, 40, 70, 180, 140, 110, 70, 80};
+	const int nkiint = 8;
+	if (nva < 0)
+		nva = 0;
+	if (nva > VAIKALUKU)
+		nva = VAIKALUKU;
+	Grid->ColCount = nkiint + nva;
 	Grid->FixedRows = 1;
 	Grid->RowCount = 2;
-	for (int c = 0; c < 10; c++) {
-		Grid->Cells[c][0] = ots[c];
-		Grid->ColWidths[c] = w[c] * Screen->PixelsPerInch / 96;
+	for (int c = 0; c < nkiint; c++) {
+		Grid->Cells[c][0] = kiint[c];
+		Grid->ColWidths[c] = wkiint[c] * Screen->PixelsPerInch / 96;
+	}
+	for (int p = 1; p <= nva; p++) {
+		wchar_t ots[32];
+		MaastossaVaOts(srjVal, p, ots, 32);
+		Grid->Cells[nkiint + p - 1][0] = UnicodeString(ots);
+		Grid->ColWidths[nkiint + p - 1] = 70 * Screen->PixelsPerInch / 96;
 	}
 }
 //---------------------------------------------------------------------------
@@ -62,6 +155,8 @@ void __fastcall TFormMaastossa::haeKilpailijat(void)
 	int srjVal = CBSarja->ItemIndex - 1;
 	int rivi = 1;
 	wchar_t line[80], nimi[80];
+	const int nkiint = 8;
+	int nvaCols = MaastossaMaxNva(srjVal);
 
 	asetaSarakkeet();
 	if (datf2.numrec < 2) {
@@ -104,42 +199,32 @@ void __fastcall TFormMaastossa::haeKilpailijat(void)
 			Grid->Cells[4][rivi] = UnicodeString(kilp.seura);
 			tarkStr(kh, line);
 			Grid->Cells[5][rivi] = UnicodeString(line);
+			Grid->Cells[6][rivi] = MaastossaLahtoPaikka(kilp, srj, os);
+
 			INT32 tl = kilp.Lahto(os);
 			if (tl != TMAALI0)
-				Grid->Cells[6][rivi] = UnicodeString(AIKATOWSTRS(line, tl, t0)).SubString(1, 8);
+				Grid->Cells[7][rivi] = UnicodeString(AIKATOWSTRS(line, tl, t0)).SubString(1, 8);
 			else
-				Grid->Cells[6][rivi] = L"";
-
-			int lastP = 0;
-			INT32 lastT = 0;
-			int lastSj = 0;
-			int nva = Sarjat[srj].valuku[os];
-			if (nva < 0) nva = 0;
-			if (nva > VAIKALUKU) nva = VAIKALUKU;
-			for (int p = 1; p <= nva; p++) {
-				INT32 va = kilp.osTulos(os, p, false);
-				if (va <= 0) {
-					INT32 ma = kilp.Maali(os, p);
-					if (ma == TMAALI0 || ma == 0)
-						continue;
-					va = ma;
-				}
-				lastP = p;
-				lastT = va;
-				lastSj = kilp.Sija(os, p);
-			}
-			if (lastP > 0) {
-				Grid->Cells[7][rivi] = UnicodeString(lastP);
-				Grid->Cells[8][rivi] = UnicodeString(AIKATOWSTRS(line, lastT, 0)).SubString(1, 8);
-				if (lastSj > 0)
-					Grid->Cells[9][rivi] = UnicodeString(lastSj);
-				else
-					Grid->Cells[9][rivi] = L"";
-			}
-			else {
 				Grid->Cells[7][rivi] = L"";
-				Grid->Cells[8][rivi] = L"";
-				Grid->Cells[9][rivi] = L"";
+
+			int nva = MaastossaNva(srj, os);
+			if (nva > nvaCols)
+				nva = nvaCols;
+			for (int p = 1; p <= nvaCols; p++) {
+				INT32 va = 0;
+				if (p <= nva) {
+					va = kilp.osTulos(os, p, false);
+					if (va <= 0) {
+						INT32 ma = kilp.Maali(os, p);
+						if (ma != TMAALI0 && ma != 0)
+							va = ma;
+					}
+				}
+				if (va > 0)
+					Grid->Cells[nkiint + p - 1][rivi] =
+						UnicodeString(AIKATOWSTRS(line, va, 0)).SubString(1, 8);
+				else
+					Grid->Cells[nkiint + p - 1][rivi] = L"";
 			}
 			rivi++;
 		}
