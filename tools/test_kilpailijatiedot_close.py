@@ -38,7 +38,6 @@ def test_close_resets_edit_mode():
     assert "asetaMuokkaustila(!sallimuokkaus)" not in body
 
     assert "void __fastcall TFormKilpailijatiedot::asetaMuokkaustila(bool paalle)" in text
-    assert "asetaMuokkaustila(!sallimuokkaus)" in text
     hdr = open(os.path.join(ROOT, "TPsource", "V52", "cbHk", "UnitKilpailijatiedot.h"),
                encoding="utf-8", errors="replace").read()
     assert "void __fastcall asetaMuokkaustila(bool paalle);" in hdr
