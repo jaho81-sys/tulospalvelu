@@ -24,7 +24,7 @@ def p_aika_index(piste):
 
 def nva_kaytossa(sarja_valuku, kilpparam_valuku, cap=60):
     nva = sarja_valuku if sarja_valuku is not None else 0
-    if nva < kilpparam_valuku:
+    if nva <= 0:
         nva = kilpparam_valuku
     if nva < 0:
         nva = 0
@@ -97,7 +97,7 @@ def test_va_index():
 
 def test_nva_and_columns():
     assert nva_kaytossa(0, 3) == 3
-    assert nva_kaytossa(2, 3) == 3
+    assert nva_kaytossa(2, 3) == 2
     assert nva_kaytossa(5, 3) == 3
     assert nva_kaytossa(-1, 2) == 2
     assert va_otsikko(1) == u"1.va"
@@ -169,6 +169,9 @@ def test_source():
     for text, name in ((hk_t, "Hk"), (vi_t, "Viesti")):
         assert "MaastossaLahtoPaikka" in text, name
         assert "MaastossaMaxNva" in text, name
+        assert "nva <= 0" in text, name
+        assert "tark_selite" in text, name
+        assert "nva < kilpparam.valuku" not in text, name
         assert "Lpaikka" in text, name
         assert ".va" in text, name
         assert "haerata" in text, name
