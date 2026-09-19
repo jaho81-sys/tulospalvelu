@@ -23,7 +23,7 @@
 #include "VDeclare.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "..\\ViestiWin\\VertAikaUnit.dfm"
+#pragma resource "VertAikaUnit_v.dfm"
 TVertAikaFrm *VertAikaFrm;
 //---------------------------------------------------------------------------
 __fastcall TVertAikaFrm::TVertAikaFrm(TComponent* Owner)

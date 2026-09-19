@@ -24,7 +24,7 @@
 #include "UnitMain.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "..\\ViestiWin\\UnitPiirival.dfm"
+#pragma resource "UnitPiirival_v.dfm"
 TFormPiiriVal *FormPiiriVal;
 
 void luepiirit(wchar_t *flname);

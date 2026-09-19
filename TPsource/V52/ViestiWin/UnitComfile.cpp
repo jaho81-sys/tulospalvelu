@@ -24,7 +24,7 @@
 #include "UnitMain.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "..\\ViestiWin\\UnitComfile.dfm"
+#pragma resource "UnitComfile_v.dfm"
 TFormComfile *FormComfile;
 
 extern sendtestparamtp sendtestparam;

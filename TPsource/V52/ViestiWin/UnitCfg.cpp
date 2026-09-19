@@ -23,7 +23,7 @@
 #include "UnitCfg.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "..\\ViestiWin\\UnitCfg.dfm"
+#pragma resource "UnitCfg_v.dfm"
 TFormCfg *FormCfg;
 
 INT yhteys_no(wchar_t *st, INT *pos);

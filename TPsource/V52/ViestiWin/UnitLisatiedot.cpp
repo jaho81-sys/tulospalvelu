@@ -23,7 +23,7 @@
 #include "UnitMain.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "..\\ViestiWin\\UnitLisatiedot.dfm"
+#pragma resource "UnitLisatiedot_v.dfm"
 TFormLisatiedot *FormLisatiedot;
 //---------------------------------------------------------------------------
 

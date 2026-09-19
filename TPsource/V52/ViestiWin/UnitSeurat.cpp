@@ -24,7 +24,7 @@
 #include "UnitMain.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "..\\ViestiWin\\UnitSeurat.dfm"
+#pragma resource "UnitSeurat_v.dfm"
 TFormSeurat *FormSeurat;
 extern TEditDialog *EditDialog;
 

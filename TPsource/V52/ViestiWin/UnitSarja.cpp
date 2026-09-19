@@ -24,7 +24,7 @@
 #include "VDeclare.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "..\\ViestiWin\\UnitSarja.dfm"
+#pragma resource "UnitSarja_v.dfm"
 TFormSarja *FormSarja;
 
 //---------------------------------------------------------------------------

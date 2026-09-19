@@ -33,7 +33,7 @@
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "..\\ViestiWin\\UnitStatus.dfm"
+#pragma resource "UnitStatus_v.dfm"
 TFormStatus *FormStatus;
 extern TTapForm *TapFrm[NTAPFORM];
 extern TTilanneForm *TilFrm[NTILANNEFORM];
@@ -61,6 +61,10 @@ __fastcall TFormStatus::TFormStatus(TComponent* Owner)
 	}
 	LkmGrid->ColWidths[0] = 55 * Screen->PixelsPerInch / ppi0;
 	memset(edTap, '\xff', sizeof(edTap));
+}
+//---------------------------------------------------------------------------
+void __fastcall TFormStatus::FormCreate(TObject *Sender)
+{
 }
 //---------------------------------------------------------------------------
 statusIkkParamClass::statusIkkParamClass(void)

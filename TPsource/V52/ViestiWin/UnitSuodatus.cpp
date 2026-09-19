@@ -24,7 +24,7 @@
 #include "VDeclare.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "..\\ViestiWin\\UnitSuodatus.dfm"
+#pragma resource "UnitSuodatus_v.dfm"
 TFormSuodatus *FormSuodatus;
 //---------------------------------------------------------------------------
 __fastcall TFormSuodatus::TFormSuodatus(TComponent* Owner)

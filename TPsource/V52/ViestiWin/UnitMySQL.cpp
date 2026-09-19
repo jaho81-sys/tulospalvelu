@@ -23,7 +23,7 @@
 #include "UnitMySQL.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "..\\ViestiWin\\UnitMySQL.dfm"
+#pragma resource "UnitMySQL_v.dfm"
 TFormMySQL *FormMySQL;
 //---------------------------------------------------------------------------
 __fastcall TFormMySQL::TFormMySQL(TComponent* Owner)

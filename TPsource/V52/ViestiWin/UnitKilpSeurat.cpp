@@ -23,7 +23,7 @@
 #include "VDeclare.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "..\\ViestiWin\\UnitKilpSeurat.dfm"
+#pragma resource "UnitKilpSeurat_v.dfm"
 TFormKilpSeurat *FormKilpSeurat;
 
 //---------------------------------------------------------------------------

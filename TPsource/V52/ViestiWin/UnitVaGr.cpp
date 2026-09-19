@@ -24,7 +24,7 @@
 #include "UnitMain.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "..\\ViestiWin\\UnitVaGr.dfm"
+#pragma resource "UnitVaGr_v.dfm"
 TFormVaGr *FormVaGr;
 //---------------------------------------------------------------------------
 __fastcall TFormVaGr::TFormVaGr(TComponent* Owner)

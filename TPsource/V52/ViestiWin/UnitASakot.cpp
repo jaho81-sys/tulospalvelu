@@ -22,7 +22,7 @@
 #include "UnitASakot.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "..\\ViestiWin\\UnitASakot.dfm"
+#pragma resource "UnitASakot_v.dfm"
 TFormASakot *FormASakot;
 
 static CRITICAL_SECTION sakkoGrid_CriticalSection;

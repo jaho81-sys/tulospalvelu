@@ -23,7 +23,7 @@
 #include "UnitMain.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "..\\ViestiWin\\UnitAutoFile.dfm"
+#pragma resource "UnitAutoFile_v.dfm"
 TFormAutoFile *FormAutoFile;
 
 //---------------------------------------------------------------------------

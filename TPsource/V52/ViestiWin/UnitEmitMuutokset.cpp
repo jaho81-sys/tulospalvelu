@@ -24,7 +24,7 @@
 #include "VDeclare.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "..\\ViestiWin\\UnitEmitMuutokset.dfm"
+#pragma resource "UnitEmitMuutokset_v.dfm"
 TFormEmitMuutokset *FormEmitMuutokset;
 //---------------------------------------------------------------------------
 __fastcall TFormEmitMuutokset::TFormEmitMuutokset(TComponent* Owner)

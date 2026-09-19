@@ -27,7 +27,7 @@
 #include "UnitValSarjat.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "..\\ViestiWin\\TulosUnit.dfm"
+#pragma resource "TulosUnit_v.dfm"
 TTilanneForm *TilanneForm;
 extern TTilanneForm *TilFrm[];
 
