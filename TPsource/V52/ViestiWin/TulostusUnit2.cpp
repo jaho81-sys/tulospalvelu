@@ -34,7 +34,7 @@
 #include "VMuotoilu.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "..\\ViestiWin\\TulostusUnit2.dfm"
 
 #define MAXBUFFERSIZE 500
 wchar_t FISMaarFileName[200];

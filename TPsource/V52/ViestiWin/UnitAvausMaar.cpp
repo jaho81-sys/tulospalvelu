@@ -25,7 +25,7 @@
 #include "VDeclare.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "..\\ViestiWin\\UnitAvausMaar.dfm"
 TFormAvausMaar *FormAvausMaar;
 //---------------------------------------------------------------------------
 __fastcall TFormAvausMaar::TFormAvausMaar(TComponent* Owner)

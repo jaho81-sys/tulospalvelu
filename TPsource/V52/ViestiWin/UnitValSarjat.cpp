@@ -22,7 +22,7 @@
 #include "UnitValSarjat.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "..\\ViestiWin\\UnitValSarjat.dfm"
 TFormValSarjat *FormValSarjat;
 //---------------------------------------------------------------------------
 __fastcall TFormValSarjat::TFormValSarjat(TComponent* Owner)

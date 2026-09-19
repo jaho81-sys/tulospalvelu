@@ -24,7 +24,7 @@
 #include "UnitMain.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "..\\ViestiWin\\UnitSarjatiedot.dfm"
 TFormSarjatiedot *FormSarjatiedot;
 //extern TFormSarja *FormSarja;
 //extern TFormVaPisteet *FormVaPisteet;

@@ -28,7 +28,7 @@ TFormMuotoilu *FormMuotoilu;
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "..\\ViestiWin\\MuotoiluUnit.dfm"
 
 static int Varit[9][2];
 static struct {

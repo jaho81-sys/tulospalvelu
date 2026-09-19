@@ -25,7 +25,7 @@
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "..\\ViestiWin\\UnitExport.dfm"
 TFormExport *FormExport;
 
 extern bool kirjXMLkaikki;

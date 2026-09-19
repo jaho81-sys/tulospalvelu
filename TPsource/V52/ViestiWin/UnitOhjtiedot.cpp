@@ -23,7 +23,7 @@
 #include "VDeclare.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "..\\ViestiWin\\UnitOhjtiedot.dfm"
 TFormOhjtiedot *FormOhjtiedot;
 //---------------------------------------------------------------------------
 __fastcall TFormOhjtiedot::TFormOhjtiedot(TComponent* Owner)

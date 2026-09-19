@@ -23,7 +23,7 @@
 #include "VDeclare.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "..\\ViestiWin\\UnitNollaus.dfm"
 TFormNollaus *FormNollaus;
 //---------------------------------------------------------------------------
 __fastcall TFormNollaus::TFormNollaus(TComponent* Owner)

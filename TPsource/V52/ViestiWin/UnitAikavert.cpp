@@ -23,7 +23,7 @@
 #include "UnitAikakorjaus.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "..\\ViestiWin\\UnitAikavert.dfm"
 TFormAikavert *FormAikavertailut[NAJANOTOT];
 
 ColTp VertGridCols0[MAXAVCOL] = {

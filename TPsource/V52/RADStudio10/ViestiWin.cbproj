@@ -165,13 +165,13 @@
         <ILINK_StackCommitSize>0x10000</ILINK_StackCommitSize>
         <DCC_UnitSearchPath>..\COMM;.\;$(BDS)\lib;$(BDS)\lib\obj;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <ILINK_StackReserveSize>0x200000</ILINK_StackReserveSize>
-        <BRCC_UserSuppliedOptions> -I..\COMM;$(BDS)\include;$(BDS)\include\vcl;$(BDS)\include\dinkumware</BRCC_UserSuppliedOptions>
+        <BRCC_UserSuppliedOptions> -I..\ViestiWin;..\COMM;$(BDS)\include;$(BDS)\include\vcl;$(BDS)\include\dinkumware</BRCC_UserSuppliedOptions>
         <BCC_GenerateMultithreaded>true</BCC_GenerateMultithreaded>
         <DCC_DcuOutput>obj\</DCC_DcuOutput>
         <BCC_PCHCache>true</BCC_PCHCache>
         <IncludePath>..\ViestiWin\;..\cbHk\;..\tputilv2\;..\cbTp\;..\Tp\;..\Juk\;..\com\;..\INCLUDE\;$(IncludePath)</IncludePath>
         <BCC_IntegerSizedEnums>false</BCC_IntegerSizedEnums>
-        <BRCC_IncludePath>..\COMM;$(BDS)\include;$(BDS)\include\vcl;$(BRCC_IncludePath)</BRCC_IncludePath>
+        <BRCC_IncludePath>..\ViestiWin;..\COMM;$(BDS)\include;$(BDS)\include\vcl;$(BRCC_IncludePath)</BRCC_IncludePath>
         <AllPackageLibs>vcl.lib;rtl.lib;vclie.lib;dbrtl.lib;dbexpress.lib;DbxCommonDriver.lib;DBXMySQLDriver.lib;IndySystem.lib;IndyProtocols.lib;IndyCore.lib;vclx.lib</AllPackageLibs>
         <TASM_IncludePath>..\COMM;$(BDS)\include;$(BDS)\include\vcl;$(TASM_IncludePath)</TASM_IncludePath>
         <DCC_IncludePath>..\COMM;.\;$(BDS)\lib;$(BDS)\lib\obj;$(DCC_IncludePath)</DCC_IncludePath>

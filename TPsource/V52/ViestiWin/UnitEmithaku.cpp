@@ -22,7 +22,7 @@
 #include "UnitEmithaku.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "..\\ViestiWin\\UnitEmithaku.dfm"
 TFormEmithaku *FormEmithaku;
 //---------------------------------------------------------------------------
 __fastcall TFormEmithaku::TFormEmithaku(TComponent* Owner)

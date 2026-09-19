@@ -4,6 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
+| 2026-09-19 | — | ViestiWin: samannimiset dfm:t upotetaan ViestiWin-kansiosta, ei cbHk:sta (FormStatus.OnCreate EReadError) |
 | 2026-09-19 | #26 | ViestiWin: ApiIntegration.h ei enää sisällytä HK:n ApiSaike.h:ta (bcc32 E2227 Extra parameter ApiIlmoitaTapahtuma) |
 | 2026-09-19 | #25 | Kilpailijatiedot: Salli muokkaus piilotetaan muokkaustilassa; pois muokkauksesta Tallenna, Peruuta tai Sulje |
 | 2026-09-19 | #24 | Kilpailijatiedot: Peruuta muutokset poistaa muokkaustilan (palaa haku- ja katseluun) |

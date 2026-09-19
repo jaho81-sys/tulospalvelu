@@ -26,7 +26,7 @@
 #include "VDeclare.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "..\\ViestiWin\\UnitYv.dfm"
 TFormYhtveto *FormYhtveto;
 void uusiemitanalyysi(bool uusi);
 

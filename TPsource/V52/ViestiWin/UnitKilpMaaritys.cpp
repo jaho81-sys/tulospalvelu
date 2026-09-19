@@ -26,7 +26,7 @@
 #include "UnitMain.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "..\\ViestiWin\\UnitKilpMaaritys.dfm"
 TFormKilpMaaritys *FormKilpMaaritys;
 extern TFormMain *FormMain;
 

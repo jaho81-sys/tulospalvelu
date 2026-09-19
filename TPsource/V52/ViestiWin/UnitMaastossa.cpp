@@ -16,7 +16,7 @@
 #include <stdio.h>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "..\\ViestiWin\\UnitMaastossa.dfm"
 TFormMaastossa *FormMaastossa;
 //---------------------------------------------------------------------------
 __fastcall TFormMaastossa::TFormMaastossa(TComponent* Owner)

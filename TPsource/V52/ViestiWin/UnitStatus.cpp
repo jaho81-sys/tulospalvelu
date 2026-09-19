@@ -33,7 +33,7 @@
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "..\\ViestiWin\\UnitStatus.dfm"
 TFormStatus *FormStatus;
 extern TTapForm *TapFrm[NTAPFORM];
 extern TTilanneForm *TilFrm[NTILANNEFORM];

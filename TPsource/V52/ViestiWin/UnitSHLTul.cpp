@@ -23,7 +23,7 @@
 #include "TulostusUnit2.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "..\\ViestiWin\\UnitSHLTul.dfm"
 TFormSHLtul *FormSHLtul;
 //---------------------------------------------------------------------------
 __fastcall TFormSHLtul::TFormSHLtul(TComponent* Owner)
