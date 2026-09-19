@@ -20,6 +20,7 @@
 #pragma hdrstop
 
 #include "ApiIntegration.h"
+#include "ApiSaike.h"
 
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
