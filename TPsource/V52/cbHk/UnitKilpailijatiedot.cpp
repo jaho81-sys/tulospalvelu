@@ -1317,11 +1317,11 @@ void __fastcall TFormKilpailijatiedot::BtnPeruutaClick(TObject *Sender)
 {
 	if (Lisays) {
 		Lisays = false;
-		BtnSalliClick(Sender);
 		EdBtnClick(Sender);
 		}
 	Kilp = Kilp1;
 	naytaTiedot();
+	asetaMuokkaustila(false);
 }
 //---------------------------------------------------------------------------
 
@@ -1330,7 +1330,8 @@ void __fastcall TFormKilpailijatiedot::BtnTallennaClick(TObject *Sender)
 	if (tallennaTiedot() == 0) {
 		BtnPeruutaClick(Sender);
 		}
-	BtnSalliClick(Sender);
+	else
+		asetaMuokkaustila(false);
 	FocusControl(EdtKilpno);
 }
 //---------------------------------------------------------------------------
