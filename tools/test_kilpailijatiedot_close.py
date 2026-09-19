@@ -26,8 +26,13 @@ def test_close_resets_edit_mode():
     assert 'L"Tallennetaanko muutokset?"' in body
     assert "MB_YESNO" in body
     assert "asetaMuokkaustila(false)" in body
-    assert "tallennaTiedot()" in body
+    assert "tallennaTiedot() != 0" in body
+    assert "Action = caNone" in body
+    assert "if (dKilp > 0)" in body
+    assert "naytaKilpailija(d)" in body
+    assert "Lisays = false" in body
     assert "Kilp = Kilp1" in body
+    assert "paivitaMuutos" not in body
     # Old close used ReadOnly as proxy and never left edit mode.
     assert "EdtSukunimi->ReadOnly" not in body
     assert "asetaMuokkaustila(!sallimuokkaus)" not in body
@@ -41,24 +46,33 @@ def test_close_resets_edit_mode():
 
 
 def test_close_dialog_yes_no():
-    """Kyllä saves when data changed; Ei discards. Both leave edit mode."""
-    def close_edit(sallimuokkaus, changed, answer_yes):
+    """Kyllä saves when data changed; failed save stays in edit mode."""
+    def close_edit(sallimuokkaus, changed, answer_yes, save_ok=True, lisays=False, dkilp=1):
         if not sallimuokkaus:
-            return ("view", False, False)
+            return ("view", False, False, False, dkilp)
         save = False
         discard = False
+        stayed = False
         if answer_yes:
-            if changed:
+            if changed or lisays:
                 save = True
+                if not save_ok:
+                    return ("edit", True, False, True, dkilp)
+            lisays = False
         else:
+            if lisays:
+                lisays = False
+                if dkilp <= 0:
+                    dkilp = 1
             discard = True
-        return ("view", save, discard)
+        return ("view", save, discard, stayed, dkilp)
 
-    assert close_edit(False, True, True) == ("view", False, False)
-    assert close_edit(True, True, True) == ("view", True, False)
-    assert close_edit(True, False, True) == ("view", False, False)
-    assert close_edit(True, True, False) == ("view", False, True)
-    assert close_edit(True, False, False) == ("view", False, True)
+    assert close_edit(False, True, True)[0] == "view"
+    assert close_edit(True, True, True) == ("view", True, False, False, 1)
+    assert close_edit(True, False, True) == ("view", False, False, False, 1)
+    assert close_edit(True, True, False) == ("view", False, True, False, 1)
+    assert close_edit(True, True, True, save_ok=False) == ("edit", True, False, True, 1)
+    assert close_edit(True, True, False, lisays=True, dkilp=0)[4] == 1
     print("ok close yes/no")
 
 
