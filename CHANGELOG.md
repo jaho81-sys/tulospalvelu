@@ -4,7 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
-| 2026-09-19 | — | Kilpailijatiedot: Peruuta muutokset poistaa muokkaustilan (palaa haku- ja katseluun) |
+| 2026-09-19 | #24 | Kilpailijatiedot: Peruuta muutokset poistaa muokkaustilan (palaa haku- ja katseluun) |
 | 2026-09-19 | #23 | Kilpailijatiedot: muokkaustilan sulkeminen kysyy tallennusta; epäonnistunut tallennus pitää ikkunan auki; uuden kilpailijan peruutus ei jätä dKilp=0 |
 | 2026-09-19 | #23 | Maastossa: sarjan valuku määrää väliaikasarakkeet; statusselitteet yhteiseen tark_selite-funktioon (N = Ilmoittautunut säilyy) |
 | 2026-07-28 | #50 | Ratatietoja: kartan kulmapisteiden muokkaus merkitsee nyt muutokset tallentamattomiksi — EdtMapLeft/Top/Right/Bottom- ja EdtScale-kentillä ei ollut OnChange-käsittelijää, joten pelkkien karttakalibrointitietojen muokkaus ei merkinnyt tietoja muuttuneiksi (rataMuutoksia). Tämä saattoi johtaa siihen, että käyttäjä sulki Ratatiedot-ikkunan ja muutokset katosivat tallentamatta ilman varoitusta. Korjattu lisäämällä yhteinen käsittelijä kaikille viidelle kentälle; koskee sekä HkKisaWiniä että ViestiWiniä, koska UnitRadat.cpp/h/dfm on jaettu koodi. |
