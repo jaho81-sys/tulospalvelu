@@ -23,7 +23,7 @@
 #include "UnitSakkoKierr.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "UnitSakkoKierr_v.dfm"
 TFormSakkoKierr *FormSakkoKierr;
 
 bool haeAvoimetThreadOn = false;

@@ -24,7 +24,7 @@
 #include "UnitMain.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "TapUnit2_v.dfm"
 
 TTapForm *TapForm;
 extern tapTp Tapahtuma[MAXTAPAHTUMA];

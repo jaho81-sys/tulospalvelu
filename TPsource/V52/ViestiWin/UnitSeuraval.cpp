@@ -23,7 +23,7 @@
 #include "VDeclare.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "UnitSeuraval_v.dfm"
 TFormSeuraVal *FormSeuraVal;
 //---------------------------------------------------------------------------
 __fastcall TFormSeuraVal::TFormSeuraVal(TComponent* Owner)

@@ -22,7 +22,7 @@
 #include "UnitEmit_VA.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "UnitEmit_VA_v.dfm"
 TFormEmit_VA *FormEmit_VA;
 //---------------------------------------------------------------------------
 __fastcall TFormEmit_VA::TFormEmit_VA(TComponent* Owner)

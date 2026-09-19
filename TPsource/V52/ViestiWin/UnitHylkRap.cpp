@@ -25,7 +25,7 @@
 #include "UnitKirjoitinVal.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "UnitHylkRap_v.dfm"
 TFormHylkRap *FormHylkRap;
 
 #define HRP_HylRaportti             1

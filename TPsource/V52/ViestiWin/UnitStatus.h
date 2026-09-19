@@ -52,6 +52,7 @@ __published:	// IDE-managed Components
 	TMenuItem *Suljekaavake1;
 	TMenuItem *Yhteydeterikaavakkeella1;
 	void __fastcall FormResize(TObject *Sender);
+	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall Yhteislht1Click(TObject *Sender);
 	void __fastcall Hylkysesitykset1Click(TObject *Sender);
 	void __fastcall Emittietueet1Click(TObject *Sender);

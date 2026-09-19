@@ -26,7 +26,7 @@
 #include "UnitFIS.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "UnitArvonta_v.dfm"
 TFormArvonta *FormArvonta;
 extern TFormSarjatiedot *FormSarjatiedot;
 

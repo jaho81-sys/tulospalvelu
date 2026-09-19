@@ -25,7 +25,7 @@
 #include "UnitMySQL.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "UnitImport_v.dfm"
 TFormImport *FormImport;
 
 static int n_os_v, n_va_v, k_arvo = 1, k_yhd = 1, valuku_v;

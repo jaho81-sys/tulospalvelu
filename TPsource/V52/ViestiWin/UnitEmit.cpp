@@ -36,7 +36,7 @@
 #include "UnitHylkRap.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "UnitEmit_v.dfm"
 TFormEmit *FormEmit;
 
 int onrata(wchar_t *tunnus);

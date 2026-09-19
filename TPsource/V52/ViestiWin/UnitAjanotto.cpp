@@ -32,7 +32,7 @@
 #include "ApiVIntegration.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
-#pragma resource "*.dfm"
+#pragma resource "UnitAjanotto_v.dfm"
 TFormAjanotto *FormAjanotot[NAJANOTOT];
 
 void initajat(int ino, int vaihda);
