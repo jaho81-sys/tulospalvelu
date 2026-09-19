@@ -23,6 +23,7 @@
 
 #include <Classes.hpp>
 #include "ApiIntegration.h"
+#include "ApiSaike.h"
 
 //---------------------------------------------------------------------------
 // Helpperi-funktiot API-integroimiseen pääikkunaan

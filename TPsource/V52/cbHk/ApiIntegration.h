@@ -20,8 +20,12 @@
 #define ApiIntegrationH
 
 #include <Classes.hpp>
-#include "ApiSaike.h"
 #include "ApiYhteydet.h"
+
+// TApiSaike is defined in program-specific ApiSaike.h (cbHk vs ViestiWin).
+// Do not include it here: bcc32 looks in this header's directory first, so
+// ViestiWin would get the 3-arg HK ApiIlmoitaTapahtuma and fail E2227.
+class TApiSaike;
 
 //---------------------------------------------------------------------------
 // Global API integration manager
