@@ -126,11 +126,7 @@ static bool MaastossaNaytaOsuus(kilptietue& kilp, int os)
 {
 	if (!MaastossaOnEmit(kilp, os))
 		return false;
-	if (kilp.Lahto(os) != TMAALI0)
-		return true;
-	// Edellinen osuus suljettu: seuraaja emitillä on maastossa, vaikka
-	// lähtöaika ei tule vaihdosta.
-	return kilp.Sulj(os);
+	return kilp.Lahto(os) != TMAALI0;
 }
 
 void __fastcall TFormMaastossa::asetaSarakkeet(void)
