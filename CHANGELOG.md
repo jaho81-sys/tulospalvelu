@@ -4,7 +4,7 @@ Muutoshistoria pääkehityshaaraan (main) tehdyistä committeista, uusin ensin.
 
 | Pvm | # | Muutos |
 |---|---|---|
-| 2026-09-20 | — | Maastossa (ViestiWin): ääkköset seuran, sarjan ja väliaikaotsikoiden näytössä (Seura/Sarjanimi/MbsToWcs) |
+| 2026-09-20 | #29 | Maastossa (ViestiWin): ääkköset seuran, sarjan ja väliaikaotsikoiden näytössä (Seura/Sarjanimi/MbsToWcs) |
 | 2026-09-19 | #28 | Joukkuetiedot: Salli muokkaus piilotetaan muokkaustilassa; pois muokkauksesta Tallenna, Peruuta tai Sulje |
 | 2026-09-19 | #27 | ViestiWin: samannimiset dfm:t upotetaan UnitXxx_v.dfm -tiedostoina, ei cbHk-nimikaimoina (FormStatus.OnCreate EReadError) |
 | 2026-09-19 | #26 | ViestiWin: ApiIntegration.h ei enää sisällytä HK:n ApiSaike.h:ta (bcc32 E2227 Extra parameter ApiIlmoitaTapahtuma) |
