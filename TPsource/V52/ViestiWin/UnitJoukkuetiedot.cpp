@@ -212,7 +212,7 @@ void __fastcall TFormJoukkuetiedot::naytaTiedot(void)
 			SrjVal->Items->Add(Sarjat[srj].sarjanimi);
 		SrjVal->ItemIndex = 0;
 		}
-	BtnSalli->Visible = sallimuokkausvalinta;
+	BtnSalli->Visible = sallimuokkausvalinta && !sallimuokkaus;
 	BtnPeruuta->Visible = sallimuokkaus;
 	BtnTallenna->Visible = sallimuokkaus;
 	BtnJjVaihto->Visible = sallimuokkaus;
@@ -997,16 +997,15 @@ void __fastcall TFormJoukkuetiedot::FormDestroy(TObject *Sender)
 //---------------------------------------------------------------------------
 
 
-void __fastcall TFormJoukkuetiedot::BtnSalliClick(TObject *Sender)
+// Switch the team form between view and edit.
+// Close() only hides this form, so edit mode must be turned off on close
+// or the next Show() still has writable fields.
+// Hide Salli muokkaus while editing: it used to leave edit without
+// Tallenna/Peruuta, which discarded or stranded unsaved changes.
+void __fastcall TFormJoukkuetiedot::asetaMuokkaustila(bool paalle)
 {
-	if (oistuvienlisystentila1->Checked) {
-		sallimuokkaus = true;
-		salliNumeromuutos = true;
-		}
-	else {
-		salliNumeromuutos = false;
-		sallimuokkaus = !sallimuokkaus;
-		}
+	sallimuokkaus = paalle;
+	BtnSalli->Visible = sallimuokkausvalinta && !sallimuokkaus;
 	BtnPeruuta->Visible = sallimuokkaus;
 	BtnTallenna->Visible = sallimuokkaus;
 	BtnJjVaihto->Visible = sallimuokkaus;
@@ -1033,7 +1032,8 @@ void __fastcall TFormJoukkuetiedot::BtnSalliClick(TObject *Sender)
 			Tila->Caption = UnicodeString(L"Uuden tietueen muokkaus");
 		else
 			Tila->Caption = UnicodeString(L"Muokkaustila");
-		BtnSalli->Caption = L"Hakuun ja katseluun";
+		if (ActiveControl == BtnSalli)
+			FocusControl(EdtSeura);
 		}
 	else {
 		OsGrid->Options >> goEditing;
@@ -1044,17 +1044,25 @@ void __fastcall TFormJoukkuetiedot::BtnSalliClick(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TFormJoukkuetiedot::BtnSalliClick(TObject *Sender)
+{
+	salliNumeromuutos = oistuvienlisystentila1->Checked;
+	if (!sallimuokkaus)
+		asetaMuokkaustila(true);
+}
+//---------------------------------------------------------------------------
+
 void __fastcall TFormJoukkuetiedot::BtnPeruutaClick(TObject *Sender)
 {
 	if (!oistuvienlisystentila1->Checked)
 		salliNumeromuutos = false;
 	if (Lisays) {
 		Lisays = false;
-		BtnSalliClick(Sender);
 		EdBtnClick(Sender);
 		}
 	Kilp = Kilp1;
 	naytaTiedot();
+	asetaMuokkaustila(false);
 }
 //---------------------------------------------------------------------------
 
@@ -1065,7 +1073,8 @@ void __fastcall TFormJoukkuetiedot::BtnTallennaClick(TObject *Sender)
 	if (tallennaTiedot() == 0) {
 		BtnPeruutaClick(Sender);
 		}
-	BtnSalliClick(Sender);
+	else if (!oistuvienlisystentila1->Checked)
+		asetaMuokkaustila(false);
 }
 //---------------------------------------------------------------------------
 
@@ -1110,7 +1119,7 @@ void __fastcall TFormJoukkuetiedot::FormClose(TObject *Sender, TCloseAction &Act
 			MB_YESNO) == IDYES) {
 			tallennaTiedot();
 			}
-		sallimuokkaus = false;
+		asetaMuokkaustila(false);
 		}
 	oistuvienlisystentila1->Checked = false;
 	salliNumeromuutos = false;
@@ -1333,9 +1342,8 @@ void __fastcall TFormJoukkuetiedot::Liskilpailija1Click(TObject *Sender)
 	dKilp = 0;
 	Kilp.nollaa();
 	Lisays = true;
-	sallimuokkaus = false;
-	salliNumeromuutos = true;
-	BtnSalliClick(Sender);
+	salliNumeromuutos = oistuvienlisystentila1->Checked;
+	asetaMuokkaustila(true);
 	naytaTiedot();
 }
 //---------------------------------------------------------------------------
@@ -1566,7 +1574,7 @@ void __fastcall TFormJoukkuetiedot::oistuvienlisystentila1Click(TObject *Sender)
 		}
 	else {
 		salliNumeromuutos = false;
-		BtnSalliClick(Sender);
+		asetaMuokkaustila(false);
 		}
 }
 //---------------------------------------------------------------------------
