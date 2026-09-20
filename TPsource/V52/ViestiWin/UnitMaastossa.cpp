@@ -86,8 +86,11 @@ static void MaastossaVaOts(int srjVal, int p, wchar_t *ots, int otsLen)
 		for (int os = 0; os < nos; os++) {
 			char *m = Sarjat[srjVal].va_matka[os][p - 1];
 			if (m && m[0] && !(m[0] == '0' && m[1] == 0)) {
-				ansitowcs(ots, m, otsLen);
-				return;
+				MbsToWcs(ots, m, otsLen);
+				if (otsLen > 0)
+					ots[otsLen - 1] = 0;
+				if (ots[0])
+					return;
 			}
 		}
 	}
@@ -106,6 +109,28 @@ static UnicodeString MaastossaLahtoPaikka(kilptietue& kilp, int srj, int os)
 		lp += UnicodeString(rt->lahto);
 	}
 	return lp;
+}
+
+static bool MaastossaOnEmit(kilptietue& kilp, int os)
+{
+	if (os < 0)
+		return false;
+	if (kilp.ostiet[os].badge[0] != 0)
+		return true;
+	if (kilpparam.kaksibadge && kilp.ostiet[os].badge[1] != 0)
+		return true;
+	return false;
+}
+
+static bool MaastossaNaytaOsuus(kilptietue& kilp, int os)
+{
+	if (!MaastossaOnEmit(kilp, os))
+		return false;
+	if (kilp.Lahto(os) != TMAALI0)
+		return true;
+	// Edellinen osuus suljettu: seuraaja emitillä on maastossa, vaikka
+	// lähtöaika ei tule vaihdosta.
+	return kilp.Sulj(os);
 }
 
 void __fastcall TFormMaastossa::asetaSarakkeet(void)
@@ -146,7 +171,7 @@ void __fastcall TFormMaastossa::haeKilpailijat(void)
 {
 	int srjVal = CBSarja->ItemIndex - 1;
 	int rivi = 1;
-	wchar_t line[80], nimi[80];
+	wchar_t line[80], nimi[80], sr[LSEURA+1];
 	const int nkiint = 8;
 	int nvaCols = MaastossaMaxNva(srjVal);
 
@@ -181,14 +206,16 @@ void __fastcall TFormMaastossa::haeKilpailijat(void)
 				continue;
 			if (kilp.Maali(os, 0) != TMAALI0)
 				continue;
+			if (!MaastossaNaytaOsuus(kilp, os))
+				continue;
 
 			if (rivi >= Grid->RowCount)
 				Grid->RowCount = rivi + 1;
 			Grid->Cells[0][rivi] = UnicodeString(kilp.KilpNo());
 			Grid->Cells[1][rivi] = UnicodeString(os + 1);
-			Grid->Cells[2][rivi] = UnicodeString(Sarjat[srj].sarjanimi);
+			Grid->Cells[2][rivi] = UnicodeString(Sarjat[srj].Sarjanimi());
 			Grid->Cells[3][rivi] = UnicodeString(kilp.Nimi(nimi, 79, os));
-			Grid->Cells[4][rivi] = UnicodeString(kilp.seura);
+			Grid->Cells[4][rivi] = UnicodeString(kilp.Seura(sr));
 			tarkStr(kh, line);
 			Grid->Cells[5][rivi] = UnicodeString(line);
 			Grid->Cells[6][rivi] = MaastossaLahtoPaikka(kilp, srj, os);
@@ -239,7 +266,7 @@ void __fastcall TFormMaastossa::FormShow(TObject *Sender)
 	CBSarja->Clear();
 	CBSarja->Items->Add(L"Kaikki sarjat");
 	for (int srj = 0; srj < sarjaluku; srj++)
-		CBSarja->Items->Add(UnicodeString(Sarjat[srj].sarjanimi));
+		CBSarja->Items->Add(UnicodeString(Sarjat[srj].Sarjanimi()));
 	CBSarja->Items->EndUpdate();
 	if (vanha >= 0 && vanha < CBSarja->Items->Count)
 		CBSarja->ItemIndex = vanha;
